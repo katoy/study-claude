@@ -1,9 +1,21 @@
 {
 	"name": "example-001",
 	"image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+	"features": {
+		"ghcr.io/devcontainers/features/node:1": {},
+		"ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
+	},
 	"customizations": {
 		"vscode": {
-			"extensions": []
+			"extensions": [
+				"anthropic.claude-code"
+			]
 		}
-	}
+	},
+	"mounts": [
+		"source=claude-config,target=/home/vscode/.claude,type=volume"
+	],
+	"remoteUser": "vscode",
+	"postCreateCommand": "sudo chown -R vscode:vscode /home/vscode/.claude"
 }
+

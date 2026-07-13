@@ -40,6 +40,12 @@
 python3 -m http.server 8000
 ```
 
+または `node` (`npx`) を使う場合は次のように起動します。
+
+```bash
+npx http-server -p 8000
+```
+
 その後、ブラウザで `http://localhost:8000/` を開いてください。
 
 ## 遊び方
