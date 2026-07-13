@@ -406,6 +406,7 @@
         let isPaused = false;
         let lastDropTime = 0;
         let currentTime = 0;
+        let bag = [];
 
         // Canvas参照
         const canvas = document.getElementById('gameCanvas');
@@ -458,6 +459,7 @@
         // 初期化
         function init() {
             board = Array(BOARD_HEIGHT).fill(null).map(() => Array(BOARD_WIDTH).fill(0));
+            bag = [];
             currentBlock = getRandomBlock();
             nextBlock = getRandomBlock();
             score = 0;
@@ -471,9 +473,17 @@
             draw();
         }
 
-        // ランダムなテトロミノを取得
+        // ランダムなテトロミノを取得（7バッグシステム）
         function getRandomBlock() {
-            const key = TETROMINO_KEYS[Math.floor(Math.random() * TETROMINO_KEYS.length)];
+            if (bag.length === 0) {
+                bag = [...TETROMINO_KEYS];
+                // シャッフル
+                for (let i = bag.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [bag[i], bag[j]] = [bag[j], bag[i]];
+                }
+            }
+            const key = bag.pop();
             const tetromino = TETROMINOS[key];
             return {
                 type: key,
@@ -540,15 +550,29 @@
             }
         }
 
-        // 回転
+        // 回転（壁蹴り対応）
         function rotate(block) {
             const rotated = block.shape[0].map((_, i) =>
                 block.shape.map(row => row[i]).reverse()
             );
             const oldShape = block.shape;
+            const oldX = block.x;
             block.shape = rotated;
-            if (!canMove(block, 0, 0)) {
+            
+            // 回転後の衝突判定（衝突した場合は左右にずらして配置可能か検証）
+            const kicks = [0, -1, 1, -2, 2];
+            let success = false;
+            for (let dx of kicks) {
+                if (canMove(block, dx, 0)) {
+                    block.x += dx;
+                    success = true;
+                    break;
+                }
+            }
+            
+            if (!success) {
                 block.shape = oldShape;
+                block.x = oldX;
             }
         }
 
@@ -714,108 +738,136 @@
 
         // キーボード入力
         const keys = {};
+        let lastLeftMoveTime = 0;
+        let lastRightMoveTime = 0;
+        let lastSoftDropTime = 0;
+
         document.addEventListener('keydown', (e) => {
+            if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                e.preventDefault(); // デフォルトのスクロール等を防止
+            }
+
             keys[e.key] = true;
-            if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'ArrowDown') e.preventDefault();
+
+            if (gameOver) {
+                if (e.key === 'Enter') {
+                    init();
+                }
+                return;
+            }
+
+            if (e.key === 'p' || e.key === 'P') {
+                isPaused = !isPaused;
+                updateUI();
+                return;
+            }
+
+            if (isPaused) return;
+
+            // 単発アクションは keydown イベント発生時に即座に実行
+            if (e.key === 'ArrowUp') {
+                rotate(currentBlock);
+            }
+            if (e.key === ' ') {
+                while (canMove(currentBlock, 0, 1)) {
+                    currentBlock.y++;
+                }
+            }
         });
 
         document.addEventListener('keyup', (e) => {
             keys[e.key] = false;
         });
 
-        // キー処理
-        let lastInputTime = 0;
+        // 継続的なキー入力を処理するループ
         function handleInput() {
             const now = Date.now();
-            const inputDelay = 100; // ms
+            const moveDelay = 100; // 左右長押し移動のディレイ (ms)
+            const softDropDelay = 50; // ソフトドロップのディレイ (ms)
 
-            if (gameOver) {
-                if (keys['Enter'] && now - lastInputTime > 200) {
-                    init();
-                    lastInputTime = now;
-                }
-                return;
-            }
+            if (gameOver || isPaused) return;
 
-            if (keys['p'] || keys['P']) {
-                if (now - lastInputTime > 200) {
-                    isPaused = !isPaused;
-                    lastInputTime = now;
-                    updateUI();
-                }
-                return;
-            }
-
-            if (isPaused) return;
-
-            if (keys['ArrowLeft'] && now - lastInputTime > inputDelay) {
+            if (keys['ArrowLeft'] && now - lastLeftMoveTime > moveDelay) {
                 if (canMove(currentBlock, -1, 0)) {
                     currentBlock.x--;
-                    lastInputTime = now;
+                    lastLeftMoveTime = now;
                 }
             }
-            if (keys['ArrowRight'] && now - lastInputTime > inputDelay) {
+            if (keys['ArrowRight'] && now - lastRightMoveTime > moveDelay) {
                 if (canMove(currentBlock, 1, 0)) {
                     currentBlock.x++;
-                    lastInputTime = now;
+                    lastRightMoveTime = now;
                 }
             }
-            if (keys['ArrowUp'] && now - lastInputTime > inputDelay) {
-                rotate(currentBlock);
-                lastInputTime = now;
-            }
-            if (keys['ArrowDown']) {
+            if (keys['ArrowDown'] && now - lastSoftDropTime > softDropDelay) {
                 if (canMove(currentBlock, 0, 1)) {
                     currentBlock.y++;
+                    lastSoftDropTime = now;
                 }
-            }
-            if (keys[' '] && now - lastInputTime > inputDelay) {
-                while (canMove(currentBlock, 0, 1)) {
-                    currentBlock.y++;
-                }
-                lastInputTime = now;
             }
         }
 
-        // タッチボタンイベント
-        document.getElementById('btnLeft').addEventListener('click', () => {
+        // タッチ操作用イベントハンドラ（pointerdown / click 両対応）
+        const handleLeft = (e) => {
+            if (e) e.preventDefault();
             if (!gameOver && !isPaused && canMove(currentBlock, -1, 0)) {
                 currentBlock.x--;
             }
-        });
+        };
 
-        document.getElementById('btnRight').addEventListener('click', () => {
+        const handleRight = (e) => {
+            if (e) e.preventDefault();
             if (!gameOver && !isPaused && canMove(currentBlock, 1, 0)) {
                 currentBlock.x++;
             }
-        });
+        };
 
-        document.getElementById('btnRotate').addEventListener('click', () => {
+        const handleRotate = (e) => {
+            if (e) e.preventDefault();
             if (!gameOver && !isPaused) {
                 rotate(currentBlock);
             }
-        });
+        };
 
-        document.getElementById('btnSoftDrop').addEventListener('click', () => {
+        const handleSoftDrop = (e) => {
+            if (e) e.preventDefault();
             if (!gameOver && !isPaused && canMove(currentBlock, 0, 1)) {
                 currentBlock.y++;
             }
-        });
+        };
 
-        document.getElementById('btnHardDrop').addEventListener('click', () => {
+        const handleHardDrop = (e) => {
+            if (e) e.preventDefault();
             if (!gameOver && !isPaused) {
                 while (canMove(currentBlock, 0, 1)) {
                     currentBlock.y++;
                 }
             }
-        });
+        };
 
-        document.getElementById('btnPause').addEventListener('click', () => {
+        const handlePause = (e) => {
+            if (e) e.preventDefault();
             if (!gameOver) {
                 isPaused = !isPaused;
                 updateUI();
             }
-        });
+        };
+
+        // イベント設定ユーティリティ
+        const setupTouchEvent = (id, handler) => {
+            const btn = document.getElementById(id);
+            if (btn) {
+                btn.addEventListener('pointerdown', handler);
+                btn.addEventListener('click', handler);
+            }
+        };
+
+        setupTouchEvent('btnLeft', handleLeft);
+        setupTouchEvent('btnRight', handleRight);
+        setupTouchEvent('btnRotate', handleRotate);
+        setupTouchEvent('btnSoftDrop', handleSoftDrop);
+        setupTouchEvent('btnHardDrop', handleHardDrop);
+        setupTouchEvent('btnPause', handlePause);
 
         // ゲームループ
         let lastTime = 0;
