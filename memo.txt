@@ -1,0 +1,9 @@
+- Ubuntuコンテナでdeb直インストール前に `sudo apt-get update` が必要。未更新だと依存が "not installable" になりやすい。
+- VS Code はアーキに合わせてURLを使い分ける: arm64 は `.../latest/linux-deb-arm64/stable`。
+
+- Claude Code は `curl -fsSL https://claude.ai/install.sh | bash` で導入可能。インストール先は `~/.local/bin/claude`。
+
+- https://book.mynavi.jp/supportsite/detail/9784839990206.html
+  サーポートページ
+
+- 
