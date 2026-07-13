@@ -1,0 +1,5 @@
+{
+  "image": "ghcr.io/fosawa/claudecode-devcontainer:latest",
+  "remoteUser": "vscode",
+  "containerUser": "vscode"
+}

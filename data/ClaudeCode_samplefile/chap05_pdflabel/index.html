@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDFラベルメーカー</title>
+  <!-- jsPDFライブラリ（CDN） -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+  <!-- ラベル用紙プリセットデータ（file:// でも読めるよう .js として外部化） -->
+  <script src="labellist.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 24px 16px;
+      color: #333;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      margin-bottom: 24px;
+    }
+
+    fieldset {
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    legend {
+      font-weight: bold;
+      font-size: 0.9rem;
+      padding: 0 4px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      margin-bottom: 4px;
+    }
+
+    .field {
+      margin-bottom: 12px;
+    }
+
+    .field:last-child {
+      margin-bottom: 0;
+    }
+
+    select,
+    input[type="number"],
+    input[type="text"],
+    textarea {
+      width: 100%;
+      padding: 6px 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+
+    textarea {
+      height: 100px;
+      resize: vertical;
+      font-family: sans-serif;
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .row .field {
+      flex: 1;
+    }
+
+    button {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      font-size: 1rem;
+      font-weight: bold;
+      color: #fff;
+      background: #333;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #555;
+    }
+
+    /* 絞り込み付きドロップダウン */
+    .preset-wrapper {
+      position: relative;
+    }
+
+    .preset-list {
+      display: none;
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 100%;
+      max-height: 240px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      border-top: none;
+      border-radius: 0 0 4px 4px;
+      background: #fff;
+      z-index: 10;
+      list-style: none;
+    }
+
+    .preset-list.open {
+      display: block;
+    }
+
+    .preset-list li {
+      padding: 6px 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .preset-list li:hover,
+    .preset-list li.active {
+      background: #eee;
+    }
+
+    .preset-list li .sub {
+      color: #888;
+      font-size: 0.75rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>PDFラベルメーカー</h1>
+
+  <!-- 用紙プリセット -->
+  <fieldset>
+    <legend>用紙プリセット</legend>
+    <div class="field">
+      <label for="presetSearch">ラベル用紙（メーカー名・品番・面数で絞り込み）</label>
+      <div class="preset-wrapper">
+        <input type="text" id="presetSearch" placeholder="例: エーワン 24面" autocomplete="off">
+        <ul class="preset-list" id="presetList"></ul>
+      </div>
+    </div>
+  </fieldset>
+
+  <!-- ラベルに印字するテキスト -->
+  <fieldset>
+    <legend>テキスト</legend>
+    <div class="field">
+      <label for="labelText">ラベルに印字する内容</label>
+      <textarea id="labelText" placeholder="ここにテキストを入力"></textarea>
+    </div>
+    <div class="field">
+      <label for="fontSize">フォントサイズ (pt)</label>
+      <input type="number" id="fontSize" value="10" min="1" step="0.5">
+    </div>
+  </fieldset>
+
+  <!-- 用紙余白 -->
+  <fieldset>
+    <legend>用紙余白 (mm)</legend>
+    <div class="row">
+      <div class="field">
+        <label for="marginTop">上</label>
+        <input type="number" id="marginTop" value="10" min="0" step="0.5">
+      </div>
+      <div class="field">
+        <label for="marginBottom">下</label>
+        <input type="number" id="marginBottom" value="10" min="0" step="0.5">
+      </div>
+      <div class="field">
+        <label for="marginLeft">左</label>
+        <input type="number" id="marginLeft" value="10" min="0" step="0.5">
+      </div>
+      <div class="field">
+        <label for="marginRight">右</label>
+        <input type="number" id="marginRight" value="10" min="0" step="0.5">
+      </div>
+    </div>
+  </fieldset>
+
+  <!-- ラベル設定 -->
+  <fieldset>
+    <legend>ラベル設定 (mm)</legend>
+    <div class="row">
+      <div class="field">
+        <label for="labelWidth">ラベル幅</label>
+        <input type="number" id="labelWidth" value="70" min="1" step="0.5">
+      </div>
+      <div class="field">
+        <label for="labelHeight">ラベル高さ</label>
+        <input type="number" id="labelHeight" value="37" min="1" step="0.5">
+      </div>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label for="labelGapX">ラベル間余白（横）</label>
+        <input type="number" id="labelGapX" value="2" min="0" step="0.5">
+      </div>
+      <div class="field">
+        <label for="labelGapY">ラベル間余白（縦）</label>
+        <input type="number" id="labelGapY" value="2" min="0" step="0.5">
+      </div>
+    </div>
+  </fieldset>
+
+  <!-- PDF生成ボタン -->
+  <button type="button" id="generateBtn">PDF を作成</button>
+
+  <script>
+    // labelList は labellist.js で定義済み（const labelList = [...]）
+
+    // プリセット項目の表示テキストを生成する
+    function presetLabel(item) {
+      return item.manufacturer + ' ' + item.productNumber + ' ' + item.name
+        + ' (' + item.labelWidth + '×' + item.labelHeight + 'mm)';
+    }
+
+    // プリセットリストを描画する
+    function renderPresetList(query) {
+      var listEl = document.getElementById('presetList');
+      listEl.innerHTML = '';
+      var q = query.toLowerCase();
+      var filtered = labelList.filter(function (item) {
+        if (!q) return true;
+        var text = presetLabel(item).toLowerCase();
+        // スペース区切りのAND検索
+        return q.split(/\s+/).every(function (word) {
+          return text.indexOf(word) !== -1;
+        });
+      });
+
+      // カスタム（手動設定）を先頭に追加
+      var customLi = document.createElement('li');
+      customLi.textContent = 'カスタム（手動設定）';
+      customLi.addEventListener('mousedown', function (e) {
+        e.preventDefault();
+        document.getElementById('presetSearch').value = '';
+        closePresetList();
+      });
+      listEl.appendChild(customLi);
+
+      filtered.forEach(function (item) {
+        var li = document.createElement('li');
+        li.innerHTML = '<div>' + item.manufacturer + ' <b>' + item.productNumber + '</b> ' + item.name
+          + '</div><div class="sub">' + item.labelWidth + '×' + item.labelHeight + 'mm</div>';
+        li.addEventListener('mousedown', function (e) {
+          e.preventDefault();
+          applyPreset(item);
+        });
+        listEl.appendChild(li);
+      });
+    }
+
+    // プリセットを入力欄に反映する
+    function applyPreset(item) {
+      var fields = [
+        'marginTop', 'marginBottom', 'marginLeft', 'marginRight',
+        'labelWidth', 'labelHeight', 'labelGapX', 'labelGapY'
+      ];
+      fields.forEach(function (id) {
+        document.getElementById(id).value = item[id];
+      });
+      document.getElementById('presetSearch').value = presetLabel(item);
+      closePresetList();
+    }
+
+    // リストを開閉する
+    function openPresetList() {
+      document.getElementById('presetList').classList.add('open');
+    }
+    function closePresetList() {
+      document.getElementById('presetList').classList.remove('open');
+    }
+
+    // 検索欄のイベント
+    var searchEl = document.getElementById('presetSearch');
+    searchEl.addEventListener('focus', function () {
+      renderPresetList(this.value);
+      openPresetList();
+    });
+    searchEl.addEventListener('input', function () {
+      renderPresetList(this.value);
+      openPresetList();
+    });
+    searchEl.addEventListener('blur', function () {
+      closePresetList();
+    });
+
+    // フォントデータのキャッシュ
+    let fontCache = null;
+
+    // NotoSansJPフォントをCDNから読み込む
+    async function loadFont() {
+      if (fontCache) return fontCache;
+      const url = 'https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/notosansjp/NotoSansJP%5Bwght%5D.ttf';
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('フォントの読み込みに失敗しました');
+      const buffer = await response.arrayBuffer();
+      // ArrayBufferをBase64文字列に変換
+      const bytes = new Uint8Array(buffer);
+      let binary = '';
+      for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      fontCache = btoa(binary);
+      return fontCache;
+    }
+
+    // 入力値を数値で取得するヘルパー
+    function getVal(id) {
+      return parseFloat(document.getElementById(id).value);
+    }
+
+    // PDF生成
+    async function generatePdf() {
+      const btn = document.getElementById('generateBtn');
+      btn.disabled = true;
+      btn.textContent = 'フォント読み込み中…';
+
+      try {
+        // フォント読み込み
+        const fontBase64 = await loadFont();
+        btn.textContent = 'PDF 生成中…';
+
+        const { jsPDF } = window.jspdf;
+
+        // 入力値を取得
+        const text = document.getElementById('labelText').value;
+        const fontSize = getVal('fontSize');
+        const marginTop = getVal('marginTop');
+        const marginBottom = getVal('marginBottom');
+        const marginLeft = getVal('marginLeft');
+        const marginRight = getVal('marginRight');
+        const labelWidth = getVal('labelWidth');
+        const labelHeight = getVal('labelHeight');
+        const labelGapX = getVal('labelGapX');
+        const labelGapY = getVal('labelGapY');
+        const padding = 2; // ラベル内余白 2mm
+
+        // A4用紙サイズ
+        const pageWidth = 210;
+        const pageHeight = 297;
+
+        // 印刷可能領域
+        const printableWidth = pageWidth - marginLeft - marginRight;
+        const printableHeight = pageHeight - marginTop - marginBottom;
+
+        // 行数・列数を自動計算
+        const cols = Math.floor((printableWidth + labelGapX) / (labelWidth + labelGapX));
+        const rows = Math.floor((printableHeight + labelGapY) / (labelHeight + labelGapY));
+
+        if (cols <= 0 || rows <= 0) {
+          alert('ラベルが用紙に収まりません。設定を見直してください。');
+          return;
+        }
+
+        // PDF作成
+        const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+
+        // フォント登録
+        doc.addFileToVFS('NotoSansJP.ttf', fontBase64);
+        doc.addFont('NotoSansJP.ttf', 'NotoSansJP', 'normal');
+        doc.setFont('NotoSansJP');
+        doc.setFontSize(fontSize);
+
+        // テキストの折り返し処理（改行と幅超過の両方に対応）
+        const maxTextWidth = labelWidth - padding * 2;
+        const lines = text ? doc.splitTextToSize(text, maxTextWidth) : [];
+
+        // ptからmmへの変換係数
+        const ptToMm = 0.352778;
+
+        // 各ラベルを描画
+        for (let row = 0; row < rows; row++) {
+          for (let col = 0; col < cols; col++) {
+            const x = marginLeft + col * (labelWidth + labelGapX);
+            const y = marginTop + row * (labelHeight + labelGapY);
+
+            // 枠線を描画
+            doc.rect(x, y, labelWidth, labelHeight);
+
+            // テキストを描画（左上揃え）
+            if (lines.length > 0) {
+              const textX = x + padding;
+              // ベースライン位置 = ラベル上端 + パディング + フォントサイズ分
+              const textY = y + padding + fontSize * ptToMm;
+              doc.text(lines, textX, textY);
+            }
+          }
+        }
+
+        // 新しいタブでPDFを表示
+        const pdfBlob = doc.output('blob');
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+        window.open(pdfUrl, '_blank');
+
+      } catch (err) {
+        alert('エラーが発生しました: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'PDF を作成';
+      }
+    }
+
+    // ボタンイベント
+    document.getElementById('generateBtn').addEventListener('click', generatePdf);
+  </script>
+</body>
+</html>

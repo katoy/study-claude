@@ -1,0 +1,21 @@
+# 依存パッケージ
+node_modules/
+
+# Playwright のテスト成果物
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Claude Code のローカル設定
+.claude/settings.local.json
+
+# ログ
+*.log
+npm-debug.log*
+
+# OS / エディタが生成するファイル
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

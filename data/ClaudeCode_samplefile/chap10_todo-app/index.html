@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TODOリスト</title>
+  <link href="./node_modules/quill/dist/quill.snow.css" rel="stylesheet" />
+  <script src="./node_modules/quill/dist/quill.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', 'Hiragino Sans', 'Meiryo', sans-serif;
+      background: #f5f5f5;
+      color: #333;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    button {
+      cursor: pointer;
+      padding: 6px 16px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #fff;
+      font-size: 14px;
+    }
+
+    button:hover {
+      background: #e8e8e8;
+    }
+
+    .btn-primary {
+      background: #4a90d9;
+      color: #fff;
+      border-color: #4a90d9;
+    }
+
+    .btn-primary:hover {
+      background: #357abd;
+    }
+
+    .btn-danger {
+      background: #d9534f;
+      color: #fff;
+      border-color: #d9534f;
+    }
+
+    .btn-danger:hover {
+      background: #c9302c;
+    }
+
+    /* タブ */
+    .tab-bar {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-bottom: 16px;
+    }
+
+    .tab {
+      padding: 8px 20px;
+      border: 1px solid #ccc;
+      background: #fff;
+      cursor: pointer;
+      font-size: 14px;
+      border-radius: 0;
+    }
+
+    .tab:first-child {
+      border-radius: 4px 0 0 4px;
+    }
+
+    .tab:last-of-type {
+      border-radius: 0 4px 4px 0;
+    }
+
+    .tab.active {
+      background: #4a90d9;
+      color: #fff;
+      border-color: #4a90d9;
+    }
+
+    .tab-bar-right {
+      margin-left: auto;
+    }
+
+    /* セクション */
+    .section {
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      color: #888;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 4px;
+      margin-bottom: 8px;
+    }
+
+    /* ToDoアイテム行 */
+    .todo-item {
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      margin-bottom: 4px;
+    }
+
+    .todo-item.completed {
+      opacity: 0.6;
+    }
+
+    .todo-item .todo-title {
+      flex: 1;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .todo-item.completed .todo-title {
+      text-decoration: line-through;
+      color: #999;
+    }
+
+    .todo-item .todo-date {
+      margin-right: 12px;
+      font-size: 13px;
+      color: #666;
+    }
+
+    .todo-item .btn-complete {
+      font-size: 12px;
+      padding: 4px 12px;
+    }
+
+    .todo-item.completed .btn-complete {
+      background: #ccc;
+      color: #666;
+      border-color: #bbb;
+    }
+
+    /* モーダル */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-overlay.visible {
+      display: flex;
+    }
+
+    .modal {
+      background: #fff;
+      border-radius: 8px;
+      padding: 24px;
+      width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      z-index: 1001;
+    }
+
+    .modal h2 {
+      margin-bottom: 16px;
+      font-size: 18px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+
+    .form-group input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .radio-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .radio-group label {
+      font-weight: normal;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .date-input-wrapper {
+      margin-left: 24px;
+      margin-top: 4px;
+    }
+
+    .error-message {
+      color: red;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    #editor-container {
+      height: 150px;
+    }
+  </style>
+</head>
+<body>
+  <h1>TODOリスト</h1>
+  <div class="header">
+    <button class="btn-primary" id="btn-new">新規</button>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab active" data-filter="all">すべて</div>
+    <div class="tab" data-filter="incomplete">未完了</div>
+    <div class="tab" data-filter="completed">完了済</div>
+    <span class="tab-bar-right">
+      <button id="btn-delete-completed">完済を削除</button>
+    </span>
+  </div>
+
+  <div id="todo-list"></div>
+
+  <!-- モーダル -->
+  <div class="modal-overlay" id="modal-overlay">
+    <div class="modal" id="modal" role="dialog">
+      <div class="form-group">
+        <label>タイトル</label>
+        <input type="text" id="modal-title" placeholder="タイトルを入力" maxlength="101">
+        <div class="error-message" id="error-title"></div>
+      </div>
+
+      <div class="form-group">
+        <label>日時</label>
+        <div class="radio-group">
+          <label><input type="radio" name="dateType" value="none" checked> なし</label>
+          <label><input type="radio" name="dateType" value="date"> 日のみ</label>
+          <div class="date-input-wrapper">
+            <input type="date" id="modal-date" style="display:none;">
+          </div>
+          <label><input type="radio" name="dateType" value="datetime"> 時まで</label>
+          <div class="date-input-wrapper">
+            <input type="datetime-local" id="modal-datetime" style="display:none;">
+          </div>
+        </div>
+        <div class="error-message" id="error-date"></div>
+      </div>
+
+      <div class="form-group">
+        <label>詳細</label>
+        <div id="editor-container"></div>
+        <div class="error-message" id="error-detail"></div>
+      </div>
+
+      <div class="modal-buttons">
+        <button class="btn-primary" id="btn-save">保存</button>
+        <button id="btn-cancel">キャンセル</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========================================
+    // データ管理
+    // ========================================
+    const STORAGE_KEY = 'todo-app-items';
+
+    // localStorageからデータを読み込む
+    function loadItems() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    // localStorageにデータを保存する
+    function saveItems(items) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    }
+
+    let items = loadItems();
+    let currentFilter = 'all';
+    let editingId = null;
+    let quillEditor = null;
+
+    // ========================================
+    // セクション分類
+    // ========================================
+    function getSection(item) {
+      if (item.dateType === 'none' || !item.deadline) {
+        return 'other';
+      }
+
+      const deadline = new Date(item.deadline);
+      const now = new Date();
+
+      // 今日の終わり
+      const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+      // 明日の終わり
+      const tomorrowEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 23, 59, 59, 999);
+
+      if (deadline <= todayEnd) {
+        return 'today';
+      } else if (deadline <= tomorrowEnd) {
+        return 'tomorrow';
+      } else {
+        return 'other';
+      }
+    }
+
+    // ========================================
+    // ソート
+    // ========================================
+    function sortItems(itemsToSort) {
+      return [...itemsToSort].sort((a, b) => {
+        // deadlineありが先
+        const aHasDeadline = a.dateType !== 'none' && a.deadline;
+        const bHasDeadline = b.dateType !== 'none' && b.deadline;
+
+        if (aHasDeadline && !bHasDeadline) return -1;
+        if (!aHasDeadline && bHasDeadline) return 1;
+
+        if (aHasDeadline && bHasDeadline) {
+          const cmp = new Date(a.deadline) - new Date(b.deadline);
+          if (cmp !== 0) return cmp;
+        }
+
+        // createdAt昇順
+        return new Date(a.createdAt) - new Date(b.createdAt);
+      });
+    }
+
+    // ========================================
+    // 日時表示フォーマット
+    // ========================================
+    function formatDate(item) {
+      if (item.dateType === 'none' || !item.deadline) return '';
+      const d = new Date(item.deadline);
+      const month = d.getMonth() + 1;
+      const day = d.getDate();
+      if (item.dateType === 'date') {
+        return `${month}月${day}日`;
+      } else {
+        const hours = d.getHours();
+        const minutes = d.getMinutes();
+        return `${month}月${day}日${hours}時${minutes}分`;
+      }
+    }
+
+    // ========================================
+    // 画面描画
+    // ========================================
+    function render() {
+      const container = document.getElementById('todo-list');
+      container.innerHTML = '';
+
+      // フィルタリング
+      let filtered = items;
+      if (currentFilter === 'incomplete') {
+        filtered = items.filter(i => !i.completed);
+      } else if (currentFilter === 'completed') {
+        filtered = items.filter(i => i.completed);
+      }
+
+      // セクション分類
+      const sections = {
+        today: [],
+        tomorrow: [],
+        other: [],
+      };
+
+      filtered.forEach(item => {
+        const section = getSection(item);
+        sections[section].push(item);
+      });
+
+      // 各セクション内でソート
+      for (const key of Object.keys(sections)) {
+        sections[key] = sortItems(sections[key]);
+      }
+
+      const sectionConfig = [
+        { key: 'today', label: '本日中' },
+        { key: 'tomorrow', label: '明日まで' },
+        { key: 'other', label: 'それ以外' },
+      ];
+
+      sectionConfig.forEach(({ key, label }) => {
+        if (sections[key].length === 0) return;
+
+        const sectionEl = document.createElement('div');
+        sectionEl.className = 'section';
+
+        const titleEl = document.createElement('div');
+        titleEl.className = 'section-title';
+        titleEl.textContent = label;
+        sectionEl.appendChild(titleEl);
+
+        sections[key].forEach(item => {
+          const row = document.createElement('div');
+          row.className = 'todo-item' + (item.completed ? ' completed' : '');
+
+          const titleSpan = document.createElement('span');
+          titleSpan.className = 'todo-title';
+          titleSpan.textContent = item.title;
+          titleSpan.addEventListener('click', () => openModal(item.id));
+
+          const dateSpan = document.createElement('span');
+          dateSpan.className = 'todo-date';
+          dateSpan.textContent = formatDate(item);
+
+          const btn = document.createElement('button');
+          btn.className = 'btn-complete';
+          btn.textContent = '完了';
+          btn.addEventListener('click', () => toggleComplete(item.id));
+
+          row.appendChild(titleSpan);
+          row.appendChild(dateSpan);
+          row.appendChild(btn);
+          sectionEl.appendChild(row);
+        });
+
+        container.appendChild(sectionEl);
+      });
+    }
+
+    // ========================================
+    // 完了トグル
+    // ========================================
+    function toggleComplete(id) {
+      const item = items.find(i => i.id === id);
+      if (item) {
+        item.completed = !item.completed;
+        saveItems(items);
+        render();
+      }
+    }
+
+    // ========================================
+    // 完了済み削除
+    // ========================================
+    document.getElementById('btn-delete-completed').addEventListener('click', () => {
+      if (confirm('完了済みのToDoをすべて削除しますか？')) {
+        items = items.filter(i => !i.completed);
+        saveItems(items);
+        render();
+      }
+    });
+
+    // ========================================
+    // タブ切り替え
+    // ========================================
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        currentFilter = tab.dataset.filter;
+        render();
+      });
+    });
+
+    // ========================================
+    // モーダル
+    // ========================================
+    function initQuill() {
+      if (quillEditor) return;
+      quillEditor = new Quill('#editor-container', {
+        theme: 'snow',
+        modules: {
+          toolbar: [
+            ['bold', 'italic', 'underline'],
+            [{ list: 'bullet' }, { list: 'ordered' }],
+          ],
+        },
+      });
+    }
+
+    function openModal(id) {
+      initQuill();
+      editingId = id || null;
+
+      // エラーメッセージクリア
+      document.getElementById('error-title').textContent = '';
+      document.getElementById('error-date').textContent = '';
+      document.getElementById('error-detail').textContent = '';
+
+      if (editingId) {
+        // 編集モード
+        const item = items.find(i => i.id === editingId);
+        if (!item) return;
+        document.getElementById('modal-title').value = item.title;
+
+        // 日時ラジオ
+        document.querySelector(`input[name="dateType"][value="${item.dateType}"]`).checked = true;
+        updateDateInputVisibility();
+
+        if (item.dateType === 'date' && item.deadline) {
+          const d = new Date(item.deadline);
+          document.getElementById('modal-date').value = formatISODate(d);
+        } else if (item.dateType === 'datetime' && item.deadline) {
+          const d = new Date(item.deadline);
+          document.getElementById('modal-datetime').value = formatISODatetime(d);
+        }
+
+        // Quill内容復元
+        quillEditor.clipboard.dangerouslyPasteHTML(item.detail || '');
+      } else {
+        // 新規モード
+        document.getElementById('modal-title').value = '';
+        document.querySelector('input[name="dateType"][value="none"]').checked = true;
+        updateDateInputVisibility();
+        document.getElementById('modal-date').value = '';
+        document.getElementById('modal-datetime').value = '';
+        quillEditor.setContents([]);
+      }
+
+      document.getElementById('modal-overlay').classList.add('visible');
+    }
+
+    function closeModal() {
+      document.getElementById('modal-overlay').classList.remove('visible');
+      editingId = null;
+    }
+
+    function formatISODate(d) {
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    function formatISODatetime(d) {
+      return `${formatISODate(d)}T${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    }
+
+    // 日時入力欄の表示切替
+    function updateDateInputVisibility() {
+      const dateType = document.querySelector('input[name="dateType"]:checked').value;
+      document.getElementById('modal-date').style.display = dateType === 'date' ? '' : 'none';
+      document.getElementById('modal-datetime').style.display = dateType === 'datetime' ? '' : 'none';
+    }
+
+    document.querySelectorAll('input[name="dateType"]').forEach(radio => {
+      radio.addEventListener('change', updateDateInputVisibility);
+    });
+
+    // 新規ボタン
+    document.getElementById('btn-new').addEventListener('click', () => openModal(null));
+
+    // キャンセルボタン
+    document.getElementById('btn-cancel').addEventListener('click', closeModal);
+
+    // ESCキーで閉じる
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && document.getElementById('modal-overlay').classList.contains('visible')) {
+        closeModal();
+      }
+    });
+
+    // モーダル外クリックでは閉じない（イベント伝播を止める）
+    document.getElementById('modal').addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+
+    // 保存ボタン
+    document.getElementById('btn-save').addEventListener('click', () => {
+      // エラーメッセージクリア
+      document.getElementById('error-title').textContent = '';
+      document.getElementById('error-date').textContent = '';
+      document.getElementById('error-detail').textContent = '';
+
+      const title = document.getElementById('modal-title').value;
+      const dateType = document.querySelector('input[name="dateType"]:checked').value;
+      let hasError = false;
+
+      // タイトルバリデーション
+      if (!title || title.trim() === '') {
+        document.getElementById('error-title').textContent = 'タイトルを入力してください';
+        hasError = true;
+      } else if (title.length > 100) {
+        document.getElementById('error-title').textContent = 'タイトルは100文字以内で入力してください';
+        hasError = true;
+      }
+
+      // 日付バリデーション
+      if (dateType === 'date' && !document.getElementById('modal-date').value) {
+        document.getElementById('error-date').textContent = '日時を入力してください';
+        hasError = true;
+      } else if (dateType === 'datetime' && !document.getElementById('modal-datetime').value) {
+        document.getElementById('error-date').textContent = '日時を入力してください';
+        hasError = true;
+      }
+
+      // 詳細バリデーション
+      const detailText = quillEditor.getText().replace(/\n$/, '');
+      if (detailText.length > 2000) {
+        document.getElementById('error-detail').textContent = '詳細は2000文字以内で入力してください';
+        hasError = true;
+      }
+
+      if (hasError) return;
+
+      // deadlineの計算
+      let deadline = null;
+      if (dateType === 'date') {
+        deadline = document.getElementById('modal-date').value + 'T00:00:00';
+      } else if (dateType === 'datetime') {
+        deadline = document.getElementById('modal-datetime').value + ':00';
+      }
+
+      // 詳細のHTML取得
+      const detailHtml = quillEditor.root.innerHTML;
+      // 空の場合は空文字列
+      const detail = (detailText.trim() === '') ? '' : detailHtml;
+
+      if (editingId) {
+        // 編集
+        const item = items.find(i => i.id === editingId);
+        if (item) {
+          item.title = title;
+          item.dateType = dateType;
+          item.deadline = deadline;
+          item.detail = detail;
+          saveItems(items);
+        }
+      } else {
+        // 新規
+        const newItem = {
+          id: crypto.randomUUID(),
+          title: title,
+          detail: detail,
+          dateType: dateType,
+          deadline: deadline,
+          completed: false,
+          createdAt: new Date().toISOString(),
+        };
+        items.push(newItem);
+        saveItems(items);
+      }
+
+      closeModal();
+      render();
+    });
+
+    // ========================================
+    // 初期描画
+    // ========================================
+    render();
+  </script>
+</body>
+</html>
