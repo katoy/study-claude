@@ -724,15 +724,22 @@
             document.getElementById('lines').textContent = linesCleared;
 
             const statusEl = document.getElementById('status');
+            const pauseBtn = document.getElementById('btnPause');
             if (gameOver) {
                 statusEl.textContent = '⚠️ ゲームオーバー！';
                 statusEl.classList.remove('playing');
+                // ゲームオーバー時はボタンをリスタートに変更
+                if (pauseBtn) pauseBtn.textContent = '🔁 リスタート';
             } else if (isPaused) {
                 statusEl.textContent = '⏸ 一時停止中';
                 statusEl.classList.remove('playing');
+                // 一時停止中は再開ボタン表記
+                if (pauseBtn) pauseBtn.textContent = '▶️ 再開';
             } else {
                 statusEl.textContent = '⚡️ プレイ中...';
                 statusEl.classList.add('playing');
+                // プレイ中は一時停止ボタン表記
+                if (pauseBtn) pauseBtn.textContent = '⏸ 一時停止';
             }
         }
 
@@ -750,13 +757,13 @@
             keys[e.key] = true;
 
             if (gameOver) {
-                if (e.key === 'Enter') {
+                if (e.key === 'Enter' && !e.repeat) {
                     init();
                 }
                 return;
             }
 
-            if (e.key === 'p' || e.key === 'P') {
+            if ((e.key === 'p' || e.key === 'P') && !e.repeat) {
                 isPaused = !isPaused;
                 updateUI();
                 return;
@@ -764,11 +771,11 @@
 
             if (isPaused) return;
 
-            // 単発アクションは keydown イベント発生時に即座に実行
-            if (e.key === 'ArrowUp') {
+            // 単発アクションは keydown イベント発生時に即座に実行（キーリピート時は無視）
+            if (e.key === 'ArrowUp' && !e.repeat) {
                 rotate(currentBlock);
             }
-            if (e.key === ' ') {
+            if (e.key === ' ' && !e.repeat) {
                 while (canMove(currentBlock, 0, 1)) {
                     currentBlock.y++;
                 }
@@ -847,7 +854,11 @@
 
         const handlePause = (e) => {
             if (e) e.preventDefault();
-            if (!gameOver) {
+            if (gameOver) {
+                // ゲームオーバー時はリスタート
+                init();
+            } else {
+                // プレイ中は一時停止・再開
                 isPaused = !isPaused;
                 updateUI();
             }
@@ -857,8 +868,9 @@
         const setupTouchEvent = (id, handler) => {
             const btn = document.getElementById(id);
             if (btn) {
-                btn.addEventListener('pointerdown', handler);
-                btn.addEventListener('click', handler);
+                // PointerEvent をサポートしていれば pointerdown のみ、なければ click にフォールバック
+                const eventName = window.PointerEvent ? 'pointerdown' : 'click';
+                btn.addEventListener(eventName, handler);
             }
         };
 
