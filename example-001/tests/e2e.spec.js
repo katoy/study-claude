@@ -131,7 +131,6 @@ test.describe('E2E テスト', () => {
   // E-7: 一時停止（タッチボタン）
   test('E-7: 一時停止ボタンをクリックで一時停止・再開', async ({ page }) => {
     const pauseBtn = page.locator('#btnPause');
-    const initialText = await pauseBtn.textContent();
 
     await pauseBtn.click();
     await page.waitForTimeout(100);

@@ -35,3 +35,12 @@ Thumbs.db
 
 # Misc
 .claude-code/
+
+# Playwright tests
+playwright-report/
+test-results/
+playwright/.cache/
+
+# Test coverage
+.nyc_output/
+coverage/

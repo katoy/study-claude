@@ -392,4 +392,129 @@ test.describe('ゲームロジックテスト', () => {
     expect(result.gameOver).toBe(true);
     expect(result.isPaused).toBe(true);
   });
+
+  // L-19: カバレッジ補完のための詳細テスト
+  test('L-19: 未カバー部分を網羅してテストカバレッジ100%を達成する', async ({ page }) => {
+    const result = await page.evaluate(() => {
+      // 1. checkGameOver が false を返すパスのカバー (ループ終端)
+      // 空盤面かつ初期ブロック位置ならゲームオーバーではない
+      init();
+      const gameOverFalse = checkGameOver();
+
+      // 2. fixBlock 関数 (game.js 行 141-152) の直接テスト
+      const testBlock = {
+        type: 'O',
+        shape: [[1, 1], [1, 1]],
+        color: '#f0f000',
+        x: 4,
+        y: 18,
+      };
+      fixBlock(testBlock);
+      const isFixed = board[18][4] === '#f0f000' && board[18][5] === '#f0f000' &&
+                      board[19][4] === '#f0f000' && board[19][5] === '#f0f000';
+
+      // 3. update 内の自動落下からブロック固定・ライン消去・次ブロックへの切り替えパス (232-240) のカバー
+      init();
+      // ブロックを底まで移動
+      currentBlock.y = BOARD_HEIGHT - currentBlock.shape.length;
+      lastDropTime = 0;
+      currentTime = 0;
+      // dropInterval(800ms)を超えるdeltaTimeでupdateを実行
+      update(900);
+      const isProgressed = currentBlock.y === 0; // 次のブロックが上部にリセットされたはず
+
+      // 3.5. update 内で自動落下によるゲームオーバーが発生するパス (238-239) のカバー
+      init();
+      // スポーン位置をあらかじめ埋める（1行目をほぼ埋めることで、消去を防ぎつつ確実にゲームオーバーにする）
+      board[0].fill('#f0f000');
+      board[0][0] = 0; // 左端だけ空けておくことで clearLines() による消去を防止
+      // ブロックを底まで移動
+      currentBlock.y = BOARD_HEIGHT - currentBlock.shape.length;
+      lastDropTime = 0;
+      currentTime = 0;
+      // 自動落下させて固定をトリガーし、ゲームオーバーを発生させる
+      update(900);
+      const isGameOverByUpdate = gameOver === true;
+
+      // 4. draw() 関数内の gameOver 表示パス (292-303) のカバー
+      gameOver = true;
+      draw(); // 描画処理がエラーなく終了することを確認
+
+      // 5. handleInput 内の ArrowLeft, ArrowRight, ArrowDown 継続入力パス (428-438) のカバー
+      init();
+      
+      // ArrowLeft
+      keys['ArrowLeft'] = true;
+      lastLeftMoveTime = 0;
+      const xBeforeLeft = currentBlock.x;
+      handleInput();
+      const leftMoved = currentBlock.x < xBeforeLeft;
+      keys['ArrowLeft'] = false;
+
+      // ArrowRight
+      keys['ArrowRight'] = true;
+      lastRightMoveTime = 0;
+      const xBeforeRight = currentBlock.x;
+      handleInput();
+      const rightMoved = currentBlock.x > xBeforeRight;
+      keys['ArrowRight'] = false;
+
+      // ArrowDown
+      keys['ArrowDown'] = true;
+      lastSoftDropTime = 0;
+      const yBeforeDown = currentBlock.y;
+      handleInput();
+      const downMoved = currentBlock.y > yBeforeDown;
+      keys['ArrowDown'] = false;
+
+      // 6. 各タッチハンドラーの引数付き(preventDefault 実行)パスのカバー (450-476)
+      let preventDefaultCalled = 0;
+      const tEvent = {
+        preventDefault: () => { preventDefaultCalled++; }
+      };
+      // ポーズ中でない・ゲームオーバーでない状態で動かすため
+      gameOver = false;
+      isPaused = false;
+      handleRight(tEvent);
+      handleRotate(tEvent);
+      handleSoftDrop(tEvent);
+      handleHardDrop(tEvent);
+      handlePause(tEvent);
+
+      return {
+        gameOverFalse: gameOverFalse === false,
+        isFixed,
+        isProgressed,
+        isGameOverByUpdate,
+        leftMoved,
+        rightMoved,
+        downMoved,
+        preventDefaultCalled: preventDefaultCalled === 5
+      };
+    });
+
+    expect(result.gameOverFalse).toBe(true);
+    expect(result.isFixed).toBe(true);
+    expect(result.isProgressed).toBe(true);
+    expect(result.isGameOverByUpdate).toBe(true);
+    expect(result.leftMoved).toBe(true);
+    expect(result.rightMoved).toBe(true);
+    expect(result.downMoved).toBe(true);
+    expect(result.preventDefaultCalled).toBe(true);
+
+    // 7. keydown の ArrowUp 処理 (400-401) のカバー (dispatchEventによるE2E風テスト)
+    const rotated = await page.evaluate(() => {
+      init();
+      const initialShape = JSON.stringify(currentBlock.shape);
+      const event = new KeyboardEvent('keydown', {
+        key: 'ArrowUp',
+        repeat: false,
+      });
+      document.dispatchEvent(event);
+      return {
+        changed: JSON.stringify(currentBlock.shape) !== initialShape
+      };
+    });
+    expect(rotated.changed).toBe(true);
+  });
 });
