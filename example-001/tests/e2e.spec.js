@@ -91,15 +91,17 @@ test.describe('E2E テスト', () => {
   // E-5: ハードドロップ
   test('E-5: Space でブロックが最下段まで移動し固定される', async ({ page }) => {
     const result = await page.evaluate(() => {
+      const nextType = nextBlock.type;
+      
       const event = new KeyboardEvent('keydown', {
         key: ' ',
         repeat: false,
       });
       document.dispatchEvent(event);
 
-      // ハードドロップ後の状態確認
+      // ハードドロップ後の状態確認：ゲームオーバーか、あるいは次のブロックへ切り替わっていること
       return {
-        gameOverOrNext: gameOver || currentBlock.y > 0,
+        gameOverOrNext: gameOver || currentBlock.type === nextType || board[BOARD_HEIGHT - 1].some(cell => cell !== 0)
       };
     });
     expect(result.gameOverOrNext).toBe(true);
@@ -306,5 +308,40 @@ test.describe('E2E テスト', () => {
     });
 
     expect(isHidden).toBe(true);
+  });
+
+  // E-16: PWA マニフェストとテーマカラーの検証
+  test('E-16: HTML にマニフェストへのリンクとテーマカラーの指定が存在する', async ({ page }) => {
+    const manifest = page.locator('link[rel="manifest"]');
+    await expect(manifest).toHaveAttribute('href', 'manifest.json');
+
+    const themeColor = page.locator('meta[name="theme-color"]');
+    await expect(themeColor).toHaveAttribute('content', '#1b1b3a');
+  });
+
+  // E-17: Service Worker 登録スクリプトの存在検証
+  test('E-17: Service Worker 登録スクリプトが含まれている', async () => {
+    const fs = await import('fs');
+    const path = await import('path');
+    const { fileURLToPath } = await import('url');
+
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+    
+    // index.html と game.js (一時分割時のファイル) の両方を確認
+    const htmlPath = path.join(__dirname, '../game/index.html');
+    const jsPath = path.join(__dirname, '../game/game.js');
+    
+    let combinedContent = '';
+    if (fs.existsSync(htmlPath)) {
+      combinedContent += fs.readFileSync(htmlPath, 'utf8');
+    }
+    if (fs.existsSync(jsPath)) {
+      combinedContent += fs.readFileSync(jsPath, 'utf8');
+    }
+
+    const hasRegister = combinedContent.includes('navigator.serviceWorker.register') && 
+                         combinedContent.includes('sw.js');
+    expect(hasRegister).toBe(true);
   });
 });

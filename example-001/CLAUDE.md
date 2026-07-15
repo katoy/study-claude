@@ -2,21 +2,27 @@
 
 ## プロジェクト概要
 
-落ちモノパズルゲーム（テトリス風）を Vanilla HTML/CSS/JavaScript で実装するプロジェクト。`game/index.html` に単一 HTML ファイルとして完結しており、ビルドツールやフレームワークは使用していません。
+落ちモノパズルゲーム（テトリス風）を Vanilla HTML/CSS/JavaScript で実装するプロジェクト。ビルドツールやフレームワークは使用せず、PWA に対応したオフライン動作環境を提供します。
 
 ## 技術スタック
 
 - **言語・フレームワーク**: Vanilla HTML/CSS/JavaScript のみ（フレームワーク・npm ビルドツール一切使用しない）
 - **スクリプト形式**: Classic `<script>` タグ（`type="module"` ではない）。関数・状態が `window` に露出する構成のため、その前提を維持する
 - **外部依存**: Google Fonts（Inter, Orbitron）の `<link>` タグのみ
-- **ファイル構成**: 単一 HTML ファイル (`game/index.html`) で全機能が完結
+- **ファイル構成**: ビルド不要な静的アセット（HTML, CSS, Service Worker, Web Manifest, アイコン画像）で構成され、PWA に対応
+- **PWA 対応**: Service Worker (`sw.js`) によるアセットキャッシュおよびオフライン起動、`manifest.json` によるネイティブアプリ風のインストールに対応
 
 ## ディレクトリ構成
 
 ```
 example-001/
   game/
-    index.html      # ゲーム本体（891行の単一ファイル）
+    index.html      # ゲーム本体
+    style.css       # 外部化したゲーム用 CSS
+    manifest.json   # PWA 用アプリ設定
+    sw.js           # キャッシュとオフライン起動用 Service Worker
+    icon-192.png    # PWA 用アプリアイコン (192x192)
+    icon-512.png    # PWA 用アプリアイコン (512x512)
     README.md       # 操作方法・起動手順
   plan.md           # プロジェクト要件定義
   docs/
@@ -37,11 +43,11 @@ example-001/
 
 ## コーディング規約
 
-### 単一 HTML 完結の維持
+### ビルド不要な構成の維持
 
 - 新規のビルドステップ（Webpack、Vite、TypeScript コンパイルなど）を追加しない
-- ファイルを分割する際も、最終的には単一 HTML に埋め込むか、最小限の HTTP 配信で完結させる
-- CSS・JavaScript は `<style>` / `<script>` タグ内にインラインで記述する
+- フロントエンドアセット（HTML、CSS、マニフェスト、サービスワーカー等）はそのまま配信可能な静的ファイルとして扱い、トランスパイルやバンドルのプロセスは導入しない
+- JavaScript は Classic Script として `index.html` 内の `<script>` にインライン記述し、CSS は `style.css` に配置する
 
 ### Classic Script スタイルの維持
 
@@ -62,7 +68,10 @@ example-001/
 
 ## テスト
 
-現時点（2026-07-14）では自動テストが未導入です。`docs/test-plan.md` に Playwright による将来のテスト計画が記載されていますが、実装はまだです。
+Playwright を用いた自動テストスイートが導入されています。テスト実行とカバレッジ計測用のコマンドは以下の通りです。
+- テスト実行: `npm test` または `npx playwright test`
+- カバレッジ計測: `npm run coverage` (HTML から一時的に JS を分離して V8 カバレッジを収集し、自動的に復元する)
+- 静的検証: `npm run lint` (ESLint によるコード検証)
 
 ## 参考資料
 

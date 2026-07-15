@@ -69,7 +69,7 @@ npm install
 
 ### テストの実行
 
-Playwright による自動テストを実行します。33 個 of テストケース（ロジックテスト 18 個、E2Eテスト 15 個）が実行されます。
+Playwright による自動テストを実行します。46個のテストケース（ロジックテスト 19 個、描画テスト 10 個、E2Eテスト 17 個）が実行されます。
 
 ```bash
 npm test
@@ -77,7 +77,7 @@ npm test
 
 ### カバレッジの確認とレポートの生成
 
-現在、テストカバレッジは **95% 以上**（コアロジックや主要UIは 100%）を達成しています。カバレッジの分析レポートについては [COVERAGE.md](file:///Users/katoy/github/study-claude/example-001/COVERAGE.md) を参照してください。
+現在、テストカバレッジは **100%** を達成しています。カバレッジの分析レポートについては [COVERAGE.md](file:///Users/katoy/github/study-claude/example-001/COVERAGE.md) を参照してください。
 
 #### カバレッジレポートの生成および確認手順
 

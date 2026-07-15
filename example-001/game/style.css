@@ -1,0 +1,309 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: radial-gradient(circle at center, #1b1b3a 0%, #0d0d1e 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    font-family: 'Inter', sans-serif;
+    color: #fff;
+}
+
+/* グラスモルフィズム風のコンテナ */
+.container {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    width: 95vw;
+    max-width: 850px;
+    height: 95vh;
+    height: 95dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 0;
+}
+
+h1 {
+    margin-bottom: 10px;
+    font-size: 2em;
+    font-weight: 900;
+    letter-spacing: 2px;
+    background: linear-gradient(45deg, #00f0f0, #a000f0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 20px rgba(160, 0, 240, 0.2);
+}
+
+.game-wrapper {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    align-items: stretch;
+    flex: 1;
+    min-height: 0;
+}
+
+.left-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 200px;
+    min-height: 0;
+    justify-content: flex-start;
+}
+
+.game-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex: 1;
+    min-height: 0;
+}
+
+canvas#gameCanvas {
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    box-shadow: 0 0 25px rgba(0, 240, 240, 0.15);
+    image-rendering: pixelated;
+    height: 100%;
+    max-height: 55vh;
+    max-height: 55dvh;
+    width: auto;
+    aspect-ratio: 1 / 2;
+    display: block;
+}
+
+.controls-pc {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 12px;
+    font-size: 0.85em;
+    line-height: 1.7;
+    text-align: left;
+}
+
+.controls-pc p {
+    margin: 5px 0;
+    color: #ccc;
+}
+
+.controls-pc strong {
+    color: #fff;
+    display: block;
+    margin-bottom: 8px;
+    font-size: 1.1em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 4px;
+}
+
+.info-panel {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 12px;
+    text-align: left;
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.info-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.info-label {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.info-value {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.8em;
+    color: #00f0f0;
+    text-shadow: 0 0 10px rgba(0, 240, 240, 0.3);
+    font-weight: 700;
+}
+
+.next-block {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.next-block-label {
+    font-size: 0.75em;
+    color: #888;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    align-self: flex-start;
+}
+
+canvas#nextCanvas {
+    width: 80px;
+    height: 80px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.4);
+    image-rendering: pixelated;
+}
+
+.touch-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    width: 100%;
+    max-width: 320px;
+}
+
+.touch-buttons button {
+    padding: 12px 5px;
+    font-size: 0.9em;
+    font-weight: bold;
+    background: linear-gradient(135deg, #2b2b48 0%, #171730 100%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    user-select: none;
+    -webkit-user-select: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+.touch-buttons button:active {
+    transform: scale(0.95);
+    background: linear-gradient(135deg, #171730 0%, #0d0d1e 100%);
+    border-color: #00f0f0;
+    box-shadow: 0 0 10px rgba(0, 240, 240, 0.4);
+}
+
+.wide-button {
+    grid-column: 1 / -1;
+}
+
+.status {
+    font-size: 1em;
+    font-weight: bold;
+    color: #ff6b6b;
+    text-shadow: 0 0 8px rgba(255, 107, 107, 0.3);
+    text-align: center;
+    min-height: 20px;
+}
+
+.status.playing {
+    color: #00f0f0;
+    text-shadow: 0 0 8px rgba(0, 240, 240, 0.3);
+}
+
+/* レスポンシブ調整（モバイル） */
+@media (max-width: 767px) {
+    .container {
+        width: 98vw;
+        height: 98vh;
+        height: 98dvh;
+        padding: 10px;
+        justify-content: flex-start;
+        gap: 5px;
+    }
+
+    h1 {
+        font-size: 1.4em;
+        margin-bottom: 2px;
+    }
+
+    .game-wrapper {
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .left-panel {
+        display: none; /* モバイルでは操作説明を非表示 */
+    }
+
+    /* モバイルでは情報パネルを横長にする */
+    .info-panel {
+        width: 100%;
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: center;
+        padding: 8px 12px;
+        gap: 0;
+    }
+
+    .info-row {
+        align-items: center;
+    }
+
+    .info-value {
+        font-size: 1.3em;
+    }
+
+    .next-block {
+        border-top: none;
+        padding-top: 0;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .next-block-label {
+        display: none; /* ラベルを非表示にして省スペース化 */
+    }
+
+    canvas#nextCanvas {
+        width: 45px;
+        height: 45px;
+    }
+
+    /* ゲームエリア */
+    .game-area {
+        width: 100%;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    canvas#gameCanvas {
+        max-height: calc(100vh - 240px); /* 画面の高さに応じてCanvasを動的にリサイズ */
+        max-height: calc(100dvh - 240px);
+        border-width: 2px;
+    }
+
+    .touch-buttons {
+        max-width: 280px;
+        gap: 5px;
+    }
+
+    .touch-buttons button {
+        padding: 8px 4px;
+        font-size: 0.8em;
+    }
+}
