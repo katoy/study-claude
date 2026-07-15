@@ -29,11 +29,12 @@
 
 ## 起動方法
 
-このゲームは単一の HTML ファイルで動作します。起動方法は次のどちらかです。
+このゲームは単一の HTML ファイルで動作します。起動方法は次のいずれかです。
 
-1. `index.html` をブラウザで直接開く
-1. ローカルサーバーで配信する
+### 1. ブラウザで直接開く
+`index.html` をブラウザで直接開く
 
+### 2. ローカルサーバーで配信する
 ローカルサーバーを使う場合は、プロジェクト直下で次のように起動します。
 
 ```bash
@@ -46,7 +47,20 @@ python3 -m http.server 8000
 npx http-server -p 8000
 ```
 
-その後、ブラウザで `http://localhost:8000/` を開いてください。
+その後、ブラウザで `http://localhost:8000/game/` を開いてください。
+
+### 3. GitHub Pages で遊ぶ（オンライン公開）
+本ゲームは GitHub Pages を利用してインターネット上に公開し、直接ブラウザからプレイすることができます。
+
+1. GitHub 上でリポジトリ `katoy/study-claude` の **Settings** タブを開きます。
+2. 左メニューの **Pages** を選択します。
+3. **Build and deployment** セクションの **Source** で `Deploy from a branch` を選択します。
+4. **Branch** で `main` ブランチ、フォルダは `/ (root)` を選択して **Save** ボタンをクリックします。
+5. デプロイ完了後、以下の URL にアクセスすることで実際にゲームをプレイできます：  
+   [https://katoy.github.io/study-claude/example-001/game/](https://katoy.github.io/study-claude/example-001/game/)
+
+> [!NOTE]
+> GitHub Pages は HTTPS で配信されるため、モバイル端末のブラウザからアクセスして「ホーム画面に追加」を行うことで、オフライン対応の PWA アプリとしてインストールして遊ぶことができます。
 
 ## 遊び方
 

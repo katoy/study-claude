@@ -40,7 +40,7 @@ example-001/
 
 ## 起動方法
 
-ゲーム本体はサーバー不要でブラウザで直接動作しますが、ローカル HTTP サーバーを介しての起動も可能です。
+ゲーム本体はサーバー不要でブラウザで直接動作しますが、ローカル HTTP サーバーを介しての起動や、GitHub Pages によるオンライン公開も可能です。
 
 ### 1. ブラウザで直接開く
 [game/index.html](file:///Users/katoy/github/study-claude/example-001/game/index.html) をお使いのウェブブラウザにドラッグ＆ドロップするか、直接開きます。
@@ -56,6 +56,11 @@ python3 -m http.server 8000
 npx http-server -p 8000
 ```
 起動後、ブラウザで `http://localhost:8000/game/` にアクセスします。
+
+### 3. GitHub Pages でオンラインプレイ
+本プロジェクトのリポジトリ設定で GitHub Pages を有効にすることで、インターネット上で直接遊ぶことができます。
+- **デプロイ設定**: GitHub リポジトリの **Settings > Pages** で `main` ブランチの `/ (root)` をソースに設定します。
+- **プレイ用 URL**: [https://katoy.github.io/study-claude/example-001/game/](https://katoy.github.io/study-claude/example-001/game/)
 
 ## 開発およびテスト
 
