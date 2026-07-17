@@ -1,0 +1,92 @@
+name: pdflabel CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'pdflabel/**'
+      - '.github/workflows/pdflabel-ci.yml'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'pdflabel/**'
+      - '.github/workflows/pdflabel-ci.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: pdflabel/package-lock.json
+
+      - name: Install dependencies
+        working-directory: pdflabel
+        run: npm ci
+
+      - name: Run HTMLHint
+        working-directory: pdflabel
+        run: npx htmlhint index.html
+
+      - name: Run tests with coverage
+        working-directory: pdflabel
+        run: npm run test:coverage
+
+      # カバレッジ結果を GitHub Actions の Job Summary にマークダウン出力
+      - name: Generate Coverage Job Summary
+        if: always()
+        run: |
+          SUMMARY_FILE="pdflabel/coverage/coverage-summary.json"
+          if [ -f "$SUMMARY_FILE" ]; then
+            echo "### 📊 pdflabel Test Coverage Summary" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Category | Percentage | Covered / Total |" >> $GITHUB_STEP_SUMMARY
+            echo "| --- | --- | --- |" >> $GITHUB_STEP_SUMMARY
+            
+            # jq を使用して json-summary から値を抽出し Markdown テーブルを追加
+            # Statements
+            pct=$(jq '.total.statements.pct' $SUMMARY_FILE)
+            covered=$(jq '.total.statements.covered' $SUMMARY_FILE)
+            total=$(jq '.total.statements.total' $SUMMARY_FILE)
+            echo "| **Statements** | ${pct}% | ${covered} / ${total} |" >> $GITHUB_STEP_SUMMARY
+            
+            # Branches
+            pct=$(jq '.total.branches.pct' $SUMMARY_FILE)
+            covered=$(jq '.total.branches.covered' $SUMMARY_FILE)
+            total=$(jq '.total.branches.total' $SUMMARY_FILE)
+            echo "| **Branches** | ${pct}% | ${covered} / ${total} |" >> $GITHUB_STEP_SUMMARY
+            
+            # Functions
+            pct=$(jq '.total.functions.pct' $SUMMARY_FILE)
+            covered=$(jq '.total.functions.covered' $SUMMARY_FILE)
+            total=$(jq '.total.functions.total' $SUMMARY_FILE)
+            echo "| **Functions** | ${pct}% | ${covered} / ${total} |" >> $GITHUB_STEP_SUMMARY
+            
+            # Lines
+            pct=$(jq '.total.lines.pct' $SUMMARY_FILE)
+            covered=$(jq '.total.lines.covered' $SUMMARY_FILE)
+            total=$(jq '.total.lines.total' $SUMMARY_FILE)
+            echo "| **Lines** | ${pct}% | ${covered} / ${total} |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Coverage summary file not found." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      # HTML カバレッジレポートを Artifacts にアップロードして閲覧可能にする
+      - name: Upload HTML Coverage Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdflabel-coverage-report
+          path: pdflabel/coverage/
+          retention-days: 14
