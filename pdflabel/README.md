@@ -16,6 +16,8 @@
   - [インストール](#インストール)
   - [テストの実行](#テストの実行)
   - [テスト自動化とカバレッジ](#テスト自動化とカバレッジ)
+- [CI/CD パイプライン (GitHub Actions)](#cicd-パイプライン-github-actions)
+- [SEO & Web標準](#seo--web標準)
 - [リポジトリ構成](#リポジトリ構成)
 - [ライセンス](#ライセンス)
 
@@ -91,12 +93,36 @@ npm run test:coverage
 
 ---
 
+## CI/CD パイプライン (GitHub Actions)
+
+GitHub Actions を利用した CI/CD ワークフローが構成されています（[.github/workflows/ci-cd.yml](.github/workflows/ci-cd.yml)）。
+リポジトリへのプッシュ、またはプルリクエストの作成時に自動で動作します。
+
+- **静的解析 (Lint)**: `htmlhint` を用いて、`index.html` のマークアップ整合性を自動検証します。
+- **自動テスト**: `npm run test:coverage` をトリガーし、テストの実行とカバレッジ100%の達成状況を自動検証します（未達成の場合はビルドエラーとなります）。
+- **自動デプロイ**: `main` ブランチへのプッシュが成功し、すべてのテストをクリアした場合に、自動的に本番用アセット（`index.html`、`labellist.js`、`robots.txt`）を抽出し、**GitHub Pages** へ自動的にデプロイ・公開します。
+
+---
+
+## SEO & Web標準
+
+- **インライン SVG ファビコン**:
+  - `index.html` 内にインライン SVG データURIスキーム（🏷️）を埋め込んでファビコンを提供しています。追加の画像ファイルのダウンロードが不要なため、シングルページアプリとしてのポータビリティを維持しています。
+- **robots.txt**:
+  - クローラー用の構成ファイル（[robots.txt](robots.txt)）をルートに配置し、検索エンジンのインデックス登録を最適化しています。
+
+---
+
 ## リポジトリ構成
 
 ```text
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yml    # GitHub Actions の CI/CD 定義ファイル
 ├── index.html           # アプリケーション本体 (HTML/CSS/JS)
 ├── labellist.js         # ラベル用紙の寸法プリセット定義データ
 ├── package.json         # テスト・ビルドスクリプト定義
+├── robots.txt           # 検索エンジンクローラーアクセス許可設定
 ├── vitest.config.js     # Vitest 設定ファイル
 ├── scripts/
 │   └── extract-script.js# インラインJS抽出用ヘルパースクリプト
