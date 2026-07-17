@@ -4,6 +4,9 @@
 
 ![PDF Label Studioのスクリーンショット](screenshots/app_screenshot.jpg)
 
+### 🔗 公開URL
+* **本番環境 (GitHub Pages)**: [https://katoy.github.io/study-claude/pdflabel/](https://katoy.github.io/study-claude/pdflabel/)
+
 ---
 
 ## 目次 (TOC)
