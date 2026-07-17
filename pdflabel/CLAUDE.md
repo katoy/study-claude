@@ -38,9 +38,12 @@
 - 変更前に必ずgit commitすること
 - テストや機能を変更した際は必ず `npm run test:coverage` を実行し、カバレッジ **100%**（ステートメント、ブランチ、関数、行すべて）が維持されていることを確認すること
 - テスト実行用に一時的に抽出される `index.js` はコミットに含めないこと
+- `pdflabel/` は親リポジトリ `study-claude` 側で一元管理するため、この配下に個別の `.git` を作成しないこと
+- 変更は親リポジトリ側から GitHub リモートへプッシュすること。これにより GitHub Actions が自動でトリガーされます
 
 ## 開発・検証コマンド
 - **テストの実行**: `npm run test` (インラインJSを抽出してVitest + JSDOMで実行)
 - **テストの継続監視**: `npm run test:watch` (ファイル変更時に自動再テスト)
 - **カバレッジの検証**: `npm run test:coverage` (カバレッジ100%閾値が強制され、下回るとエラーになります)
 - **HTMLの静的検証**: `npx htmlhint index.html`
+- **CI/CDによるデプロイ先**: [https://katoy.github.io/study-claude/pdflabel/](https://katoy.github.io/study-claude/pdflabel/) (mainブランチへのプッシュで自動更新)
