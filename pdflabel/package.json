@@ -1,0 +1,29 @@
+{
+  "name": "pdflabel",
+  "version": "1.0.0",
+  "main": "labellist.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "extract": "node scripts/extract-script.js",
+    "pretest": "npm run extract",
+    "pretest:watch": "npm run extract",
+    "pretest:coverage": "npm run extract",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "posttest": "rm -f index.js",
+    "posttest:watch": "rm -f index.js",
+    "posttest:coverage": "rm -f index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.10",
+    "jsdom": "^29.1.1",
+    "vitest": "^4.1.10"
+  }
+}

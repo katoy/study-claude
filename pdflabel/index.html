@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Label Studio - 高機能PDFラベル作成ツール</title>
+  
+  <!-- Favicon (Inline SVG Emoji) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏷️</text></svg>">
+  
+  <!-- Webフォントの読み込み (英字: Outfit, 日本語: Noto Sans JP) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- jsPDF ライブラリ (CDNから読み込み) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  
+  <!-- 自前で外部化したラベル用紙プリセットデータ (labellist.js) -->
+  <script src="labellist.js"></script>
+
+  <style>
+    /* ==========================================
+       デザインシステム & 基本設定
+       ========================================== */
+    :root {
+      --bg-main: #0b0f19;
+      --bg-sidebar: rgba(22, 30, 49, 0.75);
+      --bg-workspace: #111827;
+      --bg-card: rgba(30, 41, 59, 0.5);
+      --bg-input: rgba(15, 23, 42, 0.8);
+      
+      --color-primary: #6366f1; /* Indigo */
+      --color-secondary: #8b5cf6; /* Violet */
+      --color-accent: #06b6d4; /* Cyan */
+      
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dark: #1e293b;
+      
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-focus: #8b5cf6;
+      
+      --font-ui: 'Outfit', 'Noto Sans JP', sans-serif;
+      --font-preview: 'Noto Sans JP', sans-serif;
+      
+      /* プレビュー縮尺用の基準サイズ (A4比率) */
+      --preview-base-width: 420px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      font-family: var(--font-ui);
+      height: 100vh;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* スクロールバーのカスタマイズ */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* ==========================================
+       レイアウト構造 (SaaSスタイル)
+       ========================================== */
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* ヘッダー */
+    .app-header {
+      background: rgba(15, 23, 42, 0.9);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 24px;
+      height: 60px;
+      z-index: 10;
+      backdrop-filter: blur(8px);
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 24px;
+      height: 24px;
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      border-radius: 6px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 2px;
+      padding: 3px;
+    }
+
+    .logo-dot {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 2px;
+    }
+
+    .app-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      background: linear-gradient(to right, #ffffff, #a5b4fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .app-version {
+      font-size: 0.7rem;
+      background: rgba(99, 102, 241, 0.2);
+      color: var(--color-primary);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      font-weight: 600;
+    }
+
+    /* メインコンテンツエリア */
+    .main-content {
+      display: flex;
+      flex: 1;
+      height: calc(100vh - 60px);
+      overflow: hidden;
+    }
+
+    /* サイドバー (設定エリア) */
+    .sidebar {
+      width: 380px;
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border-color);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow-y: auto;
+      backdrop-filter: blur(10px);
+    }
+
+    /* ワークスペース (プレビューエリア) */
+    .workspace {
+      flex: 1;
+      background-color: var(--bg-workspace);
+      background-image: 
+        radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        radial-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 20px 20px;
+      background-position: 0 0, 10px 10px;
+      padding: 30px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: auto;
+      position: relative;
+    }
+
+    /* ==========================================
+       サイドバー内のコンポーネント (カード)
+       ========================================== */
+    .setting-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+
+    .card-title {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      font-weight: 600;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-main);
+    }
+
+    /* インプット関連 */
+    select, input[type="number"], textarea {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-main);
+      padding: 10px 12px;
+      font-size: 0.9rem;
+      outline: none;
+      transition: all 0.25s ease;
+      font-family: inherit;
+    }
+
+    select:focus, input[type="number"]:focus, textarea:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+    }
+
+    /* グリッドインプット */
+    .input-grid-2x2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    /* ボタン */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-radius: 8px;
+      font-weight: 600;
+      padding: 12px 18px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.95rem;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+      color: white;
+      border: none;
+      box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+      width: 100%;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.55);
+    }
+
+    .btn-primary:active:not(:disabled) {
+      transform: translateY(1px);
+    }
+
+    .btn-primary:disabled {
+      background: #334155;
+      color: #64748b;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 6px 12px;
+      font-size: 0.75rem;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* テキストエリアのフッター */
+    .textarea-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    /* トグルスイッチスタイル */
+    .toggle-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 22px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(255, 255, 255, 0.15);
+      transition: .3s;
+      border-radius: 22px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: var(--color-primary);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(18px);
+    }
+
+    /* ==========================================
+       インフォメーションボード (グリッド情報)
+       ========================================== */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      text-align: center;
+      background: rgba(13, 20, 35, 0.5);
+      border-radius: 8px;
+      padding: 10px;
+      border: 1px dashed rgba(255, 255, 255, 0.05);
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .info-label {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .info-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--color-accent);
+    }
+
+    /* レイアウト警告 */
+    .warning-badge {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      line-height: 1.35;
+      display: none;
+    }
+
+    /* ==========================================
+       ワークスペース & A4用紙プレビュー
+       ========================================== */
+    .workspace-controls {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 20px;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 8px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+      backdrop-filter: blur(5px);
+    }
+
+    .zoom-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+
+    .zoom-btn:hover {
+      color: white;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .zoom-btn.active {
+      color: white;
+      background: var(--color-primary);
+      font-weight: 600;
+    }
+
+    .preview-container {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      perspective: 1000px;
+    }
+
+    /* A4用紙のシミュレータ */
+    #previewPage {
+      position: relative;
+      width: 100%;
+      max-width: var(--preview-base-width);
+      aspect-ratio: 210 / 297; /* A4の縦横比 */
+      background: #ffffff;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.2);
+      border-radius: 2px;
+      overflow: hidden;
+      container-type: inline-size;
+      transition: max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      
+      /* A4のミリメートルをCSSコンテナクエリ幅から逆算してカスタム単位「--mm」を定義
+         100cqw (コンテナの全幅) / 210 = 1mm相当の幅。これをベースにすべてをレイアウト */
+      --mm: calc(100cqw / 210);
+    }
+
+    /* 用紙余白のアシスタント線 (破線) */
+    .margins-helper {
+      position: absolute;
+      border: 1px dashed rgba(99, 102, 241, 0.25);
+      pointer-events: none;
+      z-index: 10;
+      box-sizing: border-box;
+    }
+
+    /* 個々のプレビューラベル */
+    .preview-label {
+      position: absolute;
+      background: #ffffff;
+      box-sizing: border-box;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: flex-start;
+      transition: border 0.2s;
+    }
+
+    /* ラベルの枠線 */
+    .preview-label.has-border {
+      border: 1px solid #ccc;
+    }
+
+    .preview-label.no-border {
+      border: 1px dashed rgba(99, 102, 241, 0.15); /* 印刷されない枠線のためのガイドライン */
+    }
+
+    /* ラベルのテキスト領域 */
+    .label-text-content {
+      width: 100%;
+      height: 100%;
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: #1a202c;
+      font-family: var(--font-preview);
+      text-align: left;
+      line-height: 1.25;
+      overflow: hidden;
+    }
+
+    /* ローディングスピナー */
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* モバイル対応 (1024px未満) */
+    @media (max-width: 1023px) {
+      body {
+        overflow-y: auto;
+        height: auto;
+      }
+      .app-container {
+        height: auto;
+      }
+      .main-content {
+        flex-direction: column-reverse;
+        height: auto;
+        overflow: visible;
+      }
+      .sidebar {
+        width: 100%;
+        height: auto;
+        border-right: none;
+        border-top: 1px solid var(--border-color);
+        overflow-y: visible;
+      }
+      .workspace {
+        width: 100%;
+        height: 550px;
+        flex: none;
+        overflow: hidden;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- ヘッダー -->
+    <header class="app-header">
+      <div class="logo-container">
+        <div class="logo-icon">
+          <div class="logo-dot"></div>
+          <div class="logo-dot"></div>
+          <div class="logo-dot"></div>
+          <div class="logo-dot"></div>
+        </div>
+        <h1 class="app-title">PDF Label Studio</h1>
+        <span class="app-version">v1.0</span>
+      </div>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="main-content">
+      
+      <!-- サイドバー (コントロール) -->
+      <aside class="sidebar">
+        
+        <!-- 用紙設定カード -->
+        <div class="setting-card">
+          <h2 class="card-title">1. ラベル用紙の選択</h2>
+          
+          <div class="form-group">
+            <label for="presetSelect">型番・プリセット</label>
+            <select id="presetSelect">
+              <!-- JSで動的に追加されます -->
+            </select>
+          </div>
+        </div>
+
+        <!-- レイアウト詳細設定カード -->
+        <div class="setting-card">
+          <h2 class="card-title">
+            2. レイアウト詳細 (mm)
+            <span style="font-size: 0.7rem; color: var(--color-accent);">A4用紙基準</span>
+          </h2>
+          
+          <!-- 余白設定 -->
+          <div class="form-group">
+            <label>ページ余白 (上下・左右)</label>
+            <div class="input-grid-2x2">
+              <div class="form-group">
+                <input type="number" id="topMargin" placeholder="上" min="0" max="100" step="0.1" title="上余白">
+                <span style="font-size: 0.65rem; color: var(--text-muted); text-align: center;">上</span>
+              </div>
+              <div class="form-group">
+                <input type="number" id="bottomMargin" placeholder="下" min="0" max="100" step="0.1" title="下余白">
+                <span style="font-size: 0.65rem; color: var(--text-muted); text-align: center;">下</span>
+              </div>
+            </div>
+            <div class="input-grid-2x2" style="margin-top: -6px;">
+              <div class="form-group">
+                <input type="number" id="leftMargin" placeholder="左" min="0" max="100" step="0.1" title="左余白">
+                <span style="font-size: 0.65rem; color: var(--text-muted); text-align: center;">左</span>
+              </div>
+              <div class="form-group">
+                <input type="number" id="rightMargin" placeholder="右" min="0" max="100" step="0.1" title="右余白">
+                <span style="font-size: 0.65rem; color: var(--text-muted); text-align: center;">右</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ラベルサイズ設定 -->
+          <div class="form-group">
+            <label>ラベルサイズ (幅 × 高さ)</label>
+            <div class="input-grid-2x2">
+              <div class="form-group">
+                <input type="number" id="labelWidth" placeholder="幅" min="1" max="210" step="0.1" title="ラベルの幅">
+                <span style="font-size: 0.65rem; color: var(--text-muted); text-align: center;">幅</span>
+              </div>
+              <div class="form-group">
+                <input type="number" id="labelHeight" placeholder="高さ" min="1" max="297" step="0.1" title="ラベルの高さ">
+                <span style="font-size: 0.65rem; color: var(--text-muted); text-align: center;">高さ</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ラベル間余白設定 -->
+          <div class="form-group">
+            <label>ラベル間の余白 (水平 × 垂直)</label>
+            <div class="input-grid-2x2">
+              <div class="form-group">
+                <input type="number" id="colSpacing" placeholder="水平" min="0" max="50" step="0.1" title="列の間隔">
+                <span style="font-size: 0.65rem; color: var(--text-muted); text-align: center;">列間隔</span>
+              </div>
+              <div class="form-group">
+                <input type="number" id="rowSpacing" placeholder="垂直" min="0" max="50" step="0.1" title="行の間隔">
+                <span style="font-size: 0.65rem; color: var(--text-muted); text-align: center;">行間隔</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 印字内容 & テキスト表示仕様 -->
+        <div class="setting-card">
+          <h2 class="card-title">3. 印字設定</h2>
+
+          <!-- テキストコンテンツ -->
+          <div class="form-group">
+            <label for="labelText">印字するテキスト (全ラベル共通)</label>
+            <textarea id="labelText" rows="5" placeholder="住所、宛名、ロゴテキストなどを入力..."></textarea>
+            <div class="textarea-footer">
+              <button class="btn btn-secondary" id="sampleTextBtn">サンプル入力</button>
+              <button class="btn btn-secondary" id="clearTextBtn">クリア</button>
+            </div>
+          </div>
+
+          <!-- フォントサイズ & ラベル内余白 -->
+          <div class="input-grid-2x2">
+            <div class="form-group">
+              <label for="fontSize">文字サイズ (pt)</label>
+              <input type="number" id="fontSize" value="10" min="4" max="72" step="0.5">
+            </div>
+            <div class="form-group">
+              <label for="padding">内余白 (mm)</label>
+              <input type="number" id="padding" value="2" min="0" max="20" step="0.5">
+            </div>
+          </div>
+
+          <!-- 枠線(罫線)の有無 -->
+          <label class="toggle-container" style="margin-top: 5px;">
+            <span>枠線（罫線）を描画する</span>
+            <span class="switch">
+              <input type="checkbox" id="drawBorders" checked>
+              <span class="slider"></span>
+            </span>
+          </label>
+        </div>
+
+        <!-- レイアウト警告 -->
+        <div class="warning-badge" id="layoutWarning">
+          警告: ラベルが配置できません。
+        </div>
+
+        <!-- 統計情報 -->
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-label">列数</span>
+            <span class="info-value" id="colsDisplay">0</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">行数</span>
+            <span class="info-value" id="rowsDisplay">0</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">総面数</span>
+            <span class="info-value" id="totalDisplay">0</span>
+          </div>
+        </div>
+
+        <!-- 生成ボタン -->
+        <button class="btn btn-primary" id="generateBtn">
+          <svg style="width: 18px; height: 18px;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+          </svg>
+          PDFを生成して開く
+        </button>
+
+      </aside>
+
+      <!-- ワークスペース (用紙プレビュー) -->
+      <section class="workspace">
+        
+        <!-- 縮尺操作用コントローラー -->
+        <div class="workspace-controls">
+          <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">プレビューサイズ:</span>
+          <button class="zoom-btn" data-size="320px">小</button>
+          <button class="zoom-btn active" data-size="420px">中</button>
+          <button class="zoom-btn" data-size="520px">大</button>
+        </div>
+
+        <!-- A4シミュレーション用紙 -->
+        <div class="preview-container">
+          <div id="previewPage">
+            <!-- JSで動的に余白ヘルパーとラベルが挿入されます -->
+          </div>
+        </div>
+        
+        <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 20px; font-weight: 500;">
+          ※ 青い点線はページ余白ガイドです。実際の印刷時には出力されません。
+        </p>
+
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    // ==========================================
+    // DOM要素の取得
+    // ==========================================
+    const presetSelect = document.getElementById('presetSelect');
+    const topMarginInput = document.getElementById('topMargin');
+    const bottomMarginInput = document.getElementById('bottomMargin');
+    const leftMarginInput = document.getElementById('leftMargin');
+    const rightMarginInput = document.getElementById('rightMargin');
+    const labelWidthInput = document.getElementById('labelWidth');
+    const labelHeightInput = document.getElementById('labelHeight');
+    const colSpacingInput = document.getElementById('colSpacing');
+    const rowSpacingInput = document.getElementById('rowSpacing');
+    const paddingInput = document.getElementById('padding');
+    const fontSizeInput = document.getElementById('fontSize');
+    const labelTextInput = document.getElementById('labelText');
+    const drawBordersCheckbox = document.getElementById('drawBorders');
+    
+    const colsDisplay = document.getElementById('colsDisplay');
+    const rowsDisplay = document.getElementById('rowsDisplay');
+    const totalDisplay = document.getElementById('totalDisplay');
+    const layoutWarning = document.getElementById('layoutWarning');
+    const previewPage = document.getElementById('previewPage');
+    
+    const sampleTextBtn = document.getElementById('sampleTextBtn');
+    const clearTextBtn = document.getElementById('clearTextBtn');
+    const generateBtn = document.getElementById('generateBtn');
+
+    // ==========================================
+    // サンプル宛名データ & 初期化
+    // ==========================================
+    const sampleAddress = `お届け先
+〒100-0001
+東京都千代田区千代田1-1
+千代田ビル 4F
+山田 太郎 様`;
+
+    // 日本語フォント (Noto Sans JP CJKサブセット) のキャッシュ用変数
+    let cachedFontBase64 = null;
+    // カスタムレイアウトの直近値を保持する
+    let customLayoutState = null;
+
+    // ==========================================
+    // 定数定義 (保守性の向上とマジックナンバー排除)
+    // ==========================================
+    const PT_TO_MM = 0.3528; // 1ptあたりのmm換算値
+
+    // カスタムレイアウトのデフォルト値 (ユーザーが数値を手動で変更し始めた際の初期値)
+    const DEFAULT_LAYOUT = {
+      topMargin: 10,
+      bottomMargin: 10,
+      leftMargin: 10,
+      rightMargin: 10,
+      labelWidth: 70,
+      labelHeight: 37,
+      colSpacing: 2,
+      rowSpacing: 2
+    };
+
+    function readLayoutInputs() {
+      return {
+        topMargin: parseFloat(topMarginInput.value) || 0,
+        bottomMargin: parseFloat(bottomMarginInput.value) || 0,
+        leftMargin: parseFloat(leftMarginInput.value) || 0,
+        rightMargin: parseFloat(rightMarginInput.value) || 0,
+        labelWidth: parseFloat(labelWidthInput.value) || 1,
+        labelHeight: parseFloat(labelHeightInput.value) || 1,
+        colSpacing: parseFloat(colSpacingInput.value) || 0,
+        rowSpacing: parseFloat(rowSpacingInput.value) || 0
+      };
+    }
+
+    function applyLayoutInputs(layout) {
+      topMarginInput.value = layout.topMargin;
+      bottomMarginInput.value = layout.bottomMargin;
+      leftMarginInput.value = layout.leftMargin;
+      rightMarginInput.value = layout.rightMargin;
+      labelWidthInput.value = layout.labelWidth;
+      labelHeightInput.value = layout.labelHeight;
+      colSpacingInput.value = layout.colSpacing;
+      rowSpacingInput.value = layout.rowSpacing;
+    }
+
+    function createDefaultCustomLayout() {
+      return { ...DEFAULT_LAYOUT };
+    }
+
+    /**
+     * 計算したレイアウトを元に、すべてのラベル位置を巡回する
+     * プレビュー表示とPDF生成で同様のグリッド計算ロジックが重複するのを防ぐため一元化
+     * @param {Object} layout calculateLayoutの結果
+     * @param {Function} callback (r, c, x, y) を引数に取る処理
+     */
+    function forEachLabelCell(layout, callback) {
+      for (let r = 0; r < layout.rows; r++) {
+        for (let c = 0; c < layout.cols; c++) {
+          const x = layout.lMargin + c * (layout.lblW + layout.colSp);
+          const y = layout.tMargin + r * (layout.lblH + layout.rowSp);
+          callback(r, c, x, y);
+        }
+      }
+    }
+
+    // ==========================================
+    // 関数定義 (キャメルケース採用、日本語コメント)
+    // ==========================================
+
+    /**
+     * ラベルの行数・列数、および座標などのレイアウト情報を計算する
+     * @returns {Object} レイアウトパラメータと計算結果
+     */
+    function calculateLayout() {
+      const paperW = 210; // A4幅 (mm)
+      const paperH = 297; // A4高さ (mm)
+
+      const tMargin = parseFloat(topMarginInput.value) || 0;
+      const bMargin = parseFloat(bottomMarginInput.value) || 0;
+      const lMargin = parseFloat(leftMarginInput.value) || 0;
+      const rMargin = parseFloat(rightMarginInput.value) || 0;
+
+      const lblW = parseFloat(labelWidthInput.value) || 1;
+      const lblH = parseFloat(labelHeightInput.value) || 1;
+
+      const colSp = parseFloat(colSpacingInput.value) || 0;
+      const rowSp = parseFloat(rowSpacingInput.value) || 0;
+
+      // 配置可能な有効幅/高さを計算
+      const availW = paperW - lMargin - rMargin;
+      const availH = paperH - tMargin - bMargin;
+
+      // 行数・列数を自動計算する公式:
+      // 列数 (Nc) は、(有効幅 + 列スペース) / (ラベル幅 + 列スペース) の小数点以下切り捨て
+      let cols = Math.floor((availW + colSp) / (lblW + colSp));
+      let rows = Math.floor((availH + rowSp) / (lblH + rowSp));
+
+      if (cols < 0 || !isFinite(cols)) cols = 0;
+      if (rows < 0 || !isFinite(rows)) rows = 0;
+
+      return {
+        paperW,
+        paperH,
+        tMargin,
+        bMargin,
+        lMargin,
+        rMargin,
+        lblW,
+        lblH,
+        colSp,
+        rowSp,
+        cols,
+        rows,
+        total: cols * rows
+      };
+    }
+
+    /**
+     * 用紙プレビュー(A4のHTML枠)をリアルタイムに更新・描画する
+     */
+    function updatePreview() {
+      const layout = calculateLayout();
+
+      // カウンターの表示更新
+      colsDisplay.textContent = layout.cols;
+      rowsDisplay.textContent = layout.rows;
+      totalDisplay.textContent = layout.total;
+
+      // 警告のハンドリング
+      if (layout.total === 0) {
+        layoutWarning.style.display = 'block';
+        layoutWarning.textContent = '警告: 設定された寸法ではラベルを配置できません。余白やサイズを小さくしてください。';
+      } else {
+        layoutWarning.style.display = 'none';
+      }
+
+      // プレビューのクリア
+      previewPage.innerHTML = '';
+
+      // 1. 用紙余白ガイドを描画 (点線の矩形)
+      const marginsHelper = document.createElement('div');
+      marginsHelper.className = 'margins-helper';
+      marginsHelper.style.left = `calc(var(--mm) * ${layout.lMargin})`;
+      marginsHelper.style.top = `calc(var(--mm) * ${layout.tMargin})`;
+      marginsHelper.style.width = `calc(var(--mm) * ${layout.paperW - layout.lMargin - layout.rMargin})`;
+      marginsHelper.style.height = `calc(var(--mm) * ${layout.paperH - layout.tMargin - layout.bMargin})`;
+      previewPage.appendChild(marginsHelper);
+
+      if (layout.total === 0) return;
+
+      // 印字設定の取得
+      const text = labelTextInput.value;
+      const padding = parseFloat(paddingInput.value) || 0;
+      const fontSizePt = parseFloat(fontSizeInput.value) || 10;
+      const drawBorder = drawBordersCheckbox.checked;
+
+      // CSS上のフォントサイズ (ptからmmへ換算)。NaNや負の値を防ぐため Math.max で保護
+      const fontSizeMm = Math.max(0, fontSizePt * PT_TO_MM);
+
+      // 2. DocumentFragment でバッチ化してパフォーマンス最適化
+      const fragment = document.createDocumentFragment();
+
+      // 自動計算されたグリッドに従って各ラベルを描画
+      forEachLabelCell(layout, (r, c, x, y) => {
+        // ラベル外枠の作成
+        const labelDiv = document.createElement('div');
+        labelDiv.className = 'preview-label ' + (drawBorder ? 'has-border' : 'no-border');
+        labelDiv.style.left = `calc(var(--mm) * ${x})`;
+        labelDiv.style.top = `calc(var(--mm) * ${y})`;
+        labelDiv.style.width = `calc(var(--mm) * ${layout.lblW})`;
+        labelDiv.style.height = `calc(var(--mm) * ${layout.lblH})`;
+        labelDiv.style.padding = `calc(var(--mm) * ${padding})`;
+
+        // テキストコンテナの作成
+        const textDiv = document.createElement('div');
+        textDiv.className = 'label-text-content';
+        textDiv.style.fontSize = `calc(var(--mm) * ${fontSizeMm})`;
+        textDiv.textContent = text;
+
+        labelDiv.appendChild(textDiv);
+        fragment.appendChild(labelDiv);
+      });
+
+      previewPage.appendChild(fragment);
+    }
+
+    /**
+     * プリセットの寸法データをUI入力欄に反映させる
+     * @param {string|number} index プリセットのインデックス（または 'custom'）
+     */
+    function applyPreset(index) {
+      if (index === 'custom') {
+        // 初回だけ標準値を入れ、以後は直前のカスタム入力を復元する
+        if (!customLayoutState) {
+          customLayoutState = createDefaultCustomLayout();
+        }
+        applyLayoutInputs(customLayoutState);
+        updatePreview();
+        return;
+      }
+
+      const preset = labelList[index];
+      if (!preset) return;
+
+      // 入力フィールドへの値の割り当てロジックを applyLayoutInputs に一元化
+      applyLayoutInputs(preset);
+      updatePreview();
+    }
+
+    /**
+     * CDNからNoto Sans JPのTTFフォントを非同期でダウンロードし、Base64に変換する
+     * @returns {Promise<string>} Base64エンコードされたフォントデータ
+     */
+    async function fetchNotoSansJPFont() {
+      if (cachedFontBase64) return cachedFontBase64;
+
+      // Google Fontsの日本語サブセットフォント(TTF)の安定したCDN配信URL
+      const fontUrl = 'https://fonts.gstatic.com/s/notosansjp/v56/-F6jfjtqLzI2JPCgQBnw7HFyzSD-AsregP8VFBEi35TS1g.ttf';
+
+      const response = await fetch(fontUrl);
+      if (!response.ok) {
+        throw new Error('フォントファイルの取得に失敗しました。インターネット接続を確認してください。');
+      }
+
+      const blob = await response.blob();
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = function() {
+          const match = reader.result.match(/data:[^;]*;base64,(.*)/);
+          const base64 = match ? match[1] : null;
+          if (!base64) {
+            reject(new Error('フォント データ形式が無効です'));
+            return;
+          }
+          cachedFontBase64 = base64; // セッションキャッシュに格納
+          resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    /**
+     * 計算したレイアウトと指定テキストに基づき、jsPDFでPDFデータを生成し、別タブで開く
+     */
+    async function generateAndOpenPDF() {
+      const originalText = generateBtn.innerHTML;
+      
+      // ボタンの状態をローディング中に変更
+      generateBtn.disabled = true;
+      generateBtn.innerHTML = `<span class="spinner"></span> フォント準備中 (約2MB)...`;
+
+      try {
+        // jsPDF ライブラリが読み込まれているか確認
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+          throw new Error('jsPDF ライブラリの読み込みに失敗しました。インターネット接続を確認してください。');
+        }
+
+        // 日本語フォントをロード (キャッシュがある場合は一瞬で終わる)
+        const fontBase64 = await fetchNotoSansJPFont();
+
+        generateBtn.innerHTML = `<span class="spinner"></span> PDFドキュメント生成中...`;
+
+        // jsPDFインスタンス作成
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+          orientation: 'portrait',
+          unit: 'mm',
+          format: 'a4'
+        });
+
+        // 仮想ファイルシステムにフォントを追加して登録
+        doc.addFileToVFS('NotoSansJP-Regular.ttf', fontBase64);
+        doc.addFont('NotoSansJP-Regular.ttf', 'NotoSansJP', 'normal');
+        doc.setFont('NotoSansJP');
+
+        const layout = calculateLayout();
+        const text = labelTextInput.value;
+        const padding = parseFloat(paddingInput.value) || 0;
+        const fontSizePt = parseFloat(fontSizeInput.value) || 10;
+        // NaNや負の値を防ぐため Math.max で保護
+        const fontSizeMm = Math.max(0, fontSizePt * PT_TO_MM);
+        const drawBorder = drawBordersCheckbox.checked;
+
+        // フォントサイズの設定
+        doc.setFontSize(fontSizePt);
+
+        if (layout.total > 0) {
+          // グリッドを走査してラベルを描画 (共通化したロジックを使用)
+          forEachLabelCell(layout, (r, c, x, y) => {
+            // 1. ラベル周囲の枠線(罫線)を描画
+            if (drawBorder) {
+              doc.setDrawColor(200, 200, 200); // 印刷時に邪魔にならない薄いグレー
+              doc.setLineWidth(0.1);
+              doc.rect(x, y, layout.lblW, layout.lblH);
+            }
+
+            // 2. ラベル内テキストを描画 (左上揃え、自動折り返し)
+            const maxTextWidth = layout.lblW - (padding * 2);
+            if (maxTextWidth > 0 && text.trim() !== '') {
+              // jsPDFの機能でテキストをラベルの最大幅に折り返す
+              const wrappedLines = doc.splitTextToSize(text, maxTextWidth);
+              
+              const startX = x + padding;
+              // 日本語フォント描画時、最初の行のベースライン(y軸)を計算
+              // (余白 + 最初の文字の高さ分を考慮。通常フォント高さの約80%程度下がった位置)
+              const startY = y + padding + (fontSizeMm * 0.82);
+              const lineSpacing = fontSizeMm * 1.25; // 1.25倍の行間
+
+              // 各行を順番に描画し、ラベルの下限を超える場合は打ち切る
+              for (let i = 0; i < wrappedLines.length; i++) {
+                const lineY = startY + (i * lineSpacing);
+                
+                // 次の行がラベルの高さ(余白および下部パディング除く)を超えてしまう場合はループを抜ける
+                // レビュー指摘に基づき、文字の高さ (fontSizeMm) を考慮した厳密な境界チェックに変更
+                if (lineY + fontSizeMm > y + layout.lblH - padding) {
+                  break; 
+                }
+                doc.text(wrappedLines[i], startX, lineY);
+              }
+            }
+          });
+        }
+
+        // PDFのバイナリをBlobに変換して別タブでプレビュー表示
+        const blob = doc.output('blob');
+        const pdfUrl = URL.createObjectURL(blob);
+        window.open(pdfUrl, '_blank');
+
+      } catch (error) {
+        console.error(error);
+        alert('PDF作成中にエラーが発生しました:\n' + error.message);
+      } finally {
+        // ボタン状態の復元
+        generateBtn.disabled = false;
+        generateBtn.innerHTML = originalText;
+      }
+    }
+
+    // ==========================================
+    // イベントリスナーの登録
+    // ==========================================
+
+    // プリセットセレクトボックスの構築
+    function initializePresets() {
+      presetSelect.innerHTML = '';
+
+      if (!window.labelList || !Array.isArray(window.labelList)) {
+        console.error('ラベルプリセットデータが読み込まれていません');
+        const option = document.createElement('option');
+        option.textContent = 'エラー: プリセット読み込み失敗 (labellist.js を確認してください)';
+        presetSelect.appendChild(option);
+        
+        // フォールバックとしてカスタムレイアウトのデフォルト値を適用し、空欄スタートを防ぐ
+        applyPreset('custom');
+        return;
+      }
+
+      labelList.forEach((preset, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = preset.name;
+        presetSelect.appendChild(option);
+      });
+
+      const customOption = document.createElement('option');
+      customOption.value = 'custom';
+      customOption.textContent = 'カスタムレイアウト...';
+      presetSelect.appendChild(customOption);
+
+      presetSelect.value = '0';
+      applyPreset(0);
+    }
+
+    // プレビューのサイズ(縮尺)コントロール
+    const zoomButtons = document.querySelectorAll('.zoom-btn');
+    zoomButtons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        zoomButtons.forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        const newSize = e.target.getAttribute('data-size');
+        document.documentElement.style.setProperty('--preview-base-width', newSize);
+      });
+    });
+
+    // デバウンス関数 (テキスト入力時の頻繁なDOM再レンダリングによるパフォーマンス低下を防止)
+    function debounce(func, wait) {
+      let timeout;
+      return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+      };
+    }
+
+    // 詳細設定パラメータ入力時の連動 (変更があった場合は「カスタム」に変更してプレビューを再描画)
+    const formInputs = [
+      topMarginInput, bottomMarginInput, leftMarginInput, rightMarginInput,
+      labelWidthInput, labelHeightInput, colSpacingInput, rowSpacingInput
+    ];
+
+    formInputs.forEach(input => {
+      input.addEventListener('input', () => {
+        customLayoutState = readLayoutInputs();
+        presetSelect.value = 'custom';
+        updatePreview();
+      });
+    });
+
+    presetSelect.addEventListener('change', (e) => {
+      applyPreset(e.target.value);
+    });
+
+    // テキスト・印字関連パラメータ変更時もリアルタイムでプレビュー更新
+    // テキスト入力のみデバウンスを適用してキー入力中のパフォーマンスを最適化
+    labelTextInput.addEventListener('input', debounce(updatePreview, 150));
+    fontSizeInput.addEventListener('input', updatePreview);
+    paddingInput.addEventListener('input', updatePreview);
+    drawBordersCheckbox.addEventListener('change', updatePreview);
+
+    // テキスト操作ボタン
+    sampleTextBtn.addEventListener('click', () => {
+      labelTextInput.value = sampleAddress;
+      updatePreview();
+    });
+
+    clearTextBtn.addEventListener('click', () => {
+      labelTextInput.value = '';
+      updatePreview();
+    });
+
+    // PDF生成トリガー
+    generateBtn.addEventListener('click', generateAndOpenPDF);
+
+    // 初期化
+    window.addEventListener('DOMContentLoaded', () => {
+      initializePresets();
+      labelTextInput.value = sampleAddress; // 初期値としてサンプルを入れておく
+      updatePreview();
+
+      // 日本語フォントをバックグラウンドで事前ロード (PDF生成時の待機時間を削減)
+      fetchNotoSansJPFont().catch(err => {
+        console.warn('日本語フォントの事前ロードに失敗しました (PDF生成時に再試行されます):', err);
+      });
+    });
+
+  </script>
+</body>
+</html>

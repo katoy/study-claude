@@ -1,0 +1,5 @@
+# robots.txt for PDF Label Studio
+# Allow all web crawlers to access all pages
+
+User-agent: *
+Allow: /

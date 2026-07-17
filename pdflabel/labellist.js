@@ -1,0 +1,102 @@
+// ラベル用紙プリセットデータ
+// 各ラベル用紙の寸法（mm）を定義しています。
+// このファイルは index.html から <script src="labellist.js"></script> を通じて読み込まれます。
+
+const labelList = [
+  {
+    name: "エーワン 12面 (86.4mm × 42.3mm)",
+    paperSize: "A4",
+    topMargin: 21.2,
+    bottomMargin: 21.2,
+    leftMargin: 18.6,
+    rightMargin: 18.6,
+    labelWidth: 86.4,
+    labelHeight: 42.3,
+    colSpacing: 0,
+    rowSpacing: 0
+  },
+  {
+    name: "エーワン 24面 (66.0mm × 33.9mm)",
+    paperSize: "A4",
+    topMargin: 12.9,
+    bottomMargin: 12.9,
+    leftMargin: 6.0,
+    rightMargin: 6.0,
+    labelWidth: 66.0,
+    labelHeight: 33.9,
+    colSpacing: 0,
+    rowSpacing: 0
+  },
+  {
+    name: "エーワン 10面 (91.0mm × 55.0mm)",
+    paperSize: "A4",
+    topMargin: 11.0,
+    bottomMargin: 11.0,
+    leftMargin: 14.0,
+    rightMargin: 14.0,
+    labelWidth: 91.0,
+    labelHeight: 55.0,
+    colSpacing: 0,
+    rowSpacing: 0
+  },
+  {
+    name: "エーワン 18面 (70.0mm × 42.3mm)",
+    paperSize: "A4",
+    topMargin: 21.2,
+    bottomMargin: 21.2,
+    leftMargin: 14.0,
+    rightMargin: 14.0,
+    labelWidth: 70.0,
+    labelHeight: 42.3,
+    colSpacing: 0,
+    rowSpacing: 0
+  },
+  {
+    name: "コクヨ 21面 (63.5mm × 38.1mm)",
+    paperSize: "A4",
+    topMargin: 15.15,
+    bottomMargin: 15.15,
+    leftMargin: 9.75,
+    rightMargin: 9.75,
+    labelWidth: 63.5,
+    labelHeight: 38.1,
+    colSpacing: 0,
+    rowSpacing: 0
+  },
+  {
+    name: "コクヨ 24面 (66.0mm × 35.0mm)",
+    paperSize: "A4",
+    topMargin: 8.5,
+    bottomMargin: 8.5,
+    leftMargin: 6.0,
+    rightMargin: 6.0,
+    labelWidth: 66.0,
+    labelHeight: 35.0,
+    colSpacing: 0,
+    rowSpacing: 0
+  },
+  {
+    name: "エーワン 44面 (48.3mm × 25.4mm)",
+    paperSize: "A4",
+    topMargin: 8.9,
+    bottomMargin: 8.9,
+    leftMargin: 21.5,
+    rightMargin: 21.5,
+    labelWidth: 48.3,
+    labelHeight: 25.4,
+    colSpacing: 0,
+    rowSpacing: 0
+  },
+  {
+    name: "エーワン 65面 (38.1mm × 21.2mm)",
+    paperSize: "A4",
+    topMargin: 10.7,
+    bottomMargin: 10.7,
+    leftMargin: 21.5,
+    rightMargin: 21.5,
+    labelWidth: 38.1,
+    labelHeight: 21.2,
+    colSpacing: 0,
+    rowSpacing: 0
+  }
+];
