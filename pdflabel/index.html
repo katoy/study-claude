@@ -444,12 +444,44 @@
       font-weight: 600;
     }
 
+    .control-btn {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 6px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .control-btn:hover {
+      color: white;
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .control-btn:active {
+      transform: scale(0.95);
+    }
+
     .preview-container {
       width: 100%;
+      flex: 1;
+      min-height: 500px;
       display: flex;
       justify-content: center;
       align-items: center;
       perspective: 1000px;
+      overflow: hidden;
+      cursor: grab;
+      position: relative;
+    }
+
+    .preview-container:active {
+      cursor: grabbing;
     }
 
     /* A4用紙のシミュレータ */
@@ -464,6 +496,8 @@
       overflow: hidden;
       container-type: inline-size;
       transition: max-width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      transform-origin: center center;
+      will-change: transform;
       
       /* A4のミリメートルをCSSコンテナクエリ幅から逆算してカスタム単位「--mm」を定義
          100cqw (コンテナの全幅) / 210 = 1mm相当の幅。これをベースにすべてをレイアウト */
@@ -911,7 +945,7 @@
         <!-- 用紙設定カード -->
         <div class="setting-card">
           <h2 class="card-title">1. ラベル用紙の選択</h2>
-          
+
           <div class="form-group">
             <label for="presetSelect">型番・プリセット</label>
             <button type="button" id="openPresetModalBtn" title="プリセット選択ダイアログを開く">
@@ -930,7 +964,7 @@
             2. レイアウト詳細 (mm)
             <span style="font-size: 0.7rem; color: var(--color-accent);">A4用紙基準</span>
           </h2>
-          
+
           <!-- 余白設定 -->
           <div class="form-group">
             <label>ページ余白 (上下・左右)</label>
@@ -1057,12 +1091,25 @@
       <!-- ワークスペース (用紙プレビュー) -->
       <section class="workspace">
         
-        <!-- 縮尺操作用コントローラー -->
+        <!-- 縮尺・操作用コントローラー -->
         <div class="workspace-controls">
           <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500;">プレビューサイズ:</span>
           <button class="zoom-btn" data-size="320px">小</button>
           <button class="zoom-btn active" data-size="420px">中</button>
           <button class="zoom-btn" data-size="520px">大</button>
+
+          <div class="workspace-divider" style="width: 1px; height: 16px; background: var(--border-color); margin: 0 8px;"></div>
+
+          <button class="control-btn" id="zoomOutBtn" title="ズームアウト" aria-label="ズームアウト">
+            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
+          </button>
+          <span id="zoomPercentDisplay" style="font-size: 0.75rem; font-weight: 600; min-width: 40px; text-align: center;">100%</span>
+          <button class="control-btn" id="zoomInBtn" title="ズームイン" aria-label="ズームイン">
+            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+          </button>
+          <button class="control-btn" id="zoomResetBtn" title="ズームリセット" aria-label="ズームリセット">
+            <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7.89M9 11l3-3 3 3m-3-3v12"></path></svg>
+          </button>
         </div>
 
         <!-- A4シミュレーション用紙 -->
@@ -1073,7 +1120,7 @@
         </div>
         
         <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 20px; font-weight: 500;">
-          ※ 青い点線はページ余白ガイドです。実際の印刷時には出力されません。
+          ※ ドラッグで移動、ホイール（Ctrl+ホイールでズーム）でスクロール・ズームが可能です。青い点線は印刷されません。
         </p>
 
       </section>
@@ -1088,7 +1135,7 @@
         <h3 class="modal-title">用紙プリセットの選択</h3>
         <button type="button" class="modal-close-btn" id="closePresetModalBtn" aria-label="閉じる">&times;</button>
       </div>
-      
+
       <div class="modal-controls">
         <div class="modal-search-wrapper">
           <span class="modal-search-icon">🔍</span>
@@ -1098,7 +1145,7 @@
           <!-- JSで動的にメーカー別タブを追加します -->
         </div>
       </div>
-      
+
       <div class="modal-body">
         <div id="modalPresetGrid" class="modal-preset-grid">
           <!-- JSで動的にプリセットカードを追加します -->
@@ -1401,7 +1448,7 @@
      */
     async function generateAndOpenPDF() {
       const originalText = generateBtn.innerHTML;
-      
+
       // ボタンの状態をローディング中に変更
       generateBtn.disabled = true;
       generateBtn.innerHTML = `<span class="spinner"></span> フォント準備中 (約2MB)...`;
@@ -1531,6 +1578,46 @@
       syncSelectedPresetLabel();
     }
 
+    // ズーム・パン・スクロール状態の管理
+    let zoomScale = 1.0;
+    let panX = 0;
+    let panY = 0;
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+
+    const previewContainer = document.querySelector('.preview-container');
+    const zoomPercentDisplay = document.getElementById('zoomPercentDisplay');
+    const zoomInBtn = document.getElementById('zoomInBtn');
+    const zoomOutBtn = document.getElementById('zoomOutBtn');
+    const zoomResetBtn = document.getElementById('zoomResetBtn');
+
+    function applyTransform() {
+      previewPage.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomScale})`;
+      zoomPercentDisplay.textContent = `${Math.round(zoomScale * 100)}%`;
+    }
+
+    function zoomAt(factor, clientX, clientY) {
+      const containerRect = previewContainer.getBoundingClientRect();
+      const x = clientX !== undefined ? clientX - containerRect.left : containerRect.width / 2;
+      const y = clientY !== undefined ? clientY - containerRect.top : containerRect.height / 2;
+
+      const oldScale = zoomScale;
+      zoomScale = Math.min(Math.max(zoomScale * factor, 0.3), 3.0);
+
+      panX = x - (x - panX) * (zoomScale / oldScale);
+      panY = y - (y - panY) * (zoomScale / oldScale);
+
+      applyTransform();
+    }
+
+    function resetZoom() {
+      zoomScale = 1.0;
+      panX = 0;
+      panY = 0;
+      applyTransform();
+    }
+
     // プレビューのサイズ(縮尺)コントロール
     const zoomButtons = document.querySelectorAll('.zoom-btn');
     zoomButtons.forEach(btn => {
@@ -1539,8 +1626,97 @@
         e.target.classList.add('active');
         const newSize = e.target.getAttribute('data-size');
         document.documentElement.style.setProperty('--preview-base-width', newSize);
+        resetZoom(); // ベースサイズ切り替え時にズーム・パンをリセット
       });
     });
+
+    zoomInBtn.addEventListener('click', () => zoomAt(1.2));
+    zoomOutBtn.addEventListener('click', () => zoomAt(0.8));
+    zoomResetBtn.addEventListener('click', resetZoom);
+
+    // マウスドラッグによるパン
+    previewContainer.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return;
+      isDragging = true;
+      startX = e.clientX - panX;
+      startY = e.clientY - panY;
+    });
+
+    previewContainer.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      panX = e.clientX - startX;
+      panY = e.clientY - startY;
+      applyTransform();
+    });
+
+    previewContainer.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+
+    previewContainer.addEventListener('mouseleave', () => {
+      isDragging = false;
+    });
+
+    // ホイールスクロール（ズーム ＆ スクロール）
+    previewContainer.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      if (e.ctrlKey) {
+        const factor = e.deltaY < 0 ? 1.1 : 0.9;
+        zoomAt(factor, e.clientX, e.clientY);
+      } else {
+        if (e.shiftKey) {
+          panX -= e.deltaY;
+        } else {
+          panY -= e.deltaY;
+          panX -= e.deltaX;
+        }
+        applyTransform();
+      }
+    }, { passive: false });
+
+    // タッチイベント (モバイル対応)
+    let touchStartDist = 0;
+    previewContainer.addEventListener('touchstart', (e) => {
+      const len = e.touches.length;
+      if (len === 1) {
+        isDragging = true;
+        startX = e.touches[0].clientX - panX;
+        startY = e.touches[0].clientY - panY;
+      }
+      if (len === 2) {
+        isDragging = false;
+        touchStartDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+      }
+    }, { passive: true });
+
+    previewContainer.addEventListener('touchmove', (e) => {
+      const len = e.touches.length;
+      if (isDragging) {
+        panX = e.touches[0].clientX - startX;
+        panY = e.touches[0].clientY - startY;
+        applyTransform();
+      }
+      if (!isDragging && len === 2) {
+        const dist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        const factor = dist / Math.max(0.001, touchStartDist);
+        const centerX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+        const centerY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+        zoomAt(factor, centerX, centerY);
+        touchStartDist = dist;
+      }
+    }, { passive: true });
+
+    previewContainer.addEventListener('touchend', () => {
+      isDragging = false;
+      touchStartDist = 0;
+    }, { passive: true });
+
 
     // デバウンス関数 (テキスト入力時の頻繁なDOM再レンダリングによるパフォーマンス低下を防止)
     function debounce(func, wait) {
@@ -1725,12 +1901,10 @@
           return;
         }
 
-        if (searchQuery) {
-          const nameLower = preset.name.toLowerCase();
-          const specText = `${preset.labelWidth} ${preset.labelHeight} ${preset.paperSize}`.toLowerCase();
-          if (!nameLower.includes(searchQuery) && !specText.includes(searchQuery)) {
-            return;
-          }
+        const nameLower = preset.name.toLowerCase();
+        const specText = `${preset.labelWidth} ${preset.labelHeight} ${preset.paperSize}`.toLowerCase();
+        if (searchQuery && !nameLower.includes(searchQuery) && !specText.includes(searchQuery)) {
+          return;
         }
 
         const card = document.createElement('div');
@@ -1832,9 +2006,6 @@
     });
     
     function handleCardKeydown(e, cardIdx, visibleCards) {
-      if (cardIdx === -1) {
-        return;
-      }
       let cols = 1;
       if (visibleCards.length > 1) {
         const firstTop = visibleCards[0].offsetTop;
@@ -1890,12 +2061,6 @@
     }
 
     presetModal.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        closePresetModal();
-        e.preventDefault();
-        return;
-      }
-
       const activeEl = document.activeElement;
       const visibleCards = Array.from(modalPresetGrid.querySelectorAll('.preset-card'));
       
@@ -1911,7 +2076,13 @@
       }
 
       const cardIdx = visibleCards.indexOf(activeEl);
-      handleCardKeydown(e, cardIdx, visibleCards);
+      switch (cardIdx) {
+        case -1:
+          break;
+        default:
+          handleCardKeydown(e, cardIdx, visibleCards);
+          break;
+      }
     });
 
     modalSearchInput.addEventListener('input', (e) => {
@@ -1920,8 +2091,12 @@
     });
 
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        closePresetModal();
+      switch (e.key) {
+        case 'Escape':
+          closePresetModal();
+          break;
+        default:
+          break;
       }
     });
 

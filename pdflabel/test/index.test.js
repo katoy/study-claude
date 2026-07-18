@@ -344,10 +344,10 @@ describe('PDF Label Studio Tests', () => {
 
       const generateBtn = document.getElementById('generateBtn');
       generateBtn.click();
-      
+
       // 非同期のフォントフェッチとPDF生成を待つため、タイマーとPromiseを解決
       await vi.runAllTimersAsync();
-      
+
       expect(window.URL.createObjectURL).toHaveBeenCalled();
       expect(window.open).toHaveBeenCalled();
       expect(generateBtn.disabled).toBe(false);
@@ -871,6 +871,159 @@ describe('PDF Label Studio Tests', () => {
       // Clean up
       window.labelList = originalLabelList;
       window.initializePresets();
+      closeBtn.click();
+
+      // === ズーム・パン・スクロールのテスト ===
+      const zoomPercent = document.getElementById('zoomPercentDisplay');
+      const zoomInBtn = document.getElementById('zoomInBtn');
+      const zoomOutBtn = document.getElementById('zoomOutBtn');
+      const zoomResetBtn = document.getElementById('zoomResetBtn');
+      const previewPage = document.getElementById('previewPage');
+      const previewContainer = document.querySelector('.preview-container');
+      const sizeBtns = document.querySelectorAll('.zoom-btn');
+
+      expect(zoomPercent.textContent).toBe('100%');
+
+      zoomInBtn.click();
+      expect(zoomPercent.textContent).toBe('120%');
+      expect(previewPage.style.transform).toContain('scale(1.2)');
+
+      zoomOutBtn.click();
+      expect(zoomPercent.textContent).toBe('96%');
+      expect(previewPage.style.transform).toContain('scale(0.96)');
+
+      zoomResetBtn.click();
+      expect(zoomPercent.textContent).toBe('100%');
+      expect(previewPage.style.transform).toContain('scale(1)');
+
+      // ベースサイズ切り替え時のリセット
+      zoomInBtn.click();
+      expect(zoomPercent.textContent).toBe('120%');
+      sizeBtns[0].click();
+      expect(zoomPercent.textContent).toBe('100%');
+
+      // マウスドラッグによるパン
+      // Left click drag
+      const mousedownEv = new window.MouseEvent('mousedown', { clientX: 100, clientY: 100, button: 0 });
+      previewContainer.dispatchEvent(mousedownEv);
+
+      const mousemoveEv = new window.MouseEvent('mousemove', { clientX: 150, clientY: 180 });
+      previewContainer.dispatchEvent(mousemoveEv);
+      expect(previewPage.style.transform).toContain('translate(50px, 80px)');
+
+      const mouseupEv = new window.MouseEvent('mouseup');
+      previewContainer.dispatchEvent(mouseupEv);
+
+      // Mousemove after mouseup (should not pan)
+      const mousemoveEv2 = new window.MouseEvent('mousemove', { clientX: 200, clientY: 200 });
+      previewContainer.dispatchEvent(mousemoveEv2);
+      expect(previewPage.style.transform).toContain('translate(50px, 80px)');
+
+      // Mouseleave drag cancel
+      previewContainer.dispatchEvent(mousedownEv);
+      previewContainer.dispatchEvent(new window.MouseEvent('mouseleave'));
+      previewContainer.dispatchEvent(mousemoveEv2);
+      expect(previewPage.style.transform).toContain('translate(50px, 80px)');
+
+      // Non-left click drag ignore
+      const rightMousedownEv = new window.MouseEvent('mousedown', { clientX: 100, clientY: 100, button: 1 });
+      previewContainer.dispatchEvent(rightMousedownEv);
+      previewContainer.dispatchEvent(mousemoveEv);
+      expect(previewPage.style.transform).toContain('translate(50px, 80px)');
+
+      // Cleanup drag state
+      previewContainer.dispatchEvent(mouseupEv);
+
+      // ホイールスクロール/ズーム
+      // Normal scroll
+      const wheelScrollEv = new window.WheelEvent('wheel', { deltaY: 50, deltaX: 10, ctrlKey: false });
+      previewContainer.dispatchEvent(wheelScrollEv);
+      expect(previewPage.style.transform).toContain('translate(40px, 30px)');
+
+      // Shift scroll (horizontal)
+      const wheelShiftScrollEv = new window.WheelEvent('wheel', { deltaY: 30, ctrlKey: false, shiftKey: true });
+      previewContainer.dispatchEvent(wheelShiftScrollEv);
+      expect(previewPage.style.transform).toContain('translate(10px, 30px)');
+
+      // Zoom in/out with Ctrl
+      const wheelZoomInEv = new window.WheelEvent('wheel', { deltaY: -120, clientX: 200, clientY: 200, ctrlKey: true });
+      previewContainer.dispatchEvent(wheelZoomInEv);
+      expect(zoomPercent.textContent).toBe('110%');
+
+      const wheelZoomOutEv = new window.WheelEvent('wheel', { deltaY: 120, clientX: 200, clientY: 200, ctrlKey: true });
+      previewContainer.dispatchEvent(wheelZoomOutEv);
+      expect(zoomPercent.textContent).toBe('99%');
+
+      // タッチ操作
+      zoomResetBtn.click(); // タッチテストの前に一度リセットして座標をクリーンにする
+
+      // 1-finger touch drag
+      const touchStartDrag = new window.Event('touchstart');
+      touchStartDrag.touches = [{ clientX: 100, clientY: 100 }];
+      previewContainer.dispatchEvent(touchStartDrag);
+
+      const touchMoveDrag = new window.Event('touchmove');
+      touchMoveDrag.touches = [{ clientX: 150, clientY: 180 }];
+      previewContainer.dispatchEvent(touchMoveDrag);
+      expect(previewPage.style.transform).toContain('translate(50px, 80px)');
+
+      // 2-finger touch pinch zoom
+      const touchStartPinch = new window.Event('touchstart');
+      touchStartPinch.touches = [
+        { clientX: 100, clientY: 100 },
+        { clientX: 200, clientY: 200 }
+      ];
+      previewContainer.dispatchEvent(touchStartPinch);
+
+      const touchMovePinch = new window.Event('touchmove');
+      touchMovePinch.touches = [
+        { clientX: 80, clientY: 80 },
+        { clientX: 220, clientY: 220 }
+      ];
+      previewContainer.dispatchEvent(touchMovePinch);
+      expect(zoomPercent.textContent).toBe('140%');
+
+      // Touch end
+      const touchEnd = new window.Event('touchend');
+      previewContainer.dispatchEvent(touchEnd);
+
+      // Touch move when not dragging
+      const originalTransform = previewPage.style.transform;
+      const touchMoveNoDrag = new window.Event('touchmove');
+      touchMoveNoDrag.touches = [{ clientX: 150, clientY: 180 }];
+      previewContainer.dispatchEvent(touchMoveNoDrag);
+      expect(previewPage.style.transform).toBe(originalTransform);
+
+      // touchstart の len === 2 の偽ルートを確実に通過させる
+      const touchStartDrag2 = new window.Event('touchstart');
+      touchStartDrag2.touches = [{ clientX: 100, clientY: 100 }];
+      previewContainer.dispatchEvent(touchStartDrag2);
+
+      // window の Escape キー判定 of 真ルートを確実に通過させる
+      const windowEscEvent = new window.KeyboardEvent('keydown', { key: 'Escape' });
+      window.dispatchEvent(windowEscEvent);
+      expect(modal.classList.contains('active')).toBe(false);
+
+      // window の Escape キー判定 of 偽ルートを確実に通過させる
+      const windowNonEscEvent = new window.KeyboardEvent('keydown', { key: 'Enter' });
+      window.dispatchEvent(windowNonEscEvent);
+      expect(modal.classList.contains('active')).toBe(false);
+
+      // カード以外とカード自身にフォーカスがある経路を通過させる
+      openBtn.click();
+      await vi.runAllTimersAsync();
+      const gridEl = document.getElementById('modalPresetGrid');
+      expect(gridEl.children.length).toBeGreaterThan(0);
+
+      // カード以外にフォーカスがあるときは何もしない
+      closeBtn.focus();
+      modal.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'ArrowLeft' }));
+      expect(document.activeElement).toBe(closeBtn);
+
+      // カードにフォーカスがあるときはキーボード操作を処理する
+      gridEl.children[0].focus();
+      modal.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'ArrowLeft' }));
+      expect(document.activeElement).toBe(gridEl.children[0]);
       closeBtn.click();
     });
   });

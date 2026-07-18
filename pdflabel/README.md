@@ -1,144 +1,137 @@
-# PDF Label Studio (PDFラベルメーカー)
+# PDF Label Studio
 
-テキストを入力し、市販の様々なラベル用紙の寸法に合わせて自動レイアウトされたPDFを生成する、完全サーバーレス・クライアントサイド完結のWebアプリケーションです。
+市販のA4ラベル用紙または任意の寸法に合わせて、同じテキストを並べた印刷用PDFをブラウザ内で生成するWebアプリケーションです。アカウント登録やアプリケーション固有のサーバーへの本文送信は不要です。
 
-![PDF Label Studioのスクリーンショット](screenshots/app_screenshot.jpg)
+[PDF Label Studioを開く](https://katoy.github.io/study-claude/pdflabel/)
 
-### 🔗 公開URL
-* **本番環境 (GitHub Pages)**: [https://katoy.github.io/study-claude/pdflabel/](https://katoy.github.io/study-claude/pdflabel/)
+![PDF Label Studioの画面](screenshots/app_screenshot.jpg)
 
----
+## 主な機能
 
-## 目次 (TOC)
+- **51種類の用紙プリセット**: エーワン、コクヨ、ヒサゴ、エレコム、プラス、サンワサプライのA4ラベル用紙を収録しています。
+- **視覚的なプリセット選択**: 用紙レイアウトの縮小SVG、寸法、面数、列数・行数をカードで比較できます。メーカー別の絞り込みと検索にも対応しています。
+- **カスタムレイアウト**: 上下左右の余白、ラベル幅・高さ、列間隔・行間隔を0.1mm単位で調整できます。
+- **リアルタイムA4プレビュー**: 入力内容、枠線、余白、ラベル配置、列数・行数・総面数を即時に確認できます。
+- **ズームとパン**: ボタン、ホイール、ドラッグ、タッチ、ピンチ操作でプレビューを拡大縮小・移動できます。
+- **日本語PDF**: Noto Sans JPをPDFに埋め込み、複数行、自動折り返し、印字領域の高さ制限に対応します。
+- **完全クライアントサイド処理**: 入力したラベル本文はアプリケーションからサーバーへ送信されません。
 
-- [プロジェクト概要](#プロジェクト概要)
-- [主な特徴](#主な特徴)
-- [技術仕様](#技術仕様)
-- [使用方法](#使用方法)
-- [開発者向けガイド](#開発者向けガイド)
-  - [インストール](#インストール)
-  - [テストの実行](#テストの実行)
-  - [テスト自動化とカバレッジ](#テスト自動化とカバレッジ)
-- [CI/CD パイプライン (GitHub Actions)](#cicd-パイプライン-github-actions)
-- [SEO & Web標準](#seo--web標準)
-- [リポジトリ構成](#リポジトリ構成)
-- [ライセンス](#ライセンス)
+## 使い方
 
----
+1. [公開版](https://katoy.github.io/study-claude/pdflabel/)を開くか、ローカルの [index.html](index.html) をブラウザで開きます。
+2. 「型番・プリセット」を押し、用紙カードを選択します。メーカータブや検索欄で候補を絞り込めます。
+3. 必要に応じて余白、ラベル寸法、ラベル間隔を編集します。編集すると「カスタムレイアウト」に切り替わります。
+4. 全ラベルに印字するテキスト、文字サイズ、内余白、枠線の有無を設定します。
+5. A4プレビューと列数・行数・総面数を確認します。
+6. 「PDFを生成して開く」を押します。生成されたPDFは新しいタブで表示されます。
 
-## プロジェクト概要
+### プリセット選択のキーボード操作
 
-本アプリケーションは、ブラウザだけで動作する軽量で高速なPDFラベル生成ツールです。面倒なサーバーサイドの処理やユーザー登録は一切不要で、個人情報の漏洩リスクを完全に排除したセキュアな設計になっています。
-事前定義されたラベル用紙プリセット（エーワン製など）を選択するか、ミリ単位でカスタム寸法を指定して、宛名ラベルや商品ラベルなどを誰でも簡単に作成できます。
+| キー | 操作 |
+| --- | --- |
+| `ArrowLeft` / `ArrowRight` | 前後のカードへ移動 |
+| `ArrowUp` / `ArrowDown` | 上下のカードへ移動 |
+| `Enter` / `Space` | フォーカス中のカードを選択 |
+| `Escape` | ダイアログを閉じる |
 
-## 主な特徴
+### プレビュー操作
 
-- **完全クライアントサイド動作**: PDF生成、フォント読み込み、レイアウト計算のすべてをブラウザ上で実行します。
-- **リアルタイムプレビュー**: 余白やラベルの寸法、フォントサイズなどを変更すると、右側のA4用紙シミュレータにリアルタイムで反映されます。
-- **ミリ単位の精密レイアウト**:
-  - 用紙の上下左右余白、ラベルの幅・高さ、列/行スペースを自在に設定可能。
-  - 用紙サイズ内に収まる最大行数・列数を自動計算。
-- **日本語フォント対応**: Noto Sans JP フォントを内蔵（または自動プリロード）し、PDF出力時の文字化けやレイアウト崩れを防ぎます。
-- **自動折り返し・高さ制限保護**: 入力された長いテキストはラベル幅に合わせて自動で改行され、ラベルの下限を超える場合は自動的に印字が打ち切られます。
-- **豊富な用紙プリセット**: [labellist.js](labellist.js) に定義された市販ラベル用紙からワンクリックでレイアウトを選択可能です。
+| 操作 | 結果 |
+| --- | --- |
+| 「小」「中」「大」 | A4プレビューのベース表示サイズを変更 |
+| `-` / `+` ボタン | 30%から300%の範囲で縮小・拡大 |
+| リセットボタン | 拡大率と表示位置を初期状態に戻す |
+| ドラッグ / 1本指ドラッグ | プレビューを移動 |
+| ホイール | 縦方向へ移動 |
+| `Shift` + ホイール | 横方向へ移動 |
+| `Ctrl` + ホイール / ピンチ | ポインター位置を基準に拡大・縮小 |
 
-## 技術仕様
+青い点線はページ余白のガイドで、生成したPDFには出力されません。
 
-- **コア**: HTML5 / CSS3 (CSSカスタムプロパティ、Grid、Flexbox)
-- **ロジック**: Vanilla JavaScript (ES6)
-- **ライブラリ**:
-  - [jsPDF](https://github.com/parallax/jsPDF) (PDF生成エンジン、CDN経由で読み込み)
-  - [Noto Sans JP (ttf)](https://fonts.google.com/specimen/Noto+Sans+JP) (Google Fonts CDNから動的フェッチ/キャッシュ)
-- **テスト**: [Vitest](https://vitest.dev/) (v8 カバレッジプロバイダ) & [JSDOM](https://github.com/jsdom/jsdom)
+## 動作要件
 
-## 使用方法
+- A4縦（210mm x 297mm）を前提としたレイアウトです。
+- 最新のChrome、Edge、Firefox、Safariなど、Blob URLとES6をサポートするブラウザが必要です。
+- jsPDF、画面表示用フォント、PDF埋め込み用Noto Sans JPをCDNから取得します。ローカルで `index.html` を直接開く場合も、初回表示とPDF生成にはインターネット接続が必要です。
+- ポップアップを制限しているブラウザでは、生成PDFの新しいタブを許可してください。
 
-1. [index.html](index.html) をブラウザで開きます。
-2. 左側のコントロールパネルから「プリセット」を選択するか、詳細設定パラメータを変更します。
-3. 印字したいテキストエリア（宛名など）を入力します。
-4. 「PDF生成」ボタンをクリックすると、別タブで印刷用のPDFが自動的に構築されて表示されます。
+## 技術構成
 
----
+- HTML5 / CSS3
+- Vanilla JavaScript
+- [jsPDF](https://github.com/parallax/jsPDF)
+- Noto Sans JP / Outfit
+- [Vitest](https://vitest.dev/) + [JSDOM](https://github.com/jsdom/jsdom)
+- GitHub Actions / GitHub Pages
 
-## 開発者向けガイド
+アプリケーション本体は [index.html](index.html) の単一ファイルにHTML、CSS、JavaScriptをまとめています。用紙データだけを [labellist.js](labellist.js) に分離し、開発用ビルドなしで `file://` からも起動できる構成です。
 
-### インストール
+レイアウト計算はプレビューとPDF生成で共有されます。A4の印字可能領域から、次の式で最大列数・行数を求めます。
 
-テストの実行やカバレッジ検証を行うには、Node.js 環境と依存パッケージをインストールする必要があります。
-
-```bash
-# 依存関係のインストール
-npm install
+```text
+columns = floor((availableWidth + columnSpacing) / (labelWidth + columnSpacing))
+rows    = floor((availableHeight + rowSpacing) / (labelHeight + rowSpacing))
 ```
 
-### テストの実行
+## 開発
 
-本プロジェクトは [Vitest](https://vitest.dev/) と [JSDOM](https://github.com/jsdom/jsdom) を用いて、UIロジックおよびPDF描画ロジックの動作検証を完全に自動化しています。
+### セットアップ
+
+CIと同じNode.js 20系を推奨します。
 
 ```bash
-# テストの実行 (Vitestによる単発実行)
-npm run test
-
-# ウォッチモードでの実行
-npm run test:watch
-
-# カバレッジ測定の実行
-npm run test:coverage
+npm ci
 ```
 
-### テスト自動化とカバレッジ
+### コマンド
 
-本プロジェクトはテストの品質維持のために以下の仕組みを備えています。
-* **カバレッジ 100% の維持**: テストカバレッジの閾値が `100%` に固定されており、`index.js` または `labellist.js` のカバー率が 100% を下回るとテストランナーが失敗します。
-* **自動ビルド＆クリーンアップ**:
-  - `pretest` スクリプトが実行され、`index.html` 内のインラインスクリプトを自動抽出して [index.js](index.js) を生成します。
-  - テスト終了後には `posttest` スクリプトが働き、一時ファイルである `index.js` が自動でクリーンアップ（削除）されます。
+| コマンド | 内容 |
+| --- | --- |
+| `npm run test` | Vitestを1回実行 |
+| `npm run test:watch` | Vitestをウォッチモードで実行 |
+| `npm run test:coverage` | V8カバレッジを測定し、100%閾値を検証 |
+| `npm run lint:html` | ローカルに固定したHTMLHintでHTMLを静的検証 |
 
----
+テスト前に `scripts/extract-script.js` が `index.html` のインラインJavaScriptを一時ファイル `index.js` へ抽出し、テスト後に削除します。`index.js` と `coverage/` は生成物のためコミットしません。
 
-## CI/CD パイプライン (GitHub Actions)
+[vitest.config.js](vitest.config.js) は `index.js` と `labellist.js` に対し、ステートメント、ブランチ、関数、行のカバレッジ閾値をすべて100%に設定しています。
 
-GitHub Actions を利用した CI ワークフローが構成されています（[.github/workflows/pdflabel-ci.yml](.github/workflows/pdflabel-ci.yml)）。
-`pdflabel/` 配下のファイルの変更時、またはワークフロー定義の変更時に自動で動作します。
+## CI/CD
 
-- **静的解析 (Lint)**: `htmlhint` を用いて、`index.html` のマークアップ整合性を自動検証します。
-- **自動テストとカバレッジ**: `npm run test:coverage` を実行し、すべてのユニットテストがパスし、カバレッジ 100% が満たされていることを検証します（下回る場合はビルドエラーとなります）。
-- **カバレッジ結果の閲覧**:
-  - **Job Summary**: Actions の各実行結果（Summary）画面に、カバレッジテーブルが直接 Markdown 出力され、ブラウザから一目で結果を確認できます。
-  - **Artifacts**: テスト結果の HTML 詳細レポートが `pdflabel-coverage-report` としてアップロードされ、Actions ページからダウンロードしてブラウザでグラフィカルに確認できます。
+[GitHub Actionsワークフロー](../.github/workflows/pdflabel-ci.yml) は、`main` へのpushまたはpull requestで `pdflabel/**` に変更がある場合に次を実行します。
 
----
+1. Node.js 20で `npm ci`
+2. HTMLHintによる `index.html` の検証
+3. `npm run test:coverage`
+4. カバレッジ結果をJob Summaryと14日間保持される `pdflabel-coverage-report` artifactへ出力
 
-## SEO & Web標準
-
-- **インライン SVG ファビコン**:
-  - `index.html` 内にインライン SVG データURIスキーム（🏷️）を埋め込んでファビコンを提供しています。追加の画像ファイルのダウンロードが不要なため、シングルページアプリとしてのポータビリティを維持しています。
-- **robots.txt**:
-  - クローラー用の構成ファイル（[robots.txt](robots.txt)）をルートに配置し、検索エンジンのインデックス登録を最適化しています。
-
----
+`main` へのpushでは、親リポジトリの[Pages配信ワークフロー](../.github/workflows/ci-cd.yml)がリポジトリ全体をデプロイします。反映後のアプリはGitHub Pagesの[公開版](https://katoy.github.io/study-claude/pdflabel/)で確認できます。
 
 ## リポジトリ構成
 
 ```text
+study-claude/
 ├── .github/
 │   └── workflows/
-│       └── pdflabel-ci.yml# GitHub Actions の CI 定義ファイル
-├── index.html           # アプリケーション本体 (HTML/CSS/JS)
-├── labellist.js         # ラベル用紙の寸法プリセット定義データ
-├── package.json         # テスト・ビルドスクリプト定義
-├── robots.txt           # 検索エンジンクローラーアクセス許可設定
-├── vitest.config.js     # Vitest 設定ファイル
-├── scripts/
-│   └── extract-script.js# インラインJS抽出用ヘルパースクリプト
-├── test/
-│   └── index.test.js    # JSDOM/Mockを用いた自動テストコード
-├── docs/
-│   └── code-review-*.md # 品質検証のためのコードレビュー結果履歴
-└── screenshots/
-    └── app_screenshot.jpg# README用アプリケーション画面イメージ
+│       ├── ci-cd.yml           # GitHub Pagesへの配信
+│       └── pdflabel-ci.yml     # テストとカバレッジのCI
+└── pdflabel/
+    ├── CLAUDE.md               # 開発エージェント向けの仕様と作業規約
+    ├── README.md                # 利用者・開発者向けドキュメント
+    ├── index.html               # アプリ本体（HTML/CSS/JavaScript）
+    ├── labellist.js             # 用紙プリセット
+    ├── package.json             # npmスクリプトと開発依存
+    ├── robots.txt               # クローラー設定
+    ├── vitest.config.js         # テスト・カバレッジ設定
+    ├── scripts/
+    │   └── extract-script.js    # インラインJavaScript抽出
+    ├── test/
+    │   └── index.test.js        # Vitestテスト
+    ├── docs/                    # 提案・コードレビュー記録
+    └── screenshots/
+        └── app_screenshot.jpg   # README用スクリーンショット
 ```
 
 ## ライセンス
 
-本プロジェクトはオープンソースです。商用・非商用問わず無償で利用・改造が可能です。
+`package.json` のライセンスメタデータは `ISC` です。
