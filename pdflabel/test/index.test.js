@@ -47,6 +47,18 @@ describe('PDF Label Studio Tests', () => {
         labelHeight: 37,
         colSpacing: 2,
         rowSpacing: 2
+      },
+      {
+        name: "エーワン テスト 2",
+        paperSize: "A4",
+        topMargin: 10,
+        bottomMargin: 10,
+        leftMargin: 10,
+        rightMargin: 10,
+        labelWidth: 70,
+        labelHeight: 37,
+        colSpacing: 2,
+        rowSpacing: 2
       }
     ];
 
@@ -129,7 +141,7 @@ describe('PDF Label Studio Tests', () => {
 
   it('should initialize presets and preview on DOMContentLoaded', () => {
     const presetSelect = document.getElementById('presetSelect');
-    expect(presetSelect.options.length).toBe(2); // 1つのモックプリセット + 1つのカスタム
+    expect(presetSelect.options.length).toBe(3); // 2つのモックプリセット + 1つのカスタム
     expect(presetSelect.value).toBe('0');
     
     const previewPage = document.getElementById('previewPage');
@@ -528,6 +540,178 @@ describe('PDF Label Studio Tests', () => {
     // inputイベントを発生させて readLayoutInputs() 内の || 0 や || 1 も実行・検証する
     const topMarginInput = document.getElementById('topMargin');
     topMarginInput.dispatchEvent(new window.Event('input'));
+  });
+
+  describe('Visual Preset Selector Modal', () => {
+    it('should open and close the modal', async () => {
+      const openBtn = document.getElementById('openPresetModalBtn');
+      const closeBtn = document.getElementById('closePresetModalBtn');
+      const modal = document.getElementById('presetModal');
+
+      expect(modal.classList.contains('active')).toBe(false);
+
+      // Open
+      openBtn.click();
+      await vi.runAllTimersAsync();
+      expect(modal.classList.contains('active')).toBe(true);
+
+      // Close via close button
+      closeBtn.click();
+      expect(modal.classList.contains('active')).toBe(false);
+
+      // Open again
+      openBtn.click();
+      await vi.runAllTimersAsync();
+      expect(modal.classList.contains('active')).toBe(true);
+
+      // Close via clicking overlay
+      modal.click();
+      expect(modal.classList.contains('active')).toBe(false);
+
+      // Open again
+      openBtn.click();
+      await vi.runAllTimersAsync();
+      expect(modal.classList.contains('active')).toBe(true);
+
+      // Close via Escape key
+      const escEvent = new window.KeyboardEvent('keydown', { key: 'Escape' });
+      window.dispatchEvent(escEvent);
+      expect(modal.classList.contains('active')).toBe(false);
+
+      // Test keydown other than Escape (which should not close the modal)
+      openBtn.click();
+      await vi.runAllTimersAsync();
+      expect(modal.classList.contains('active')).toBe(true);
+
+      const otherEvent = new window.KeyboardEvent('keydown', { key: 'Enter' });
+      window.dispatchEvent(otherEvent);
+      expect(modal.classList.contains('active')).toBe(true);
+
+      // Clean up closing the modal
+      closeBtn.click();
+    });
+
+    it('should filter presets by manufacturer tabs', () => {
+      const openBtn = document.getElementById('openPresetModalBtn');
+      openBtn.click();
+
+      const tabsContainer = document.getElementById('modalTabsContainer');
+      const grid = document.getElementById('modalPresetGrid');
+
+      // '全て' is active by default. We should have 'テストプリセット 1', 'エーワン テスト 2', and 'カスタムレイアウト' card
+      expect(grid.children.length).toBe(3);
+
+      // Click on 'コクヨ' tab
+      const tabBtns = tabsContainer.children;
+      const kokuyoTab = Array.from(tabBtns).find(btn => btn.textContent === 'コクヨ');
+      expect(kokuyoTab).toBeDefined();
+      
+      kokuyoTab.click();
+      // No presets start with 'コクヨ', and custom layout card is excluded when tab is not 'all'.
+      expect(grid.children.length).toBe(0);
+
+      // Click on 'エーワン' tab
+      const aoneTab = Array.from(tabBtns).find(btn => btn.textContent === 'エーワン');
+      expect(aoneTab).toBeDefined();
+      aoneTab.click();
+      // 'エーワン テスト 2' should be shown
+      expect(grid.children.length).toBe(1);
+
+      // Click on '全て' tab
+      const allTab = Array.from(tabBtns).find(btn => btn.textContent === '全て');
+      allTab.click();
+      expect(grid.children.length).toBe(3);
+    });
+
+    it('should filter presets by search input', () => {
+      const openBtn = document.getElementById('openPresetModalBtn');
+      openBtn.click();
+
+      const searchInput = document.getElementById('modalSearchInput');
+      const grid = document.getElementById('modalPresetGrid');
+
+      expect(grid.children.length).toBe(3);
+
+      // Type search query that matches 'テスト'
+      searchInput.value = 'テスト';
+      searchInput.dispatchEvent(new window.Event('input'));
+      expect(grid.children.length).toBe(2);
+
+      // Type search query that matches 'エーワン'
+      searchInput.value = 'エーワン';
+      searchInput.dispatchEvent(new window.Event('input'));
+      expect(grid.children.length).toBe(1);
+
+      // Type search query that matches 'カスタム'
+      searchInput.value = 'カスタム';
+      searchInput.dispatchEvent(new window.Event('input'));
+      expect(grid.children.length).toBe(1);
+
+      // Type search query that matches nothing
+      searchInput.value = 'nothing';
+      searchInput.dispatchEvent(new window.Event('input'));
+      expect(grid.children.length).toBe(0);
+    });
+
+    it('should select preset card and sync labels', () => {
+      const openBtn = document.getElementById('openPresetModalBtn');
+      openBtn.click();
+
+      const grid = document.getElementById('modalPresetGrid');
+      const presetSelect = document.getElementById('presetSelect');
+      const selectedName = document.getElementById('selectedPresetName');
+
+      // Click on the custom layout card (index 2)
+      const customCard = grid.children[2];
+      customCard.click();
+
+      expect(presetSelect.value).toBe('custom');
+      expect(selectedName.textContent).toBe('カスタムレイアウト...');
+      expect(document.getElementById('presetModal').classList.contains('active')).toBe(false);
+
+      // Open and select index 0
+      openBtn.click();
+      const testCard = grid.children[0];
+      testCard.click();
+
+      expect(presetSelect.value).toBe('0');
+      expect(selectedName.textContent).toBe('テストプリセット 1');
+      expect(document.getElementById('presetModal').classList.contains('active')).toBe(false);
+    });
+
+    it('should fallback sync label if presetSelect has empty options or fallback error', () => {
+      const presetSelect = document.getElementById('presetSelect');
+      const selectedName = document.getElementById('selectedPresetName');
+
+      // Set value to something invalid
+      presetSelect.value = 'invalid-index';
+      
+      const originalLabelList = window.labelList;
+      delete window.labelList;
+      
+      window.initializePresets();
+      expect(selectedName.textContent).toContain('エラー: プリセット読み込み失敗');
+
+      // Clean up
+      window.labelList = originalLabelList;
+      window.initializePresets();
+    });
+
+    it('should handle rendering fallback when labelList is not loaded', () => {
+      const originalLabelList = window.labelList;
+      delete window.labelList;
+      
+      const openBtn = document.getElementById('openPresetModalBtn');
+      openBtn.click();
+      
+      const grid = document.getElementById('modalPresetGrid');
+      expect(grid.children.length).toBe(0);
+      
+      // Clean up
+      window.labelList = originalLabelList;
+      const closeBtn = document.getElementById('closePresetModalBtn');
+      closeBtn.click();
+    });
   });
 });
 
