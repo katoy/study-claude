@@ -117,6 +117,7 @@ study-claude/
 │       └── pdflabel-ci.yml     # テストとカバレッジのCI
 └── pdflabel/
     ├── CLAUDE.md               # 開発エージェント向けの仕様と作業規約
+    ├── LICENSE                 # MITライセンス本文
     ├── README.md                # 利用者・開発者向けドキュメント
     ├── index.html               # アプリ本体（HTML/CSS/JavaScript）
     ├── labellist.js             # 用紙プリセット
@@ -134,4 +135,4 @@ study-claude/
 
 ## ライセンス
 
-`package.json` のライセンスメタデータは `ISC` です。
+このプロジェクトは [MIT License](LICENSE) のもとで公開されています。
