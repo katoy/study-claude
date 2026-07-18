@@ -1136,7 +1136,8 @@
     function initializePresets() {
       presetSelect.innerHTML = '';
 
-      if (!window.labelList || !Array.isArray(window.labelList)) {
+      const currentLabelList = typeof labelList !== 'undefined' ? labelList : null;
+      if (!currentLabelList || !Array.isArray(currentLabelList)) {
         console.error('ラベルプリセットデータが読み込まれていません');
         const option = document.createElement('option');
         option.textContent = 'エラー: プリセット読み込み失敗 (labellist.js を確認してください)';
@@ -1147,7 +1148,7 @@
         return;
       }
 
-      labelList.forEach((preset, index) => {
+      currentLabelList.forEach((preset, index) => {
         const option = document.createElement('option');
         option.value = index;
         option.textContent = preset.name;
