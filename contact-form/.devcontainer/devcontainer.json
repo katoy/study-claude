@@ -1,0 +1,26 @@
+{
+	"name": "Laravel PHP SQLite",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"features": {
+		"ghcr.io/devcontainers/features/node:1": {},
+		"ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"anthropic.claude-code",
+				"bmewburn.vscode-intelephense-client",
+				"onecentlin.laravel-blade",
+				"ryannaddy.laravel-artisan"
+			]
+		}
+	},
+	"mounts": [
+		"source=claude-config,target=/home/vscode/.claude,type=volume"
+	],
+	"remoteUser": "vscode",
+	"postCreateCommand": "sudo chown -R vscode:vscode /home/vscode/.claude"
+}
+
