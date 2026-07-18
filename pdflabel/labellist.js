@@ -148,7 +148,8 @@ const labelList = [
     labelWidth: 70.0,
     labelHeight: 33.9,
     colSpacing: 0,
-    rowSpacing: 0
+    rowSpacing: 0,
+    borderRadius: 2
   },
   {
     name: "エーワン 44面 (48.3mm × 25.4mm)",

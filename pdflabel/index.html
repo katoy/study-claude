@@ -783,6 +783,54 @@
       width: 54px;
       height: 76px;
       flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+      border-radius: 4px;
+    }
+
+    .preset-card-preview-area::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--color-accent), transparent);
+      box-shadow: 0 0 4px var(--color-accent);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(-4px);
+    }
+
+    .preset-card:hover .preset-card-preview-area::after {
+      animation: scanline 1.5s linear infinite;
+      opacity: 0.8;
+    }
+
+    @keyframes scanline {
+      0% {
+        transform: translateY(0);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.8;
+      }
+      90% {
+        opacity: 0.8;
+      }
+      100% {
+        transform: translateY(76px);
+        opacity: 0;
+      }
+    }
+
+    .current-layout-ghost {
+      opacity: 0;
+      transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .preset-card:hover .current-layout-ghost {
+      opacity: 0.45;
     }
 
     .preset-card-info {
@@ -1514,7 +1562,7 @@
     let selectedManufacturer = 'all';
     let searchQuery = '';
 
-    function generatePresetMiniSvg(preset) {
+    function generatePresetMiniSvg(preset, activeLayout) {
       const paperW = 210;
       const paperH = 297;
       const tMargin = preset.topMargin;
@@ -1536,20 +1584,59 @@
       const scale = svgW / paperW;
 
       let rectsHtml = '';
+      const rRad = preset.borderRadius !== undefined ? preset.borderRadius : ((colSp > 0 || rowSp > 0) ? 1.5 : 0);
+      const rxVal = rRad * scale;
+
       for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
           const x = (lMargin + c * (lblW + colSp)) * scale;
           const y = (tMargin + r * (lblH + rowSp)) * scale;
           const w = lblW * scale;
           const h = lblH * scale;
-          rectsHtml += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" fill="none" stroke="currentColor" stroke-width="0.3" rx="0.3" opacity="0.6"/>`;
+          rectsHtml += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="0.3" rx="${rxVal.toFixed(2)}" ry="${rxVal.toFixed(2)}" opacity="0.8"/>`;
         }
       }
 
+      let ghostHtml = '';
+      const aLMargin = activeLayout.lMargin;
+      const aTMargin = activeLayout.tMargin;
+      const aLblW = activeLayout.lblW;
+      const aLblH = activeLayout.lblH;
+      const aColSp = activeLayout.colSp;
+      const aRowSp = activeLayout.rowSp;
+
+      const aAvailW = paperW - aLMargin - activeLayout.rMargin;
+      const aAvailH = paperH - aTMargin - activeLayout.bMargin;
+      const aCols = Math.floor((aAvailW + aColSp) / (aLblW + aColSp));
+      const aRows = Math.floor((aAvailH + aRowSp) / (aLblH + aRowSp));
+
+      for (let r = 0; r < aRows; r++) {
+        for (let c = 0; c < aCols; c++) {
+          const x = (aLMargin + c * (aLblW + aColSp)) * scale;
+          const y = (aTMargin + r * (aLblH + aRowSp)) * scale;
+          const w = aLblW * scale;
+          const h = aLblH * scale;
+          ghostHtml += `<rect class="current-layout-ghost" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" fill="none" stroke="#ef4444" stroke-width="0.25" stroke-dasharray="1 1" rx="0.3"/>`;
+        }
+      }
+
+      const textX = (lMargin * scale + (availW * scale) / 2).toFixed(1);
+      const textY = (tMargin * scale + (availH * scale) / 2 + 3).toFixed(1);
+      const totalCount = cols * rows;
+
       return `
         <svg viewBox="0 0 ${svgW} ${svgH}" width="100%" height="100%" style="border: 0.5px solid rgba(255,255,255,0.15); border-radius: 4px; background: rgba(15, 23, 42, 0.4); color: var(--color-accent);">
-          <rect x="${(lMargin*scale).toFixed(1)}" y="${(tMargin*scale).toFixed(1)}" width="${(availW*scale).toFixed(1)}" height="${(availH*scale).toFixed(1)}" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="0.2" stroke-dasharray="1 1"/>
+          <defs>
+            <pattern id="marginHatch" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <rect width="4" height="4" fill="rgba(239, 68, 68, 0.05)" />
+              <line x1="0" y1="0" x2="0" y2="4" stroke="rgba(239, 68, 68, 0.15)" stroke-width="0.5" />
+            </pattern>
+          </defs>
+          <rect width="${svgW}" height="${svgH}" fill="url(#marginHatch)" />
+          <rect x="${(lMargin*scale).toFixed(1)}" y="${(tMargin*scale).toFixed(1)}" width="${(availW*scale).toFixed(1)}" height="${(availH*scale).toFixed(1)}" fill="rgba(15, 23, 42, 0.75)" stroke="rgba(255,255,255,0.08)" stroke-width="0.2" stroke-dasharray="1 1"/>
+          <text x="${textX}" y="${textY}" font-size="9" font-weight="bold" text-anchor="middle" fill="currentColor" opacity="0.08" pointer-events="none">${totalCount}</text>
           ${rectsHtml}
+          ${ghostHtml}
         </svg>
       `;
     }
@@ -1625,6 +1712,7 @@
       }
 
       const activeIndex = presetSelect.value;
+      const activeLayout = calculateLayout();
 
       currentLabelList.forEach((preset, index) => {
         if (selectedManufacturer !== 'all' && !preset.name.includes(selectedManufacturer)) {
@@ -1670,7 +1758,7 @@
         const rows = Math.floor((availH + rowSp) / (lblH + rowSp));
         const total = cols * rows;
 
-        const svgMarkup = generatePresetMiniSvg(preset);
+        const svgMarkup = generatePresetMiniSvg(preset, activeLayout);
 
         card.innerHTML = `
           <div class="preset-card-preview-area">

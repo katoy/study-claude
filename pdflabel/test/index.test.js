@@ -58,7 +58,8 @@ describe('PDF Label Studio Tests', () => {
         labelWidth: 70,
         labelHeight: 37,
         colSpacing: 2,
-        rowSpacing: 2
+        rowSpacing: 2,
+        borderRadius: 2
       }
     ];
 
@@ -711,6 +712,38 @@ describe('PDF Label Studio Tests', () => {
       window.labelList = originalLabelList;
       const closeBtn = document.getElementById('closePresetModalBtn');
       closeBtn.click();
+    });
+
+    it('should cover no-spacing and no-borderRadius branches in generatePresetMiniSvg', () => {
+      const originalLabelList = window.labelList;
+      window.labelList = [
+        {
+          name: "テスト 0-spacing",
+          paperSize: "A4",
+          topMargin: 10,
+          bottomMargin: 10,
+          leftMargin: 10,
+          rightMargin: 10,
+          labelWidth: 70,
+          labelHeight: 37,
+          colSpacing: 0,
+          rowSpacing: 0
+        }
+      ];
+      window.initializePresets();
+      
+      const openBtn = document.getElementById('openPresetModalBtn');
+      openBtn.click();
+
+      const grid = document.getElementById('modalPresetGrid');
+      expect(grid.children.length).toBe(2);
+
+      const closeBtn = document.getElementById('closePresetModalBtn');
+      closeBtn.click();
+
+      // Clean up
+      window.labelList = originalLabelList;
+      window.initializePresets();
     });
   });
 });
