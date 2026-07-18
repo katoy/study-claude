@@ -745,6 +745,134 @@ describe('PDF Label Studio Tests', () => {
       window.labelList = originalLabelList;
       window.initializePresets();
     });
+
+    it('should navigate using keyboard arrow keys and Enter/Space selections', async () => {
+      const openBtn = document.getElementById('openPresetModalBtn');
+      openBtn.click();
+      await vi.runAllTimersAsync();
+
+      const modal = document.getElementById('presetModal');
+      const searchInput = document.getElementById('modalSearchInput');
+      const grid = document.getElementById('modalPresetGrid');
+
+      // Mock offsetTop to simulate 2 columns:
+      // Row 0: cards 0, 1 (offsetTop = 100)
+      // Row 1: card 2 (offsetTop = 200)
+      Object.defineProperty(grid.children[0], 'offsetTop', { value: 100, configurable: true });
+      Object.defineProperty(grid.children[1], 'offsetTop', { value: 100, configurable: true });
+      Object.defineProperty(grid.children[2], 'offsetTop', { value: 200, configurable: true });
+
+      function pressKey(keyName) {
+        const event = new window.KeyboardEvent('keydown', { bubbles: true, key: keyName });
+        document.activeElement.dispatchEvent(event);
+      }
+
+      // Focus should be on searchInput initially
+      expect(document.activeElement).toBe(searchInput);
+
+      // Press ArrowDown inside searchInput to focus first card
+      pressKey('ArrowDown');
+      expect(document.activeElement).toBe(grid.children[0]);
+
+      // Press ArrowRight to focus second card
+      pressKey('ArrowRight');
+      expect(document.activeElement).toBe(grid.children[1]);
+
+      // Press ArrowLeft to focus first card again
+      pressKey('ArrowLeft');
+      expect(document.activeElement).toBe(grid.children[0]);
+
+      // Press ArrowUp inside first card to focus searchInput
+      pressKey('ArrowUp');
+      expect(document.activeElement).toBe(searchInput);
+
+      // Focus first card again, then press ArrowDown to focus last card (clamped)
+      pressKey('ArrowDown'); // focuses index 0
+      pressKey('ArrowDown');
+      expect(document.activeElement).toBe(grid.children[2]); // custom layout card
+
+      // Press ArrowUp inside last card (index 2) to focus card at index 0 (cols = 2)
+      pressKey('ArrowUp');
+      expect(document.activeElement).toBe(grid.children[0]);
+
+      // Press ArrowUp inside card at index 0 to focus searchInput (target < 0)
+      pressKey('ArrowUp');
+      expect(document.activeElement).toBe(searchInput);
+
+      // Press Enter in searchInput to select the first card
+      pressKey('Enter');
+      expect(modal.classList.contains('active')).toBe(false);
+
+      // Open again
+      openBtn.click();
+      await vi.runAllTimersAsync();
+
+      // Press ArrowDown to focus first card, then Enter to select it
+      pressKey('ArrowDown');
+      pressKey('Enter');
+      expect(modal.classList.contains('active')).toBe(false);
+
+      // Open again
+      openBtn.click();
+      await vi.runAllTimersAsync();
+
+      // Press ArrowDown to focus first card, then Space to select it
+      pressKey('ArrowDown');
+      pressKey(' ');
+      expect(modal.classList.contains('active')).toBe(false);
+
+      // Open again
+      openBtn.click();
+      await vi.runAllTimersAsync();
+
+      // Press Escape inside presetModal to close it
+      pressKey('Escape');
+      expect(modal.classList.contains('active')).toBe(false);
+
+      // Focus close button (not a card) and press ArrowRight (should do nothing/return early)
+      const closeBtn = document.getElementById('closePresetModalBtn');
+      closeBtn.focus();
+      expect(document.activeElement).toBe(closeBtn);
+      modal.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'ArrowRight' }));
+      closeBtn.click();
+
+      // Open again to focus search input and move to first card
+      openBtn.click();
+      await vi.runAllTimersAsync();
+      pressKey('ArrowDown'); // focuses index 0
+
+      // Press other key (like 'a') on card (should do nothing, covering implicit else)
+      pressKey('a');
+      expect(document.activeElement).toBe(grid.children[0]);
+
+      // Search for "エーワン" to show exactly 1 preset card in the grid
+      searchInput.value = 'エーワン';
+      searchInput.dispatchEvent(new window.Event('input'));
+      expect(grid.children.length).toBe(1);
+
+      // Focus the single card and press ArrowRight (visibleCards.length > 1 evaluates to false)
+      grid.children[0].focus();
+      pressKey('ArrowRight');
+
+      // Test when visibleCards is empty
+      const originalLabelList = window.labelList;
+      delete window.labelList;
+      window.initializePresets();
+      
+      openBtn.click();
+      await vi.runAllTimersAsync();
+      
+      // Press ArrowDown and Enter (should return early since visibleCards.length is 0)
+      pressKey('ArrowDown');
+      expect(document.activeElement).toBe(searchInput);
+      pressKey('Enter');
+      expect(modal.classList.contains('active')).toBe(true);
+
+      // Clean up
+      window.labelList = originalLabelList;
+      window.initializePresets();
+      closeBtn.click();
+    });
   });
 });
 

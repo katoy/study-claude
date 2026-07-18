@@ -766,6 +766,12 @@
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
+    .preset-card:focus-visible {
+      outline: 2px solid var(--color-accent);
+      outline-offset: 2px;
+      background: rgba(30, 41, 59, 0.7);
+    }
+
     .preset-card:hover {
       background: rgba(30, 41, 59, 0.7);
       border-color: var(--border-focus);
@@ -1729,6 +1735,7 @@
 
         const card = document.createElement('div');
         card.className = `preset-card ${activeIndex === String(index) ? 'active' : ''}`;
+        card.tabIndex = 0;
         
         let manufacturer = 'その他';
         let displayName = preset.name;
@@ -1787,6 +1794,7 @@
       if (selectedManufacturer === 'all' && (!searchQuery || 'カスタム'.includes(searchQuery))) {
         const customCard = document.createElement('div');
         customCard.className = `preset-card ${activeIndex === 'custom' ? 'active' : ''}`;
+        customCard.tabIndex = 0;
         
         customCard.innerHTML = `
           <div class="preset-card-preview-area">
@@ -1822,11 +1830,95 @@
         closePresetModal();
       }
     });
+    
+    function handleCardKeydown(e, cardIdx, visibleCards) {
+      if (cardIdx === -1) {
+        return;
+      }
+      let cols = 1;
+      if (visibleCards.length > 1) {
+        const firstTop = visibleCards[0].offsetTop;
+        for (let i = 1; i < visibleCards.length; i++) {
+          if (visibleCards[i].offsetTop === firstTop) {
+            cols++;
+          } else {
+            break;
+          }
+        }
+      }
+
+      switch (e.key) {
+        case 'ArrowLeft': {
+          const target = Math.max(0, cardIdx - 1);
+          visibleCards[target].focus();
+          e.preventDefault();
+          break;
+        }
+        case 'ArrowRight': {
+          const target = Math.min(visibleCards.length - 1, cardIdx + 1);
+          visibleCards[target].focus();
+          e.preventDefault();
+          break;
+        }
+        case 'ArrowUp': {
+          const target = cardIdx - cols;
+          if (target < 0) {
+            modalSearchInput.focus();
+          } else {
+            visibleCards[target].focus();
+          }
+          e.preventDefault();
+          break;
+        }
+        case 'ArrowDown': {
+          const target = Math.min(visibleCards.length - 1, cardIdx + cols);
+          visibleCards[target].focus();
+          e.preventDefault();
+          break;
+        }
+        case 'Enter': {
+          document.activeElement.click();
+          e.preventDefault();
+          break;
+        }
+        case ' ': {
+          document.activeElement.click();
+          e.preventDefault();
+          break;
+        }
+      }
+    }
+
+    presetModal.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closePresetModal();
+        e.preventDefault();
+        return;
+      }
+
+      const activeEl = document.activeElement;
+      const visibleCards = Array.from(modalPresetGrid.querySelectorAll('.preset-card'));
+      
+      if (activeEl === modalSearchInput) {
+        if (e.key === 'ArrowDown' && visibleCards.length > 0) {
+          visibleCards[0].focus();
+          e.preventDefault();
+        } else if (e.key === 'Enter' && visibleCards.length > 0) {
+          visibleCards[0].click();
+          e.preventDefault();
+        }
+        return;
+      }
+
+      const cardIdx = visibleCards.indexOf(activeEl);
+      handleCardKeydown(e, cardIdx, visibleCards);
+    });
+
     modalSearchInput.addEventListener('input', (e) => {
       searchQuery = e.target.value.toLowerCase();
       renderModalPresets();
     });
-    
+
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         closePresetModal();
