@@ -12,6 +12,7 @@ describe('PDF Label Studio Tests', () => {
     // コンストラクタとしての new 呼び出しに対応するため、クラスとしてモックを定義
     class MockJsPDF {
       constructor() {
+        window.mockJsPDFInstances.push(this);
         this.addFileToVFS = vi.fn();
         this.addFont = vi.fn();
         this.setFont = vi.fn();
@@ -65,9 +66,14 @@ describe('PDF Label Studio Tests', () => {
 
     // URL.createObjectURL のモック
     window.URL.createObjectURL = vi.fn().mockReturnValue('blob:mock-pdf-url');
+    window.URL.revokeObjectURL = vi.fn();
     
     // window.open のモック
-    window.open = vi.fn();
+    window.open = vi.fn().mockReturnValue({
+      addEventListener: vi.fn((eventName, callback) => {
+        if (eventName === 'load') callback();
+      })
+    });
     
     // alert のモック
     window.alert = vi.fn();
@@ -115,6 +121,7 @@ describe('PDF Label Studio Tests', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.clearAllMocks();
+    window.mockJsPDFInstances = [];
 
     // 1. DOM環境の再初期化（DOMツリーの完全リセット）
     document.documentElement.innerHTML = htmlContent;
@@ -173,7 +180,7 @@ describe('PDF Label Studio Tests', () => {
     expect(layout.total).toBe(14);
   });
 
-  it('should handle zero or negative row/col spacing and values gracefully', () => {
+  it('should reject zero label dimensions instead of rendering a large fallback layout', () => {
     // 極端なパラメータを入力
     document.getElementById('topMargin').value = '150';
     document.getElementById('bottomMargin').value = '150'; // 150+150 = 300 > 297
@@ -181,7 +188,7 @@ describe('PDF Label Studio Tests', () => {
     document.getElementById('labelHeight').value = '0'; // invalid
 
     const layout = window.calculateLayout();
-    expect(layout.cols).toBe(64); // width 0 is fallback to 1, col spacing 2 -> (190+2)/(1+2) = 64
+    expect(layout.cols).toBe(0);
     expect(layout.rows).toBe(0);
     expect(layout.total).toBe(0);
     
@@ -192,8 +199,7 @@ describe('PDF Label Studio Tests', () => {
     expect(layoutWarning.textContent).toContain('警告');
   });
 
-  it('should return 0 for layout rows/cols when calculating negative or NaN results', () => {
-    // NaN になるように設定 (左右マージン 106 + 106 = 212 > A4幅210)
+  it('should reject out-of-range layout inputs', () => {
     document.getElementById('topMargin').value = '106';
     document.getElementById('bottomMargin').value = '106';
     document.getElementById('leftMargin').value = '106';
@@ -208,14 +214,29 @@ describe('PDF Label Studio Tests', () => {
     expect(layout.rows).toBe(0);
     expect(layout.total).toBe(0);
 
-    // cols / rows がマイナス値になるように設定
-    document.getElementById('leftMargin').value = '110';
-    document.getElementById('rightMargin').value = '110'; // 110 + 110 = 220 > 210
-    document.getElementById('labelWidth').value = '10'; // availW + colSp = -10 + 2 = -8 < 0
-    document.getElementById('colSpacing').value = '0'; // 分母 > 0
+    document.getElementById('leftMargin').value = '-1';
+    expect(window.calculateLayout().cols).toBe(0);
 
-    const layoutNegative = window.calculateLayout();
-    expect(layoutNegative.cols).toBe(0);
+    document.getElementById('leftMargin').value = '10';
+    document.getElementById('labelWidth').value = '0.1';
+    document.getElementById('labelHeight').value = '0.1';
+    expect(window.calculateLayout().total).toBe(0);
+  });
+
+  it('should reject layouts that exceed the safe label count', () => {
+    document.getElementById('topMargin').value = '0';
+    document.getElementById('bottomMargin').value = '0';
+    document.getElementById('leftMargin').value = '0';
+    document.getElementById('rightMargin').value = '0';
+    document.getElementById('labelWidth').value = '1';
+    document.getElementById('labelHeight').value = '1';
+    document.getElementById('colSpacing').value = '0';
+    document.getElementById('rowSpacing').value = '0';
+
+    const layout = window.calculateLayout();
+    expect(layout.cols).toBe(0);
+    expect(layout.rows).toBe(0);
+    expect(layout.total).toBe(0);
   });
 
   it('should update preview when form inputs change', () => {
@@ -350,7 +371,22 @@ describe('PDF Label Studio Tests', () => {
 
       expect(window.URL.createObjectURL).toHaveBeenCalled();
       expect(window.open).toHaveBeenCalled();
+      expect(window.URL.revokeObjectURL).toHaveBeenCalledWith('blob:mock-pdf-url');
       expect(generateBtn.disabled).toBe(false);
+
+      const pdf = window.mockJsPDFInstances[0];
+      expect(pdf.addFileToVFS).toHaveBeenCalledWith(
+        'NotoSansJP-Regular.ttf',
+        'TU9DS19CQVNFNjRfRk9OVA=='
+      );
+      expect(pdf.addFont).toHaveBeenCalledWith(
+        'NotoSansJP-Regular.ttf',
+        'NotoSansJP',
+        'normal'
+      );
+      expect(pdf.rect).toHaveBeenCalledTimes(14);
+      expect(pdf.rect).toHaveBeenNthCalledWith(1, 10, 10, 70, 37);
+      expect(pdf.text).toHaveBeenCalled();
 
       setFetchMock(originalFetch);
     });
@@ -390,6 +426,23 @@ describe('PDF Label Studio Tests', () => {
       
       // クリーンアップ
       window.jspdf = originalJsPDF;
+    });
+
+    it('should revoke the Blob URL when the PDF popup is blocked', async () => {
+      const originalFetch = global.fetch;
+      setFetchMock(vi.fn().mockResolvedValue({
+        ok: true,
+        blob: vi.fn().mockResolvedValue(new Blob(['font-binary'], { type: 'font/ttf' }))
+      }));
+      window.open.mockReturnValueOnce(null);
+
+      document.getElementById('generateBtn').click();
+      await vi.runAllTimersAsync();
+
+      expect(window.URL.revokeObjectURL).toHaveBeenCalledWith('blob:mock-pdf-url');
+      expect(window.alert).toHaveBeenCalledWith(expect.stringContaining('ポップアップを許可してください'));
+
+      setFetchMock(originalFetch);
     });
 
     it('should handle font fetch failure gracefully', async () => {
@@ -548,17 +601,49 @@ describe('PDF Label Studio Tests', () => {
       const openBtn = document.getElementById('openPresetModalBtn');
       const closeBtn = document.getElementById('closePresetModalBtn');
       const modal = document.getElementById('presetModal');
+      const searchInput = document.getElementById('modalSearchInput');
+      const appContainer = document.querySelector('.app-container');
 
       expect(modal.classList.contains('active')).toBe(false);
+      expect(modal.hidden).toBe(true);
+      expect(modal.getAttribute('role')).toBe('dialog');
+      expect(modal.getAttribute('aria-modal')).toBe('true');
 
       // Open
+      openBtn.focus();
       openBtn.click();
       await vi.runAllTimersAsync();
       expect(modal.classList.contains('active')).toBe(true);
+      expect(modal.hidden).toBe(false);
+      expect(appContainer.inert).toBe(true);
+      expect(document.activeElement).toBe(searchInput);
 
       // Close via close button
       closeBtn.click();
       expect(modal.classList.contains('active')).toBe(false);
+      expect(modal.hidden).toBe(true);
+      expect(appContainer.inert).toBe(false);
+      expect(document.activeElement).toBe(openBtn);
+
+      // Open and verify focus trapping in both directions
+      openBtn.click();
+      await vi.runAllTimersAsync();
+      const focusableElements = Array.from(modal.querySelectorAll('button, input, [tabindex]:not([tabindex="-1"])'));
+      const firstFocusable = focusableElements[0];
+      const lastFocusable = focusableElements[focusableElements.length - 1];
+
+      lastFocusable.focus();
+      modal.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Tab' }));
+      expect(document.activeElement).toBe(firstFocusable);
+
+      firstFocusable.focus();
+      modal.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Tab', shiftKey: true }));
+      expect(document.activeElement).toBe(lastFocusable);
+
+      searchInput.focus();
+      modal.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Tab' }));
+      expect(document.activeElement).toBe(searchInput);
+      closeBtn.click();
 
       // Open again
       openBtn.click();
@@ -601,6 +686,9 @@ describe('PDF Label Studio Tests', () => {
 
       // '全て' is active by default. We should have 'テストプリセット 1', 'エーワン テスト 2', and 'カスタムレイアウト' card
       expect(grid.children.length).toBe(3);
+      expect(Array.from(grid.children).every(card => card.tagName === 'BUTTON')).toBe(true);
+      expect(grid.children[0].getAttribute('aria-pressed')).toBe('true');
+      expect(grid.children[1].getAttribute('aria-pressed')).toBe('false');
 
       // Click on 'コクヨ' tab
       const tabBtns = tabsContainer.children;

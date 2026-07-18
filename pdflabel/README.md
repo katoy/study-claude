@@ -73,6 +73,8 @@ columns = floor((availableWidth + columnSpacing) / (labelWidth + columnSpacing))
 rows    = floor((availableHeight + rowSpacing) / (labelHeight + rowSpacing))
 ```
 
+入力範囲外の寸法や、描画負荷を避けるため総面数が1000面を超えるレイアウトは配置不能として警告します。
+
 ## 開発
 
 ### セットアップ

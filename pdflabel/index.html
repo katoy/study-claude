@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A4ラベル用紙向けの印刷用PDFをブラウザ内で作成できるクライアントサイドWebアプリケーション">
   <title>PDF Label Studio - 高機能PDFラベル作成ツール</title>
   
   <!-- Favicon (Inline SVG Emoji) -->
@@ -138,7 +139,7 @@
     .app-version {
       font-size: 0.7rem;
       background: rgba(99, 102, 241, 0.2);
-      color: var(--color-primary);
+      color: #a5b4fc;
       padding: 2px 6px;
       border-radius: 4px;
       border: 1px solid rgba(99, 102, 241, 0.3);
@@ -217,7 +218,8 @@
       gap: 6px;
     }
 
-    label {
+    label,
+    .group-label {
       font-size: 0.8rem;
       font-weight: 500;
       color: var(--text-main);
@@ -640,6 +642,10 @@
       pointer-events: auto;
     }
 
+    .modal-overlay[hidden] {
+      display: none;
+    }
+
     .modal-container {
       width: 90%;
       max-width: 800px;
@@ -798,6 +804,10 @@
       gap: 16px;
       align-items: center;
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      width: 100%;
+      color: inherit;
+      font: inherit;
+      text-align: left;
     }
 
     .preset-card:focus-visible {
@@ -967,7 +977,7 @@
 
           <!-- 余白設定 -->
           <div class="form-group">
-            <label>ページ余白 (上下・左右)</label>
+            <span class="group-label">ページ余白 (上下・左右)</span>
             <div class="input-grid-2x2">
               <div class="form-group">
                 <input type="number" id="topMargin" placeholder="上" min="0" max="100" step="0.1" title="上余白">
@@ -992,7 +1002,7 @@
 
           <!-- ラベルサイズ設定 -->
           <div class="form-group">
-            <label>ラベルサイズ (幅 × 高さ)</label>
+            <span class="group-label">ラベルサイズ (幅 × 高さ)</span>
             <div class="input-grid-2x2">
               <div class="form-group">
                 <input type="number" id="labelWidth" placeholder="幅" min="1" max="210" step="0.1" title="ラベルの幅">
@@ -1007,7 +1017,7 @@
 
           <!-- ラベル間余白設定 -->
           <div class="form-group">
-            <label>ラベル間の余白 (水平 × 垂直)</label>
+            <span class="group-label">ラベル間の余白 (水平 × 垂直)</span>
             <div class="input-grid-2x2">
               <div class="form-group">
                 <input type="number" id="colSpacing" placeholder="水平" min="0" max="50" step="0.1" title="列の間隔">
@@ -1129,10 +1139,10 @@
   </div>
 
   <!-- プリセット選択モーダル -->
-  <div id="presetModal" class="modal-overlay">
+  <div id="presetModal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="presetModalTitle" hidden>
     <div class="modal-container">
       <div class="modal-header">
-        <h3 class="modal-title">用紙プリセットの選択</h3>
+        <h3 class="modal-title" id="presetModalTitle">用紙プリセットの選択</h3>
         <button type="button" class="modal-close-btn" id="closePresetModalBtn" aria-label="閉じる">&times;</button>
       </div>
 
@@ -1190,6 +1200,7 @@
     const modalTabsContainer = document.getElementById('modalTabsContainer');
     const modalPresetGrid = document.getElementById('modalPresetGrid');
     const selectedPresetName = document.getElementById('selectedPresetName');
+    const appContainer = document.querySelector('.app-container');
 
     // ==========================================
     // サンプル宛名データ & 初期化
@@ -1221,6 +1232,11 @@
       colSpacing: 2,
       rowSpacing: 2
     };
+    const MAX_LABEL_COUNT = 1000;
+    const layoutInputElements = [
+      topMarginInput, bottomMarginInput, leftMarginInput, rightMarginInput,
+      labelWidthInput, labelHeightInput, colSpacingInput, rowSpacingInput
+    ];
 
     function readLayoutInputs() {
       return {
@@ -1288,6 +1304,7 @@
 
       const colSp = parseFloat(colSpacingInput.value) || 0;
       const rowSp = parseFloat(rowSpacingInput.value) || 0;
+      const hasInvalidInput = layoutInputElements.some(input => input.value === '' || !input.checkValidity());
 
       // 配置可能な有効幅/高さを計算
       const availW = paperW - lMargin - rMargin;
@@ -1295,11 +1312,13 @@
 
       // 行数・列数を自動計算する公式:
       // 列数 (Nc) は、(有効幅 + 列スペース) / (ラベル幅 + 列スペース) の小数点以下切り捨て
-      let cols = Math.floor((availW + colSp) / (lblW + colSp));
-      let rows = Math.floor((availH + rowSp) / (lblH + rowSp));
+      let cols = hasInvalidInput ? 0 : Math.floor((availW + colSp) / (lblW + colSp));
+      let rows = hasInvalidInput ? 0 : Math.floor((availH + rowSp) / (lblH + rowSp));
 
-      if (cols < 0 || !isFinite(cols)) cols = 0;
-      if (rows < 0 || !isFinite(rows)) rows = 0;
+      if (cols * rows > MAX_LABEL_COUNT) {
+        cols = 0;
+        rows = 0;
+      }
 
       return {
         paperW,
@@ -1528,7 +1547,14 @@
         // PDFのバイナリをBlobに変換して別タブでプレビュー表示
         const blob = doc.output('blob');
         const pdfUrl = URL.createObjectURL(blob);
-        window.open(pdfUrl, '_blank');
+        const pdfWindow = window.open(pdfUrl, '_blank');
+        if (!pdfWindow) {
+          URL.revokeObjectURL(pdfUrl);
+          throw new Error('PDFを開けませんでした。ブラウザのポップアップを許可してください。');
+        }
+        pdfWindow.addEventListener('load', () => {
+          URL.revokeObjectURL(pdfUrl);
+        }, { once: true });
 
       } catch (error) {
         console.error(error);
@@ -1743,6 +1769,8 @@
 
     let selectedManufacturer = 'all';
     let searchQuery = '';
+    let modalTriggerElement = null;
+    let modalFocusTimeout = null;
 
     function generatePresetMiniSvg(preset, activeLayout) {
       const paperW = 210;
@@ -1844,19 +1872,29 @@
     }
 
     function openPresetModal() {
+      modalTriggerElement = document.activeElement;
+      appContainer.inert = true;
+      presetModal.hidden = false;
       presetModal.classList.add('active');
       modalSearchInput.value = '';
       searchQuery = '';
       selectedManufacturer = 'all';
       renderModalTabs();
       renderModalPresets();
-      setTimeout(() => {
+      modalFocusTimeout = setTimeout(() => {
         modalSearchInput.focus();
       }, 50);
     }
 
     function closePresetModal() {
+      clearTimeout(modalFocusTimeout);
       presetModal.classList.remove('active');
+      presetModal.hidden = true;
+      appContainer.inert = false;
+      if (modalTriggerElement) {
+        modalTriggerElement.focus();
+        modalTriggerElement = null;
+      }
     }
 
     function renderModalTabs() {
@@ -1907,9 +1945,10 @@
           return;
         }
 
-        const card = document.createElement('div');
+        const card = document.createElement('button');
+        card.type = 'button';
         card.className = `preset-card ${activeIndex === String(index) ? 'active' : ''}`;
-        card.tabIndex = 0;
+        card.setAttribute('aria-pressed', activeIndex === String(index) ? 'true' : 'false');
         
         let manufacturer = 'その他';
         let displayName = preset.name;
@@ -1966,9 +2005,10 @@
       });
 
       if (selectedManufacturer === 'all' && (!searchQuery || 'カスタム'.includes(searchQuery))) {
-        const customCard = document.createElement('div');
+        const customCard = document.createElement('button');
+        customCard.type = 'button';
         customCard.className = `preset-card ${activeIndex === 'custom' ? 'active' : ''}`;
-        customCard.tabIndex = 0;
+        customCard.setAttribute('aria-pressed', activeIndex === 'custom' ? 'true' : 'false');
         
         customCard.innerHTML = `
           <div class="preset-card-preview-area">
@@ -2063,6 +2103,27 @@
     presetModal.addEventListener('keydown', (e) => {
       const activeEl = document.activeElement;
       const visibleCards = Array.from(modalPresetGrid.querySelectorAll('.preset-card'));
+
+      switch (e.key) {
+        case 'Tab': {
+          const focusableElements = Array.from(
+            presetModal.querySelectorAll('button, input, [tabindex]:not([tabindex="-1"])')
+          );
+          const firstFocusable = focusableElements[0];
+          const lastFocusable = focusableElements[focusableElements.length - 1];
+
+          if (e.shiftKey && activeEl === firstFocusable) {
+            lastFocusable.focus();
+            e.preventDefault();
+          } else if (!e.shiftKey && activeEl === lastFocusable) {
+            firstFocusable.focus();
+            e.preventDefault();
+          }
+          return;
+        }
+        default:
+          break;
+      }
       
       if (activeEl === modalSearchInput) {
         if (e.key === 'ArrowDown' && visibleCards.length > 0) {
