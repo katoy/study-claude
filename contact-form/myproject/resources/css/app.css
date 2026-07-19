@@ -1,3 +1,52 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+    :root {
+        /* Light Mode */
+        --color-brand-primary: 16 185 129; /* emerald-600 */
+        --color-brand-light: 245 244 242; /* stone-50 */
+        --color-brand-dark: 28 25 23; /* stone-900 */
+        --color-brand-border: 231 229 228; /* stone-200 */
+        --color-brand-text: 28 25 23; /* stone-900 */
+        --color-brand-success: 16 185 129; /* emerald-600 */
+        --color-brand-error: 225 29 72; /* rose-600 */
+        --color-brand-warning: 217 119 6; /* amber-600 */
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            /* Dark Mode */
+            --color-brand-primary: 16 185 129; /* emerald-600 (same) */
+            --color-brand-light: 24 23 21; /* stone-900 */
+            --color-brand-dark: 245 244 242; /* stone-50 */
+            --color-brand-border: 87 83 82; /* stone-700 */
+            --color-brand-text: 245 244 242; /* stone-50 */
+            --color-brand-success: 16 185 129; /* emerald-600 (same) */
+            --color-brand-error: 225 29 72; /* rose-600 (same) */
+            --color-brand-warning: 217 119 6; /* amber-600 (same) */
+        }
+    }
+}
+
+@layer components {
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-8px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .animate-slideIn {
+        animation: slideIn 0.3s ease-out;
+    }
+
+    .transition-all {
+        @apply transition-all duration-150;
+    }
+}

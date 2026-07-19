@@ -14,6 +14,18 @@ export default {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
+            colors: {
+                brand: {
+                    primary: 'rgb(var(--color-brand-primary) / <alpha-value>)',
+                    light: 'rgb(var(--color-brand-light) / <alpha-value>)',
+                    dark: 'rgb(var(--color-brand-dark) / <alpha-value>)',
+                    border: 'rgb(var(--color-brand-border) / <alpha-value>)',
+                    text: 'rgb(var(--color-brand-text) / <alpha-value>)',
+                    success: 'rgb(var(--color-brand-success) / <alpha-value>)',
+                    error: 'rgb(var(--color-brand-error) / <alpha-value>)',
+                    warning: 'rgb(var(--color-brand-warning) / <alpha-value>)',
+                },
+            },
         },
     },
 
