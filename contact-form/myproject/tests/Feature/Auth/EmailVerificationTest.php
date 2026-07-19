@@ -99,4 +99,3 @@ class EmailVerificationTest extends TestCase
         $response->assertSessionHas('status', 'verification-link-sent');
     }
 }
-
