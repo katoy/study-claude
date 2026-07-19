@@ -29,7 +29,7 @@ APP_DISPLAY_TIMEZONE=Asia/Tokyo
 # 管理者設定（パスワードは12文字以上）
 ADMIN_NAME=管理者
 ADMIN_EMAIL=admin@example.com
-ADMIN_PASSWORD=replace-with-a-random-password
+ADMIN_PASSWORD=
 
 # セッション設定
 SESSION_ENCRYPT=true
