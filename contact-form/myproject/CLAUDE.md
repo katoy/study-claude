@@ -21,6 +21,35 @@ Laravelで作るお問い合わせフォーム。
 ### コード品質・スタイル
 - **コード整形 (Laravel Pint)**: `vendor/bin/pint`
 
+### スクリーンショット更新
+管理画面や UI に変更があった場合は、スクリーンショットを更新します。以下のコマンドで開発サーバーを起動してスクリーンショットを撮影・置き換えます：
+
+```bash
+# 1. 開発サーバーを起動
+composer dev
+
+# 2. ブラウザで http://localhost:8000/admin/contacts にアクセスしてログイン
+#    （必要に応じて管理者アカウントを作成: php artisan tinker で User::factory()->admin()->create()）
+
+# 3. ブラウザで現在のページのスクリーンショットを確認してから、別のターミナルで実行：
+screencapture -x /tmp/admin_dashboard_new.jpg
+mv /tmp/admin_dashboard_new.jpg screenshots/admin_dashboard.jpg
+
+# 4. コミット
+git add screenshots/admin_dashboard.jpg
+git commit -m "refactor: Update admin dashboard screenshot"
+
+# 5. 開発サーバーを停止
+kill $(lsof -ti:8000,5173) 2>/dev/null
+```
+
+**スクリーンショット一覧:**
+- `screenshots/contact_input.jpg` — 公開フォーム入力画面
+- `screenshots/contact_confirm.jpg` — 確認画面
+- `screenshots/admin_dashboard.jpg` — 管理画面一覧（絞り込み・ソート UI 含む）
+- `screenshots/admin_login.jpg` — ログイン画面
+- `screenshots/admin_show.jpg` — 詳細・ステータス管理画面
+
 ## 機能要件
 
 ### お問い合わせフォーム
