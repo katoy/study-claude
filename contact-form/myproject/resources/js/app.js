@@ -4,4 +4,101 @@ import Alpine from 'alpinejs';
 
 window.Alpine = Alpine;
 
+/**
+ * お問い合わせ一覧の絞り込み・ソート・ページネーション Ajax コンポーネント。
+ * initial にはサーバー側で正規化済みの現在の絞り込み条件（filters）を渡す。
+ */
+Alpine.data('contactFilters', (initial) => ({
+    status: initial.status ?? '',
+    keyword: initial.keyword ?? '',
+    dateFrom: initial.date_from ?? '',
+    dateTo: initial.date_to ?? '',
+    sort: initial.sort ?? 'created_at-desc',
+    loading: false,
+
+    init() {
+        // ブラウザの戻る/進むでURLが変化したら一覧を再取得する
+        window.addEventListener('popstate', () => this.fetchResults(window.location.href, false));
+    },
+
+    /**
+     * 現在のフォーム状態からクエリ文字列を組み立てる。
+     * デフォルト値と同じ項目は省略してURLを簡潔に保つ。
+     */
+    buildQueryString() {
+        const params = new URLSearchParams();
+        if (this.status) params.set('status', this.status);
+        if (this.keyword) params.set('keyword', this.keyword);
+        if (this.dateFrom) params.set('date_from', this.dateFrom);
+        if (this.dateTo) params.set('date_to', this.dateTo);
+        if (this.sort && this.sort !== 'created_at-desc') params.set('sort', this.sort);
+        return params.toString();
+    },
+
+    /**
+     * 一覧を Ajax で再取得し、結果を差し替える。
+     * url 指定時（ページネーションリンク等）はそのURLをそのまま使用する。
+     * pushState=false は popstate 経由の呼び出し（履歴に追加しない）用。
+     */
+    async fetchResults(url = null, pushState = true) {
+        const target = url ?? `${window.location.pathname}?${this.buildQueryString()}`;
+        this.loading = true;
+
+        try {
+            const response = await fetch(target, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            });
+            if (!response.ok) {
+                throw new Error(`一覧の取得に失敗しました (status: ${response.status})`);
+            }
+
+            // サーバーから返されたビューの HTML（信頼できるコンテンツ）を差し込む
+            this.$refs.results.innerHTML = await response.text();
+
+            if (pushState) {
+                window.history.pushState({}, '', target);
+            }
+            this.syncStateFromUrl(target);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            this.loading = false;
+        }
+    },
+
+    /**
+     * URL のクエリ文字列からフォーム状態を復元する（戻る/進む対応）。
+     */
+    syncStateFromUrl(url) {
+        const params = new URL(url, window.location.origin).searchParams;
+        this.status = params.get('status') ?? '';
+        this.keyword = params.get('keyword') ?? '';
+        this.dateFrom = params.get('date_from') ?? '';
+        this.dateTo = params.get('date_to') ?? '';
+        this.sort = params.get('sort') ?? 'created_at-desc';
+    },
+
+    /**
+     * 一覧内のページネーションリンククリックを Ajax 遷移に変換する。
+     */
+    handleListClick(event) {
+        const link = event.target.closest('[data-pagination] a');
+        if (!link) return;
+        event.preventDefault();
+        this.fetchResults(link.href);
+    },
+
+    /**
+     * 絞り込み条件をクリアする。
+     */
+    resetFilters() {
+        this.status = '';
+        this.keyword = '';
+        this.dateFrom = '';
+        this.dateTo = '';
+        this.sort = 'created_at-desc';
+        this.fetchResults();
+    },
+}));
+
 Alpine.start();

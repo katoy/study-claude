@@ -1,57 +1,117 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-2xl text-brand-text leading-tight">
-                {{ __('お問い合わせ一覧') }}
-            </h2>
-            <span class="text-sm text-gray-600 dark:text-gray-400">
-                全 {{ $contacts->total() }} 件
-            </span>
-        </div>
+        <h2 class="font-semibold text-2xl text-brand-text leading-tight">
+            {{ __('お問い合わせ一覧') }}
+        </h2>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-12" x-data="contactFilters(@js($filters))">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            @if ($contacts->count() > 0)
-                <div class="space-y-4">
-                    @foreach ($contacts as $contact)
-                        <a href="{{ route('admin.contacts.show', $contact) }}" class="block bg-white dark:bg-stone-900 border border-brand-border rounded-xl p-6 hover:shadow-lg hover:-translate-y-0.5 hover:border-brand-primary/40 dark:hover:border-brand-primary/40 active:scale-[0.995] transition-all duration-200 animate-slideIn">
-                            <div class="flex items-start justify-between gap-4">
-                                <div class="flex-1 min-w-0">
-                                    <div class="flex items-center gap-3 mb-2">
-                                        <h3 class="text-lg font-bold text-brand-text truncate">
-                                            {{ $contact->name }}
-                                        </h3>
-                                        <x-contact-status-badge :status="$contact->status" />
-                                    </div>
-                                    <p class="text-gray-600 dark:text-gray-400 mb-2 truncate">
-                                        {{ $contact->subject }}
-                                    </p>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                                        {{ $contact->created_at->copy()->setTimezone(config('app.display_timezone'))->format('Y年m月d日 H:i') }}
-                                    </p>
-                                </div>
-                                <div class="flex-shrink-0 self-center">
-                                    <svg class="w-5 h-5 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                        </a>
-                    @endforeach
+            <!-- 絞り込み・並び替えフォーム -->
+            <div class="bg-white dark:bg-stone-900 border border-brand-border rounded-xl p-6 mb-8 shadow-sm">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                    <!-- キーワード検索 -->
+                    <div>
+                        <x-form-label for="keyword">
+                            {{ __('キーワード') }}
+                        </x-form-label>
+                        <x-form-input
+                            id="keyword"
+                            name="keyword"
+                            type="text"
+                            placeholder="名前・メール・件名"
+                            x-model="keyword"
+                            @input.debounce.400ms="fetchResults()"
+                        />
+                    </div>
+
+                    <!-- ステータス -->
+                    <div>
+                        <x-form-label for="status">
+                            {{ __('ステータス') }}
+                        </x-form-label>
+                        <x-form-select
+                            id="status"
+                            name="status"
+                            :options="['' => __('すべて')] + collect(\App\Enums\ContactStatus::cases())->mapWithKeys(fn($case) => [$case->value => $case->label()])->toArray()"
+                            :selected="$filters['status']"
+                            x-model="status"
+                            @change="fetchResults()"
+                        />
+                    </div>
+
+                    <!-- 登録日 開始日 -->
+                    <div>
+                        <x-form-label for="date_from">
+                            {{ __('登録日（開始）') }}
+                        </x-form-label>
+                        <x-form-input
+                            id="date_from"
+                            name="date_from"
+                            type="date"
+                            x-model="dateFrom"
+                            @change="fetchResults()"
+                        />
+                    </div>
+
+                    <!-- 登録日 終了日 -->
+                    <div>
+                        <x-form-label for="date_to">
+                            {{ __('登録日（終了）') }}
+                        </x-form-label>
+                        <x-form-input
+                            id="date_to"
+                            name="date_to"
+                            type="date"
+                            x-model="dateTo"
+                            @change="fetchResults()"
+                        />
+                    </div>
                 </div>
 
-                <div class="mt-8">
-                    {{ $contacts->links() }}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- 並び順 -->
+                    <div>
+                        <x-form-label for="sort">
+                            {{ __('並び順') }}
+                        </x-form-label>
+                        <x-form-select
+                            id="sort"
+                            name="sort"
+                            :options="[
+                                'created_at-desc' => __('登録日時が新しい順'),
+                                'created_at-asc' => __('登録日時が古い順'),
+                                'status-asc' => __('ステータス順'),
+                                'name-asc' => __('名前順'),
+                            ]"
+                            :selected="$filters['sort']"
+                            x-model="sort"
+                            @change="fetchResults()"
+                        />
+                    </div>
+
+                    <!-- クリアボタン -->
+                    <div class="flex items-end">
+                        <button
+                            type="button"
+                            @click="resetFilters()"
+                            class="w-full px-5 py-3 bg-gray-200 hover:bg-gray-300 dark:bg-stone-700 dark:hover:bg-stone-600 text-gray-800 dark:text-gray-200 font-semibold rounded-lg transition-colors duration-200"
+                        >
+                            {{ __('絞り込みを解除') }}
+                        </button>
+                    </div>
                 </div>
-            @else
-                <div class="bg-white dark:bg-stone-900 border border-brand-border rounded-xl p-16 text-center shadow-sm animate-slideIn">
-                    <svg class="w-16 h-16 mx-auto text-gray-300 dark:text-gray-700 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 21l-4.35-4.35M11 19a8 8 0 100-16 8 8 0 000 16z"></path>
-                    </svg>
-                    <p class="text-gray-600 dark:text-gray-400 text-lg">お問い合わせはまだありません。</p>
-                </div>
-            @endif
+            </div>
+
+            <!-- 一覧結果 -->
+            <div
+                id="contacts-list"
+                x-ref="results"
+                @click="handleListClick($event)"
+                :class="{ 'opacity-50 pointer-events-none': loading }"
+            >
+                @include('admin.contacts._list')
+            </div>
         </div>
     </div>
 </x-app-layout>
