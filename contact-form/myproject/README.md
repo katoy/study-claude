@@ -64,64 +64,52 @@ npm install
 
 ## 初期セットアップ
 
-### 環境ファイル設定
+### 推奨: 自動セットアップ
 
-自動セットアップコマンドで、以下をすべて実行できます：
+`.env.example` はローカル開発用の値が設定済みです。`.env` がまだない状態で次のコマンドを実行すれば、設定値を手編集せずにローカル環境を構築できます。
 
 ```bash
 composer setup
+php artisan db:seed
 ```
 
-このコマンドは以下を実行します：
-- `.env` ファイルを生成
-- アプリケーションキーを生成
-- データベースマイグレーションを実行
-- フロントエンドアセットをビルド
+この手順では以下を実行します：
 
-管理者アカウントは固定パスワードで自動作成されません。次のコマンドなどで12文字以上のランダムなパスワードを生成し、`.env` に設定してください：
+- `.env.example` を `.env` へコピー（既存の `.env` は保持）
+- 開発環境固有の `APP_KEY` を生成
+- SQLiteデータベースのマイグレーションを実行
+- Node依存関係をインストールし、フロントエンドアセットをビルド
+- `.env` のローカル用認証情報から管理者アカウントを作成
 
-```bash
-openssl rand -hex 24
-```
-
-```dotenv
-ADMIN_NAME=管理者
-ADMIN_EMAIL=admin@example.com
-ADMIN_PASSWORD=
-```
-
-空欄の `ADMIN_PASSWORD` に生成結果を設定してから、専用シーダーを実行します。管理者パスワードをREADME、Git、チャット、ログへ記録しないでください。
-
-```bash
-php artisan config:clear
-php artisan db:seed --class=AdminUserSeeder
-```
+ローカル管理者のログイン情報は、コピーされた `.env` の `ADMIN_EMAIL` / `ADMIN_PASSWORD` を使用します。これらは公開済みの開発専用値であり、秘密情報ではありません。本番環境や外部公開される共有環境では絶対に使用せず、環境固有の値へ置き換えてください。
 
 ### 手動セットアップ
 
 以下の手順で個別に実行することも可能です：
 
 ```bash
-# .env ファイルのコピーと編集
+# ローカル用設定をコピー（設定値の手編集は不要）
 cp .env.example .env
 
-# アプリケーションキーを生成
+# 共有できないアプリケーションキーを環境ごとに生成
 php artisan key:generate
 
-# データベースマイグレーション
-php artisan migrate
-
-# .env に ADMIN_NAME、ADMIN_EMAIL、ADMIN_PASSWORD を設定後、管理者を作成
-php artisan config:clear
-php artisan db:seed --class=AdminUserSeeder
+# データベースを作成し、ローカル管理者を登録
+php artisan migrate --seed
 
 # フロントエンドアセットをビルド
 npm run build
 ```
 
+`APP_KEY` は秘密情報のため `.env.example` では意図的に空欄です。`composer setup` または `php artisan key:generate` が自動設定するため、手入力する必要はありません。
+
 ## 既存環境の更新
 
 管理者認可、表示タイムゾーン、Secure Cookie、問い合わせレート制限を既存環境へ反映する場合は、`.env` に以下を設定します。`ADMIN_PASSWORD` には既知の固定値ではなく、新しく生成した値を使用してください。
+
+```bash
+openssl rand -hex 24
+```
 
 ```dotenv
 APP_TIMEZONE=UTC
@@ -229,7 +217,8 @@ vendor/bin/pint app/Models
 Laravel Breeze の認証と `is_admin` 権限で保護された管理者専用エリア。
 
 **ログイン**
-- 管理者アカウントは環境変数を設定したうえで、専用シーダーから作成します
+- ローカルでは `.env.example` からコピーされた開発専用認証情報で、シーダーから管理者を作成できます
+- 本番では `ADMIN_EMAIL` / `ADMIN_PASSWORD` を環境固有の値へ置き換えてからシーダーを実行します
 - 一般ユーザーは管理画面へアクセスできません
 
 **一覧表示（`/admin/contacts`）**
@@ -469,11 +458,14 @@ php artisan db:seed --class=AdminUserSeeder
 ### 問題: .env ファイルが見つからない
 
 ```bash
-# .env ファイルをコピー
+# ローカル用設定をコピー
 cp .env.example .env
 
 # アプリケーションキーを生成
 php artisan key:generate
+
+# データベースとローカル管理者を作成
+php artisan migrate --seed
 ```
 
 ### 問題: ポート 8000 / 5173 が使用中
