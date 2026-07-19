@@ -19,9 +19,18 @@ class ContactControllerTest extends TestCase
         $response->assertRedirectToRoute('login');
     }
 
-    public function test_authenticated_user_can_view_index(): void
+    public function test_authenticated_non_admin_user_cannot_view_index(): void
     {
         $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get(route('admin.contacts.index'));
+
+        $response->assertForbidden();
+    }
+
+    public function test_admin_user_can_view_index(): void
+    {
+        $user = User::factory()->admin()->create();
         Contact::factory(3)->create();
 
         $response = $this->actingAs($user)->get(route('admin.contacts.index'));
@@ -33,7 +42,7 @@ class ContactControllerTest extends TestCase
 
     public function test_index_shows_latest_contacts_first(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->admin()->create();
         $contact1 = Contact::factory()->create(['name' => 'First']);
         sleep(1);
         $contact2 = Contact::factory()->create(['name' => 'Second']);
@@ -53,9 +62,9 @@ class ContactControllerTest extends TestCase
         $response->assertRedirectToRoute('login');
     }
 
-    public function test_authenticated_user_can_view_show(): void
+    public function test_admin_user_can_view_show(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->admin()->create();
         $contact = Contact::factory()->create([
             'name' => 'テスト太郎',
             'email' => 'test@example.com',
@@ -80,9 +89,9 @@ class ContactControllerTest extends TestCase
         $response->assertRedirectToRoute('login');
     }
 
-    public function test_authenticated_user_can_update_status(): void
+    public function test_admin_user_can_update_status(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->admin()->create();
         $contact = Contact::factory()->create(['status' => ContactStatus::New]);
 
         $response = $this->actingAs($user)->patch(route('admin.contacts.update', $contact), [
@@ -100,7 +109,7 @@ class ContactControllerTest extends TestCase
 
     public function test_invalid_status_value_fails_validation(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->admin()->create();
         $contact = Contact::factory()->create();
 
         $response = $this->actingAs($user)->patch(route('admin.contacts.update', $contact), [
@@ -116,7 +125,7 @@ class ContactControllerTest extends TestCase
 
     public function test_missing_status_fails_validation(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->admin()->create();
         $contact = Contact::factory()->create();
 
         $response = $this->actingAs($user)->patch(route('admin.contacts.update', $contact), []);

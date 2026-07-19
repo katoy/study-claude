@@ -173,8 +173,8 @@ vendor/bin/pint app/Models
 Laravel Breeze で保護された認証必須エリア。
 
 **ログイン**
-- メールアドレス: `admin@example.com`
-- パスワード: `password`
+- 管理者アカウントは環境変数を設定したうえで、専用シーダーから作成します
+- 一般ユーザーは管理画面へアクセスできません
 
 **一覧表示（`/admin/contacts`）**
 - 受信日時で新しい順にソート

@@ -16,7 +16,7 @@ Route::post('/contact/store', [ContactController::class, 'store'])->name('contac
 Route::get('/contact/complete', [ContactController::class, 'complete'])->name('contact.complete');
 
 // 管理画面（認証必須）
-Route::middleware('auth')->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'can:manage-contacts'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('contacts', AdminContactController::class)->only(['index', 'show', 'update']);
 });
 
