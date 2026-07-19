@@ -23,6 +23,8 @@ MAIL_MAILER=log
 APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://your-domain.com
+APP_TIMEZONE=UTC
+APP_DISPLAY_TIMEZONE=Asia/Tokyo
 
 # 管理者設定（パスワードは12文字以上）
 ADMIN_NAME=管理者
@@ -69,6 +71,7 @@ php artisan db:seed --class=AdminUserSeeder --force
 ### 3. セキュリティチェックリスト
 
 - [ ] `APP_DEBUG=false`
+- [ ] `APP_TIMEZONE=UTC` / `APP_DISPLAY_TIMEZONE=Asia/Tokyo`
 - [ ] `SESSION_ENCRYPT=true`
 - [ ] `SESSION_SECURE_COOKIE=true` (HTTPS使用時)
 - [ ] `SESSION_SAME_SITE=strict`

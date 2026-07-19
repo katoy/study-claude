@@ -10,25 +10,25 @@
 
         <div>
             <x-form-label for="name" value="お名前" />
-            <x-form-input id="name" name="name" type="text" placeholder="山田太郎" required />
+            <x-form-input id="name" name="name" type="text" placeholder="山田太郎" :value="$input['name'] ?? null" required />
             <x-form-error :messages="$errors->get('name')" />
         </div>
 
         <div>
             <x-form-label for="email" value="メールアドレス" />
-            <x-form-input id="email" name="email" type="email" placeholder="example@example.com" required />
+            <x-form-input id="email" name="email" type="email" placeholder="example@example.com" :value="$input['email'] ?? null" required />
             <x-form-error :messages="$errors->get('email')" />
         </div>
 
         <div>
             <x-form-label for="subject" value="件名" />
-            <x-form-input id="subject" name="subject" type="text" placeholder="お問い合わせの内容をお聞かせください" required />
+            <x-form-input id="subject" name="subject" type="text" placeholder="お問い合わせの内容をお聞かせください" :value="$input['subject'] ?? null" required />
             <x-form-error :messages="$errors->get('subject')" />
         </div>
 
         <div>
             <x-form-label for="body" value="本文" />
-            <x-form-textarea id="body" name="body" placeholder="詳しい内容をお聞かせください。" required />
+            <x-form-textarea id="body" name="body" placeholder="詳しい内容をお聞かせください。" :value="$input['body'] ?? null" required />
             <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">最大 2000 文字まで入力できます。</p>
             <x-form-error :messages="$errors->get('body')" />
         </div>

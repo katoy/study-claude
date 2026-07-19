@@ -5,6 +5,7 @@ namespace Tests\Feature\Admin;
 use App\Enums\ContactStatus;
 use App\Models\Contact;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -99,7 +100,10 @@ class ContactControllerTest extends TestCase
         ]);
 
         $response->assertRedirectToRoute('admin.contacts.show', $contact)
-            ->assertSessionHas('status_updated', true);
+            ->assertSessionHas('status_updated', 'ステータスを更新しました。');
+
+        $this->get(route('admin.contacts.show', $contact))
+            ->assertSee('ステータスを更新しました。');
 
         $this->assertDatabaseHas('contacts', [
             'id' => $contact->id,
@@ -131,5 +135,20 @@ class ContactControllerTest extends TestCase
         $response = $this->actingAs($user)->patch(route('admin.contacts.update', $contact), []);
 
         $response->assertSessionHasErrors('status');
+    }
+
+    public function test_admin_pages_display_contact_time_in_japan_timezone(): void
+    {
+        $user = User::factory()->admin()->create();
+        $contact = Contact::factory()->create([
+            'created_at' => CarbonImmutable::parse('2026-07-19 00:00:00', 'UTC'),
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('admin.contacts.index'))
+            ->assertSee('2026年07月19日 09:00');
+
+        $this->get(route('admin.contacts.show', $contact))
+            ->assertSee('2026年07月19日 09:00:00');
     }
 }

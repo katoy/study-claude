@@ -27,13 +27,12 @@
     </div>
 
     <div class="flex items-center justify-between gap-4 pt-6 border-t border-brand-border">
-        <button
-            type="button"
-            onclick="window.history.back()"
+        <a
+            href="{{ route('contact.create') }}"
             class="text-brand-primary hover:text-emerald-700 font-semibold underline underline-offset-2"
         >
             戻る
-        </button>
+        </a>
         <form method="POST" action="{{ route('contact.store') }}">
             @csrf
             <x-button-primary type="submit">

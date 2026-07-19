@@ -40,6 +40,6 @@ class ContactController extends Controller
 
         return redirect()
             ->route('admin.contacts.show', $contact)
-            ->with('status_updated', true);
+            ->with('status_updated', 'ステータスを更新しました。');
     }
 }

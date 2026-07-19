@@ -28,7 +28,7 @@
                                         {{ $contact->subject }}
                                     </p>
                                     <p class="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                                        {{ $contact->created_at->format('Y年m月d日 H:i') }}
+                                        {{ $contact->created_at->copy()->setTimezone(config('app.display_timezone'))->format('Y年m月d日 H:i') }}
                                     </p>
                                 </div>
                                 <div class="flex-shrink-0 self-center">

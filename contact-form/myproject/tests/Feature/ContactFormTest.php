@@ -147,6 +147,29 @@ class ContactFormTest extends TestCase
         $response->assertRedirectToRoute('contact.create');
     }
 
+    public function test_confirmation_back_link_returns_to_populated_form(): void
+    {
+        $data = [
+            'name' => 'テスト太郎',
+            'email' => 'test@example.com',
+            'subject' => 'テスト件名',
+            'body' => 'テスト本文です。',
+        ];
+
+        $confirmResponse = $this->post(route('contact.confirm'), $data);
+
+        $this->assertMatchesRegularExpression(
+            '/<a[^>]+href="'.preg_quote(route('contact.create'), '/').'"[^>]*>\s*戻る\s*<\/a>/u',
+            $confirmResponse->getContent()
+        );
+
+        $this->get(route('contact.create'))
+            ->assertSee('value="テスト太郎"', false)
+            ->assertSee('value="test@example.com"', false)
+            ->assertSee('value="テスト件名"', false)
+            ->assertSee('テスト本文です。');
+    }
+
     public function test_contact_confirmation_is_rate_limited(): void
     {
         $data = [
