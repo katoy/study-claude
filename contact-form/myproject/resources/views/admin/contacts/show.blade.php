@@ -78,7 +78,7 @@
                                 </select>
                             </div>
 
-                            <x-button-primary type="submit" class="sm:py-3.5">
+                            <x-button-primary type="submit" size="sm">
                                 ステータスを更新
                             </x-button-primary>
                         </form>

@@ -47,6 +47,7 @@
   "The password is incorrect.": "パスワードが正しくありません。",
   "Two Factor Authentication": "2 要素認証",
   "Logout": "ログアウト",
+  "Log Out": "ログアウト",
   "Verify": "確認",
   "Please confirm access to your account by entering the authentication code provided by your authenticator application.": "認証アプリが提供する認証コードを入力して、アカウントへのアクセスを確認してください。",
   "Code": "コード",
