@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('welcome');
 
 // 公開お問い合わせフォーム（認証不要）
 Route::get('/contact', [ContactController::class, 'create'])->name('contact.create');
