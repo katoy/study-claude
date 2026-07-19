@@ -12,7 +12,7 @@ Laravelで作るお問い合わせフォーム。
 
 ### 開発・ビルド
 - **環境セットアップ**: `composer setup` (依存関係の解決、`.env` の生成、キー生成、マイグレーション、アセットビルドを一括実行)
-- **開発サーバー起動**: `composer dev` (Artisan Serve, Vite, Queue, Pailログを並列起動)
+- **開発サーバー起動**: `composer dev` (Artisan Serve, Vite, Queue, Pailログを `yyyy-MM-dd HH:mm:ss` のタイムスタンプ付きで並列起動)
 - **アセットビルド**: `npm run build`
 
 ### テスト
@@ -45,3 +45,11 @@ Laravelで作るお問い合わせフォーム。
 
 ## 作業ルール
 - 変更前に必ずgit commitすること
+
+## デプロイ検討メモ
+- **GitHub Pages**:
+  - 静的ホスティングのため、LaravelのPHP/DB処理はそのままでは動作不可。
+  - 対策案：フロントエンドのみ静的化して配置し、送信先を外部のフォームSaaS（Formspree等）にするか、別サーバーのAPIを叩く構成にする。
+- **Google Cloud (Cloud Run)**:
+  - コンテナ化（Docker）によるデプロイが可能。リクエスト時のみ起動するため、低コスト（無料枠あり）で運用可能で最も推奨。
+  - データベース（Cloud SQL）は固定費がかかるため、コストを抑える場合は外部の無料DB（Supabase等）と連携させる。
