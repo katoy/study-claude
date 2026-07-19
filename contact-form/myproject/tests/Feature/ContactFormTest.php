@@ -146,4 +146,39 @@ class ContactFormTest extends TestCase
 
         $response->assertRedirectToRoute('contact.create');
     }
+
+    public function test_contact_confirmation_is_rate_limited(): void
+    {
+        $data = [
+            'name' => 'テスト太郎',
+            'email' => 'test@example.com',
+            'subject' => 'テスト件名',
+            'body' => 'テスト本文です。',
+        ];
+
+        for ($attempt = 0; $attempt < 30; $attempt++) {
+            $this->post(route('contact.confirm'), $data)->assertOk();
+        }
+
+        $this->post(route('contact.confirm'), $data)->assertTooManyRequests();
+    }
+
+    public function test_contact_submissions_are_rate_limited(): void
+    {
+        $data = [
+            'name' => 'テスト太郎',
+            'email' => 'test@example.com',
+            'subject' => 'テスト件名',
+            'body' => 'テスト本文です。',
+        ];
+
+        for ($attempt = 0; $attempt < 5; $attempt++) {
+            $this->post(route('contact.confirm'), $data);
+            $this->post(route('contact.store'))->assertRedirectToRoute('contact.complete');
+        }
+
+        $this->post(route('contact.confirm'), $data);
+        $this->post(route('contact.store'))->assertTooManyRequests();
+        $this->assertDatabaseCount('contacts', 5);
+    }
 }

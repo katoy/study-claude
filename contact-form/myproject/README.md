@@ -74,8 +74,19 @@ composer setup
 - `.env` ファイルを生成
 - アプリケーションキーを生成
 - データベースマイグレーションを実行
-- データベースシーダーを実行（テストデータ＆管理者アカウント作成）
 - フロントエンドアセットをビルド
+
+管理者アカウントは固定パスワードで自動作成されません。`.env` に以下を設定してから、専用シーダーを実行してください：
+
+```dotenv
+ADMIN_NAME=管理者
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=replace-with-a-random-password
+```
+
+```bash
+php artisan db:seed --class=AdminUserSeeder
+```
 
 ### 手動セットアップ
 
@@ -91,8 +102,8 @@ php artisan key:generate
 # データベースマイグレーション
 php artisan migrate
 
-# シーダーでテストデータを初期化
-php artisan db:seed
+# .env に ADMIN_NAME、ADMIN_EMAIL、ADMIN_PASSWORD を設定後、管理者を作成
+php artisan db:seed --class=AdminUserSeeder
 
 # フロントエンドアセットをビルド
 npm run build

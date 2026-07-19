@@ -11,8 +11,12 @@ Route::get('/', function () {
 
 // 公開お問い合わせフォーム（認証不要）
 Route::get('/contact', [ContactController::class, 'create'])->name('contact.create');
-Route::post('/contact/confirm', [ContactController::class, 'confirm'])->name('contact.confirm');
-Route::post('/contact/store', [ContactController::class, 'store'])->name('contact.store');
+Route::post('/contact/confirm', [ContactController::class, 'confirm'])
+    ->middleware('throttle:contact-confirmation')
+    ->name('contact.confirm');
+Route::post('/contact/store', [ContactController::class, 'store'])
+    ->middleware('throttle:contact-submissions')
+    ->name('contact.store');
 Route::get('/contact/complete', [ContactController::class, 'complete'])->name('contact.complete');
 
 // 管理画面（認証必須）

@@ -24,9 +24,14 @@ APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://your-domain.com
 
+# 管理者設定（パスワードは12文字以上）
+ADMIN_NAME=管理者
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=replace-with-a-random-password
+
 # セッション設定
 SESSION_ENCRYPT=true
-SESSION_SECURE_COOKIES=true
+SESSION_SECURE_COOKIE=true
 SESSION_SAME_SITE=strict
 
 # ログレベル
@@ -51,14 +56,23 @@ php artisan view:cache
 # 確認
 php artisan config:show | grep APP_DEBUG
 php artisan config:show | grep SESSION_ENCRYPT
+php artisan config:show session | grep secure
+```
+
+管理者フラグを追加するマイグレーションと、安全な管理者作成を実行します：
+
+```bash
+php artisan migrate --force
+php artisan db:seed --class=AdminUserSeeder --force
 ```
 
 ### 3. セキュリティチェックリスト
 
 - [ ] `APP_DEBUG=false`
 - [ ] `SESSION_ENCRYPT=true`
-- [ ] `SESSION_SECURE_COOKIES=true` (HTTPS使用時)
+- [ ] `SESSION_SECURE_COOKIE=true` (HTTPS使用時)
 - [ ] `SESSION_SAME_SITE=strict`
+- [ ] `ADMIN_PASSWORD` が12文字以上のランダムな値
 - [ ] `MAIL_MAILER=smtp` (ログ出力以外)
 - [ ] `LOG_LEVEL=warning`
 - [ ] `APP_KEY` が生成されている
@@ -85,11 +99,12 @@ server {
 }
 ```
 
-### 5. レート制限（オプション）
+### 5. レート制限
 
-```bash
-# 環境変数追加
-RATE_LIMIT_PER_MINUTE=60
+```dotenv
+# 確認画面は1分あたり30回、DB保存は1分あたり5回（IP単位）
+CONTACT_CONFIRMATION_RATE_LIMIT=30
+CONTACT_SUBMISSION_RATE_LIMIT=5
 ```
 
 ---
@@ -121,4 +136,3 @@ php artisan config:clear
 
 **HTTPS自動リダイレクト**
 - `APP_URL=https://your-domain.com` に設定
-
