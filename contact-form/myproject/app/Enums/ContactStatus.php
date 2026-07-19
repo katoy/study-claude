@@ -15,8 +15,6 @@ enum ContactStatus: string
 
     /**
      * 画面表示用の日本語ラベルを返す。
-     *
-     * @return string
      */
     public function label(): string
     {

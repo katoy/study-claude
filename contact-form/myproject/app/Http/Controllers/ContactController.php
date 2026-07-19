@@ -45,7 +45,7 @@ class ContactController extends Controller
     {
         $input = session(self::SESSION_KEY);
 
-        if (!$input) {
+        if (! $input) {
             return redirect()->route('contact.create');
         }
 
@@ -62,7 +62,7 @@ class ContactController extends Controller
      */
     public function complete(): View|RedirectResponse
     {
-        if (!session()->pull(self::COMPLETED_KEY)) {
+        if (! session()->pull(self::COMPLETED_KEY)) {
             return redirect()->route('contact.create');
         }
 
