@@ -16,6 +16,7 @@
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
             <x-status-badge status="success" :message="session('status_updated')" />
+            <x-status-badge status="error" :message="session('error')" />
 
             <div class="bg-white dark:bg-stone-900 border border-brand-border rounded-xl shadow-sm overflow-hidden animate-slideIn">
                 <div class="p-8">

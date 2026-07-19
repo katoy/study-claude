@@ -33,7 +33,7 @@
         >
             戻る
         </a>
-        <form method="POST" action="{{ route('contact.store') }}">
+        <form method="POST" action="{{ route('contact.store') }}" onsubmit="this.querySelector('button[type=submit]').disabled = true;">
             @csrf
             <x-button-primary type="submit">
                 送信する

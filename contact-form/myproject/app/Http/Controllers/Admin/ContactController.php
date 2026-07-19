@@ -36,7 +36,18 @@ class ContactController extends Controller
      */
     public function update(UpdateContactStatusRequest $request, Contact $contact): RedirectResponse
     {
-        $contact->update(['status' => $request->validated('status')]);
+        try {
+            $contact->update(['status' => $request->validated('status')]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('お問い合わせのステータス更新に失敗しました。', [
+                'contact_id' => $contact->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()
+                ->route('admin.contacts.show', $contact)
+                ->with('error', 'ステータスの更新中にエラーが発生しました。時間をおいて再度お試しください。');
+        }
 
         return redirect()
             ->route('admin.contacts.show', $contact)

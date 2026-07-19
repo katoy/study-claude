@@ -41,17 +41,35 @@ class ContactController extends Controller
     /**
      * 確認済みの内容をDBへ保存し、完了画面へリダイレクトする。
      */
-    public function store(): RedirectResponse
+    public function store(): \Illuminate\Http\RedirectResponse
     {
-        $input = session(self::SESSION_KEY);
+        // 多重送信防止のため、セッションからデータを引き出すと同時に削除する
+        $input = session()->pull(self::SESSION_KEY);
 
         if (! $input) {
             return redirect()->route('contact.create');
         }
 
-        Contact::create([...$input, 'status' => ContactStatus::New]);
+        try {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($input) {
+                Contact::create([...$input, 'status' => ContactStatus::New]);
+            });
+        } catch (\Exception $e) {
+            // エラーログの記録
+            \Illuminate\Support\Facades\Log::error('お問い合わせの保存に失敗しました。', [
+                'error' => $e->getMessage(),
+                // bodyは長文かつ個人情報を含む可能性があるためログ出力から除外
+                'input' => array_diff_key($input, ['body' => '']),
+            ]);
 
-        session()->forget(self::SESSION_KEY);
+            // 保存失敗時はセッション値を復元して入力画面へ戻す
+            session()->put(self::SESSION_KEY, $input);
+
+            return redirect()->route('contact.create')
+                ->withInput($input)
+                ->with('error', '送信処理中にエラーが発生しました。お手数ですが、時間をおいて再度お試しください。');
+        }
+
         session()->flash(self::COMPLETED_KEY, true);
 
         return redirect()->route('contact.complete');
