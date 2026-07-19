@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateContactStatusRequest;
 use App\Models\Contact;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Log;
 
 /**
  * 管理画面向けお問い合わせ管理コントローラー。
@@ -39,7 +40,7 @@ class ContactController extends Controller
         try {
             $contact->update(['status' => $request->validated('status')]);
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('お問い合わせのステータス更新に失敗しました。', [
+            Log::error('お問い合わせのステータス更新に失敗しました。', [
                 'contact_id' => $contact->id,
                 'error' => $e->getMessage(),
             ]);
