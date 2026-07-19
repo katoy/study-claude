@@ -191,25 +191,7 @@ vendor/bin/pint app/Models
 
 本アプリケーションにおける一般ユーザーおよび管理者の画面遷移図です。
 
-```mermaid
-flowchart TD
-    %% 一般ユーザーフロー
-    subgraph UserFlow [一般ユーザー画面遷移]
-        Welcome["トップページ (/)"] -->|お問い合わせはこちら| ContactInput["お問い合わせ入力 (/contact)"]
-        ContactInput -->|送信前バリデーション成功| ContactConfirm["お問い合わせ確認 (POST /contact/confirm)"]
-        ContactConfirm -->|戻る| ContactInput
-        ContactConfirm -->|送信する (DB保存)| ContactComplete["送信完了 (/contact/complete)"]
-        ContactComplete -->|トップへ戻る| Welcome
-    end
-
-    %% 管理者フロー
-    subgraph AdminFlow [管理者画面遷移]
-        Login["ログイン画面 (/login)"] -->|管理者認証成功| AdminList["問い合わせ一覧 (/admin/contacts)"]
-        AdminList -->|詳細表示| AdminShow["問い合わせ詳細 (/admin/contacts/{id})"]
-        AdminShow -->|ステータス更新| AdminShow
-        AdminShow -->|一覧に戻る| AdminList
-    end
-```
+![画面遷移図](screenshots/transition.png)
 
 ## 機能
 
