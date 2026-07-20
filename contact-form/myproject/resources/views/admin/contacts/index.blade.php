@@ -8,6 +8,7 @@
     <div class="py-12" x-data="contactFilters(@js($filters))">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- 絞り込み・並び替えフォーム -->
+            <!-- 絞り込み・並び替えフォーム -->
             <div class="bg-white dark:bg-stone-900 border border-brand-border rounded-xl p-6 mb-8 shadow-sm">
                 <!-- 条件指定エリア最上部ヘッダー（文字上端） -->
                 <div class="flex items-center justify-between mb-5 pb-3 border-b border-brand-border/40">
@@ -15,7 +16,7 @@
                         <svg class="w-4 h-4 text-brand-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
                         </svg>
-                        絞り込み条件
+                        {{ __('絞り込み条件') }}
                     </h3>
                     <button
                         type="button"
@@ -30,11 +31,11 @@
                         <svg class="w-3.5 h-3.5 shrink-0 transition-transform duration-300" :class="{ 'rotate-180': hasActiveFilters }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                         </svg>
-                        <span x-text="hasActiveFilters ? `条件をクリア (${activeFilterCount})` : '絞り込みなし'"></span>
+                        <span x-text="hasActiveFilters ? `条件をクリア (${activeFilterCount})` : '{{ __('絞り込みなし') }}'"></span>
                     </button>
                 </div>
 
-                <!-- 1行目: キーワード検索 & 本文検索 -->
+                <!-- 1行目: キーワード検索 (名前・メール・件名) & 本文検索 -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <!-- キーワード検索 -->
                     <div>
@@ -55,34 +56,12 @@
                                 <option :value="item"></option>
                             </template>
                         </datalist>
-                        <template x-if="keywordHistory.length > 0">
-                            <div class="flex flex-wrap items-center gap-1.5 mt-1.5 text-xs text-gray-500 dark:text-gray-400">
-                                <span class="font-medium text-gray-400">履歴:</span>
-                                <template x-for="item in keywordHistory.slice(0, 5)" :key="item">
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-stone-800 rounded-md border border-gray-200 dark:border-stone-700">
-                                        <button
-                                            type="button"
-                                            @click="selectKeywordHistory(item)"
-                                            class="hover:text-brand-primary truncate max-w-[100px] transition-colors"
-                                            :title="'引用: ' + item"
-                                            x-text="item"
-                                        ></button>
-                                        <button
-                                            type="button"
-                                            @click.stop="removeKeywordHistoryItem(item)"
-                                            class="text-gray-400 hover:text-rose-500 font-bold ml-0.5 leading-none transition-colors"
-                                            title="この履歴を削除"
-                                        >&times;</button>
-                                    </span>
-                                </template>
-                                <button
-                                    type="button"
-                                    @click="clearKeywordHistory()"
-                                    class="text-[11px] text-gray-400 hover:text-rose-500 underline ml-1 transition-colors"
-                                    title="履歴を全削除"
-                                >全削除</button>
-                            </div>
-                        </template>
+                        <x-filter-history-tags
+                            items="keywordHistory"
+                            onSelect="selectKeywordHistory(item)"
+                            onRemove="removeKeywordHistoryItem(item)"
+                            onClear="clearKeywordHistory()"
+                        />
                     </div>
 
                     <!-- 本文検索 -->
@@ -104,34 +83,12 @@
                                 <option :value="item"></option>
                             </template>
                         </datalist>
-                        <template x-if="bodyKeywordHistory.length > 0">
-                            <div class="flex flex-wrap items-center gap-1.5 mt-1.5 text-xs text-gray-500 dark:text-gray-400">
-                                <span class="font-medium text-gray-400">履歴:</span>
-                                <template x-for="item in bodyKeywordHistory.slice(0, 5)" :key="item">
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-stone-800 rounded-md border border-gray-200 dark:border-stone-700">
-                                        <button
-                                            type="button"
-                                            @click="selectBodyKeywordHistory(item)"
-                                            class="hover:text-brand-primary truncate max-w-[100px] transition-colors"
-                                            :title="'引用: ' + item"
-                                            x-text="item"
-                                        ></button>
-                                        <button
-                                            type="button"
-                                            @click.stop="removeBodyKeywordHistoryItem(item)"
-                                            class="text-gray-400 hover:text-rose-500 font-bold ml-0.5 leading-none transition-colors"
-                                            title="この履歴を削除"
-                                        >&times;</button>
-                                    </span>
-                                </template>
-                                <button
-                                    type="button"
-                                    @click="clearBodyKeywordHistory()"
-                                    class="text-[11px] text-gray-400 hover:text-rose-500 underline ml-1 transition-colors"
-                                    title="履歴を全削除"
-                                >全削除</button>
-                            </div>
-                        </template>
+                        <x-filter-history-tags
+                            items="bodyKeywordHistory"
+                            onSelect="selectBodyKeywordHistory(item)"
+                            onRemove="removeBodyKeywordHistoryItem(item)"
+                            onClear="clearBodyKeywordHistory()"
+                        />
                     </div>
                 </div>
 
@@ -201,35 +158,15 @@
                     </div>
 
                     <!-- 登録日 履歴一覧 -->
-                    <template x-if="dateHistory.length > 0">
-                        <div class="col-span-1 sm:col-span-2 lg:col-span-4 pt-2 border-t border-brand-border/40 flex flex-wrap items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
-                            <span class="font-medium text-gray-400">登録日履歴:</span>
-                            <template x-for="item in dateHistory.slice(0, 5)" :key="item.label">
-                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-gray-100 dark:bg-stone-800 rounded-md border border-gray-200 dark:border-stone-700">
-                                    <button
-                                        type="button"
-                                        @click="selectDateHistory(item)"
-                                        class="hover:text-brand-primary font-medium transition-colors"
-                                        :title="'この指定日をセット: ' + item.label"
-                                        x-text="item.label"
-                                    ></button>
-                                    <button
-                                        type="button"
-                                        @click.stop="removeDateHistoryItem(item)"
-                                        class="text-gray-400 hover:text-rose-500 font-bold ml-0.5 leading-none transition-colors"
-                                        title="この履歴を削除"
-                                    >&times;</button>
-                                </span>
-                            </template>
-                            <button
-                                type="button"
-                                @click="clearDateHistory()"
-                                class="text-[11px] text-gray-400 hover:text-rose-500 underline ml-1 transition-colors"
-                                title="日付履歴を全削除"
-                            >全削除</button>
-                        </div>
-                    </template>
-                </div>
+                    <x-filter-history-tags
+                        items="dateHistory"
+                        label="登録日履歴"
+                        onSelect="selectDateHistory(item)"
+                        onRemove="removeDateHistoryItem(item)"
+                        onClear="clearDateHistory()"
+                        displayKey="label"
+                        class="col-span-1 sm:col-span-2 lg:col-span-4 pt-3 border-t border-brand-border/40"
+                    />
                 </div>
             </div>
 
