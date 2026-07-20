@@ -18,6 +18,7 @@ Alpine.data('contactFilters', (initial) => ({
     keywordHistory: [],
     bodyKeywordHistory: [],
     dateHistory: [],
+    isExpanded: true,
     loading: false,
 
     /**
@@ -46,18 +47,29 @@ Alpine.data('contactFilters', (initial) => ({
     },
 
     /**
-     * LocalStorage から過去の検索履歴を読み込む。
+     * LocalStorage から過去の検索履歴および開閉状態を読み込む。
      */
     loadHistory() {
         try {
             this.keywordHistory = JSON.parse(localStorage.getItem('contact_keyword_history') || '[]');
             this.bodyKeywordHistory = JSON.parse(localStorage.getItem('contact_body_keyword_history') || '[]');
             this.dateHistory = JSON.parse(localStorage.getItem('contact_date_history') || '[]');
+            const savedExpanded = localStorage.getItem('contact_filter_expanded');
+            if (savedExpanded !== null) {
+                this.isExpanded = JSON.parse(savedExpanded);
+            }
         } catch {
             this.keywordHistory = [];
             this.bodyKeywordHistory = [];
             this.dateHistory = [];
         }
+    },
+
+    toggleExpanded() {
+        this.isExpanded = !this.isExpanded;
+        try {
+            localStorage.setItem('contact_filter_expanded', JSON.stringify(this.isExpanded));
+        } catch {}
     },
 
     /**
