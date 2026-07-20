@@ -9,13 +9,15 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- 絞り込み・並び替えフォーム -->
             <div class="bg-white dark:bg-stone-900 border border-brand-border rounded-xl p-6 mb-8 shadow-sm">
-                <!-- 1行目: キーワード検索 & 本文検索（ラベル行に条件クリアボタン配置） -->
+                <!-- 1行目: キーワード検索 & 本文検索（ラベル垂直位置を完全同期） -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <!-- キーワード検索 -->
                     <div>
-                        <x-form-label for="keyword">
-                            {{ __('キーワード（名前・メール・件名）') }}
-                        </x-form-label>
+                        <div class="flex items-center justify-between min-h-[26px] mb-2">
+                            <label for="keyword" class="block text-sm font-semibold text-brand-text">
+                                {{ __('キーワード（名前・メール・件名）') }}
+                            </label>
+                        </div>
                         <x-form-input
                             id="keyword"
                             name="keyword"
@@ -62,7 +64,7 @@
 
                     <!-- 本文検索 -->
                     <div>
-                        <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center justify-between min-h-[26px] mb-2">
                             <label for="body_keyword" class="block text-sm font-semibold text-brand-text">
                                 {{ __('本文キーワード') }}
                             </label>
