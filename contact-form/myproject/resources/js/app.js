@@ -19,6 +19,24 @@ Alpine.data('contactFilters', (initial) => ({
     bodyKeywordHistory: [],
     loading: false,
 
+    /**
+     * 現在適用されている絞り込み条件の数を返す。
+     */
+    get activeFilterCount() {
+        let count = 0;
+        if (this.status) count++;
+        if (this.keyword) count++;
+        if (this.bodyKeyword) count++;
+        if (this.dateFrom) count++;
+        if (this.dateTo) count++;
+        if (this.sort && this.sort !== 'created_at-desc') count++;
+        return count;
+    },
+
+    get hasActiveFilters() {
+        return this.activeFilterCount > 0;
+    },
+
     init() {
         this.loadHistory();
         this.saveCurrentKeywordsToHistory();
