@@ -5,7 +5,7 @@ Laravelで作るお問い合わせフォーム。
 
 ## 技術仕様
 - **Backend**: Laravel 13.x (PHP 8.3+)
-- **Frontend**: Vite, Tailwind CSS v4
+- **Frontend**: Vite, Tailwind CSS v3
 - **Database**: SQLite (`database/database.sqlite`)
 
 ## 主要コマンド
