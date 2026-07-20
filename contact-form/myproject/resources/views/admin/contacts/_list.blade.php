@@ -73,22 +73,22 @@
                 </thead>
                 <tbody class="divide-y divide-brand-border/40">
                     @foreach ($contacts as $contact)
-                        <tr class="hover:bg-gray-50 dark:hover:bg-stone-800/30 transition-colors duration-150 animate-slideIn">
-                            <td class="px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-mono font-bold text-gray-600 dark:text-gray-300 text-right">{{ $contacts->firstItem() + $loop->index }}</td>
-                            <td class="px-3 sm:px-4 py-2.5 sm:py-3">
+                        <tr class="hover:bg-gray-50 dark:hover:bg-stone-800/30 transition-colors duration-150 animate-slideIn align-middle">
+                            <td class="px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-mono font-bold text-gray-600 dark:text-gray-300 text-right align-middle">{{ $contacts->firstItem() + $loop->index }}</td>
+                            <td class="px-3 sm:px-4 py-2 sm:py-2.5 align-middle whitespace-nowrap">
                                 <x-contact-status-badge :status="$contact->status" />
                             </td>
-                            <td class="px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm font-semibold text-brand-text truncate">
+                            <td class="px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-brand-text truncate align-middle">
                                 <a href="{{ route('admin.contacts.show', array_merge(['contact' => $contact], request()->only(['status', 'keyword', 'body_keyword', 'date_from', 'date_to', 'sort', 'per_page', 'page']))) }}" class="hover:text-brand-primary transition-colors duration-150" :href>
                                     {{ $contact->name }}
                                 </a>
                             </td>
-                            <td class="px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                            <td class="px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap align-middle">
                                 <a href="{{ route('admin.contacts.show', array_merge(['contact' => $contact], request()->only(['status', 'keyword', 'body_keyword', 'date_from', 'date_to', 'sort', 'per_page', 'page']))) }}" class="hover:text-brand-primary transition-colors duration-150">
                                     {{ $contact->created_at->copy()->setTimezone(config('app.display_timezone'))->format('Y年m月d日 H:i') }}
                                 </a>
                             </td>
-                            <td class="px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
+                            <td class="px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate align-middle">
                                 <a href="{{ route('admin.contacts.show', array_merge(['contact' => $contact], request()->only(['status', 'keyword', 'body_keyword', 'date_from', 'date_to', 'sort', 'per_page', 'page']))) }}" class="hover:text-brand-primary transition-colors duration-150">
                                     {{ $contact->subject }}
                                 </a>

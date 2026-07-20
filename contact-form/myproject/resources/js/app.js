@@ -263,4 +263,38 @@ Alpine.data('contactFilters', (initial) => ({
     },
 }));
 
+/**
+ * テーマ（ダーク／ライト）の切り替え。
+ */
+Alpine.data('themeToggle', () => ({
+    isDark: false,
+
+    init() {
+        const saved = localStorage.getItem('app_theme');
+        if (saved) {
+            this.isDark = saved === 'dark';
+        } else {
+            this.isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        }
+        this.applyTheme();
+    },
+
+    toggleTheme() {
+        this.isDark = !this.isDark;
+        this.applyTheme();
+        try {
+            localStorage.setItem('app_theme', this.isDark ? 'dark' : 'light');
+        } catch {}
+    },
+
+    applyTheme() {
+        const html = document.documentElement;
+        if (this.isDark) {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+    },
+}));
+
 Alpine.start();
