@@ -15,11 +15,73 @@ Alpine.data('contactFilters', (initial) => ({
     dateFrom: initial.date_from ?? '',
     dateTo: initial.date_to ?? '',
     sort: initial.sort ?? 'created_at-desc',
+    keywordHistory: [],
+    bodyKeywordHistory: [],
     loading: false,
 
     init() {
+        this.loadHistory();
+        this.saveCurrentKeywordsToHistory();
         // ブラウザの戻る/進むでURLが変化したら一覧を再取得する
         window.addEventListener('popstate', () => this.fetchResults(window.location.href, false));
+    },
+
+    /**
+     * LocalStorage から過去の検索履歴を読み込む。
+     */
+    loadHistory() {
+        try {
+            this.keywordHistory = JSON.parse(localStorage.getItem('contact_keyword_history') || '[]');
+            this.bodyKeywordHistory = JSON.parse(localStorage.getItem('contact_body_keyword_history') || '[]');
+        } catch {
+            this.keywordHistory = [];
+            this.bodyKeywordHistory = [];
+        }
+    },
+
+    /**
+     * 現在入力されているキーワードを履歴に保存する（直近10件、重複除去）。
+     */
+    saveCurrentKeywordsToHistory() {
+        if (this.keyword.trim()) {
+            const val = this.keyword.trim();
+            this.keywordHistory = [val, ...this.keywordHistory.filter((item) => item !== val)].slice(0, 10);
+            try {
+                localStorage.setItem('contact_keyword_history', JSON.stringify(this.keywordHistory));
+            } catch {}
+        }
+
+        if (this.bodyKeyword.trim()) {
+            const val = this.bodyKeyword.trim();
+            this.bodyKeywordHistory = [val, ...this.bodyKeywordHistory.filter((item) => item !== val)].slice(0, 10);
+            try {
+                localStorage.setItem('contact_body_keyword_history', JSON.stringify(this.bodyKeywordHistory));
+            } catch {}
+        }
+    },
+
+    selectKeywordHistory(val) {
+        this.keyword = val;
+        this.fetchResults();
+    },
+
+    selectBodyKeywordHistory(val) {
+        this.bodyKeyword = val;
+        this.fetchResults();
+    },
+
+    clearKeywordHistory() {
+        this.keywordHistory = [];
+        try {
+            localStorage.removeItem('contact_keyword_history');
+        } catch {}
+    },
+
+    clearBodyKeywordHistory() {
+        this.bodyKeywordHistory = [];
+        try {
+            localStorage.removeItem('contact_body_keyword_history');
+        } catch {}
     },
 
     /**
@@ -43,6 +105,7 @@ Alpine.data('contactFilters', (initial) => ({
      * pushState=false は popstate 経由の呼び出し（履歴に追加しない）用。
      */
     async fetchResults(url = null, pushState = true) {
+        this.saveCurrentKeywordsToHistory();
         const target = url ?? `${window.location.pathname}?${this.buildQueryString()}`;
         this.loading = true;
 

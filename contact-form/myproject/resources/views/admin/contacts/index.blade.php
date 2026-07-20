@@ -22,8 +22,28 @@
                             type="text"
                             placeholder="名前・メール・件名"
                             x-model="keyword"
+                            list="keyword-history-list"
                             @input.debounce.400ms="fetchResults()"
                         />
+                        <datalist id="keyword-history-list">
+                            <template x-for="item in keywordHistory" :key="item">
+                                <option :value="item"></option>
+                            </template>
+                        </datalist>
+                        <template x-if="keywordHistory.length > 0">
+                            <div class="flex flex-wrap items-center gap-1 mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                                <span class="font-medium text-gray-400">履歴:</span>
+                                <template x-for="item in keywordHistory.slice(0, 5)" :key="item">
+                                    <button
+                                        type="button"
+                                        @click="selectKeywordHistory(item)"
+                                        class="px-2 py-0.5 bg-gray-100 dark:bg-stone-800 hover:bg-emerald-50 hover:text-brand-primary dark:hover:bg-stone-700 rounded-md transition-colors border border-gray-200 dark:border-stone-700 truncate max-w-[120px]"
+                                        :title="item"
+                                        x-text="item"
+                                    ></button>
+                                </template>
+                            </div>
+                        </template>
                     </div>
 
                     <!-- 本文検索 -->
@@ -37,8 +57,28 @@
                             type="text"
                             placeholder="本文に含まれる文字"
                             x-model="bodyKeyword"
+                            list="body-keyword-history-list"
                             @input.debounce.400ms="fetchResults()"
                         />
+                        <datalist id="body-keyword-history-list">
+                            <template x-for="item in bodyKeywordHistory" :key="item">
+                                <option :value="item"></option>
+                            </template>
+                        </datalist>
+                        <template x-if="bodyKeywordHistory.length > 0">
+                            <div class="flex flex-wrap items-center gap-1 mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                                <span class="font-medium text-gray-400">履歴:</span>
+                                <template x-for="item in bodyKeywordHistory.slice(0, 5)" :key="item">
+                                    <button
+                                        type="button"
+                                        @click="selectBodyKeywordHistory(item)"
+                                        class="px-2 py-0.5 bg-gray-100 dark:bg-stone-800 hover:bg-emerald-50 hover:text-brand-primary dark:hover:bg-stone-700 rounded-md transition-colors border border-gray-200 dark:border-stone-700 truncate max-w-[120px]"
+                                        :title="item"
+                                        x-text="item"
+                                    ></button>
+                                </template>
+                            </div>
+                        </template>
                     </div>
                 </div>
 
