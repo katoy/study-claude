@@ -9,8 +9,8 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- 絞り込み・並び替えフォーム -->
             <div class="bg-white dark:bg-stone-900 border border-brand-border rounded-xl p-6 mb-8 shadow-sm">
-                <!-- 1行目: キーワード検索 & 本文検索 -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <!-- 1行目: キーワード検索, 本文検索, 条件クリアボタン -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <!-- キーワード検索 -->
                     <div>
                         <x-form-label for="keyword">
@@ -62,7 +62,7 @@
 
                     <!-- 本文検索 -->
                     <div>
-                        <x-form-label for="body_keyword" class="text-right">
+                        <x-form-label for="body_keyword">
                             {{ __('本文キーワード') }}
                         </x-form-label>
                         <x-form-input
@@ -80,7 +80,7 @@
                             </template>
                         </datalist>
                         <template x-if="bodyKeywordHistory.length > 0">
-                            <div class="flex flex-wrap items-center justify-end gap-1.5 mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                            <div class="flex flex-wrap items-center gap-1.5 mt-1.5 text-xs text-gray-500 dark:text-gray-400">
                                 <span class="font-medium text-gray-400">履歴:</span>
                                 <template x-for="item in bodyKeywordHistory.slice(0, 5)" :key="item">
                                     <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-stone-800 rounded-md border border-gray-200 dark:border-stone-700">
@@ -108,10 +108,29 @@
                             </div>
                         </template>
                     </div>
+
+                    <!-- 絞り込み解除ボタン -->
+                    <div class="flex items-start md:items-end">
+                        <button
+                            type="button"
+                            @click="resetFilters()"
+                            :disabled="!hasActiveFilters"
+                            :class="{
+                                'bg-rose-50 text-rose-700 hover:bg-rose-100 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800 dark:hover:bg-rose-900/80 shadow-2xs cursor-pointer': hasActiveFilters,
+                                'bg-gray-100 text-gray-400 border-gray-200 dark:bg-stone-800/60 dark:text-gray-600 dark:border-stone-800 cursor-not-allowed opacity-60': !hasActiveFilters
+                            }"
+                            class="w-full px-4 py-2.5 font-semibold rounded-lg border transition-all duration-200 flex items-center justify-center gap-1.5"
+                        >
+                            <svg class="w-4 h-4 shrink-0 transition-transform duration-300" :class="{ 'rotate-180': hasActiveFilters }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                            <span x-text="hasActiveFilters ? `条件をクリア (${activeFilterCount})` : '絞り込みなし'"></span>
+                        </button>
+                    </div>
                 </div>
 
-                <!-- 2行目: ステータス, 登録日(開始), 登録日(終了), 並び順, 絞り込み解除 -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <!-- 2行目: ステータス, 登録日(開始), 登録日(終了), 並び順 -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <!-- ステータス -->
                     <div>
                         <x-form-label for="status">
@@ -173,25 +192,6 @@
                             x-model="sort"
                             @change="fetchResults()"
                         />
-                    </div>
-
-                    <!-- 絞り込み解除ボタン -->
-                    <div class="flex items-end">
-                        <button
-                            type="button"
-                            @click="resetFilters()"
-                            :disabled="!hasActiveFilters"
-                            :class="{
-                                'bg-rose-50 text-rose-700 hover:bg-rose-100 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800 dark:hover:bg-rose-900/80 shadow-2xs cursor-pointer': hasActiveFilters,
-                                'bg-gray-100 text-gray-400 border-gray-200 dark:bg-stone-800/60 dark:text-gray-600 dark:border-stone-800 cursor-not-allowed opacity-60': !hasActiveFilters
-                            }"
-                            class="w-full px-4 py-2.5 font-semibold rounded-lg border transition-all duration-200 flex items-center justify-center gap-1.5"
-                        >
-                            <svg class="w-4 h-4 shrink-0 transition-transform duration-300" :class="{ 'rotate-180': hasActiveFilters }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                            </svg>
-                            <span x-text="hasActiveFilters ? `条件をクリア (${activeFilterCount})` : '絞り込みなし'"></span>
-                        </button>
                     </div>
                 </div>
             </div>
