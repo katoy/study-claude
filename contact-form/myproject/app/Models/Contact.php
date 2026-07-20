@@ -48,7 +48,8 @@ class Contact extends Model
             $query->where(function (Builder $q) use ($keyword) {
                 $q->where('name', 'like', "%{$keyword}%")
                     ->orWhere('email', 'like', "%{$keyword}%")
-                    ->orWhere('subject', 'like', "%{$keyword}%");
+                    ->orWhere('subject', 'like', "%{$keyword}%")
+                    ->orWhere('body', 'like', "%{$keyword}%");
             });
         }
 

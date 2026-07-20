@@ -19,7 +19,7 @@
                             id="keyword"
                             name="keyword"
                             type="text"
-                            placeholder="名前・メール・件名"
+                            placeholder="名前・メール・件名・本文"
                             x-model="keyword"
                             @input.debounce.400ms="fetchResults()"
                         />
