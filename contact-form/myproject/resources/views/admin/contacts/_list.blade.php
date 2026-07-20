@@ -11,32 +11,32 @@
                 <a href="{{ route('admin.contacts.show', $contact) }}" class="block bg-white dark:bg-stone-900 border border-brand-border rounded-xl p-6 hover:shadow-lg hover:-translate-y-0.5 hover:border-brand-primary/40 dark:hover:border-brand-primary/40 active:scale-[0.995] transition-all duration-200 animate-slideIn">
                     <div class="flex items-start justify-between gap-4">
                         <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-3 mb-2">
+                            <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mb-2">
                                 <h3 class="text-lg font-bold text-brand-text truncate">
                                     {{ $contact->name }}
                                 </h3>
                                 <x-contact-status-badge :status="$contact->status" />
-                            </div>
-                            <p class="text-base font-semibold text-brand-text mb-1 truncate">
-                                {{ $contact->subject }}
-                            </p>
-                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
-                                {{ \Illuminate\Support\Str::limit($contact->body, 100) }}
-                            </p>
-                            <div class="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs text-gray-500 dark:text-gray-400 font-medium pt-2 border-t border-brand-border/40">
-                                <div class="flex items-center gap-1.5">
+
+                                <div class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 font-medium">
                                     <svg class="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
                                     <span>登録日時: {{ $contact->created_at->copy()->setTimezone(config('app.display_timezone'))->format('Y年m月d日 H:i') }}</span>
                                 </div>
-                                <div class="flex items-center gap-1.5 truncate">
+
+                                <div class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 font-medium truncate">
                                     <svg class="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                                     </svg>
                                     <span class="truncate">{{ $contact->email }}</span>
                                 </div>
                             </div>
+                            <p class="text-base font-semibold text-brand-text mb-1 truncate">
+                                {{ $contact->subject }}
+                            </p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                                {{ \Illuminate\Support\Str::limit($contact->body, 100) }}
+                            </p>
                         </div>
                         <div class="flex-shrink-0 self-center">
                             <svg class="w-5 h-5 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
