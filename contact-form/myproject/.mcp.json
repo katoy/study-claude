@@ -1,0 +1,24 @@
+{
+  "mcpServers": {
+    "claude-in-chrome": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["~/.claude/mcp/claude-in-chrome/dist/index.js"]
+    },
+    "notebooklm-mcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["notebooklm-mcp"]
+    },
+    "claude-mem": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["claude-mem-mcp"]
+    },
+    "playwright-mcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["playwright-mcp"]
+    }
+  }
+}
