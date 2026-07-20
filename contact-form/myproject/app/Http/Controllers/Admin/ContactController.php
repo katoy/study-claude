@@ -71,6 +71,7 @@ class ContactController extends Controller
             'filters' => [
                 'status' => $filters['status'],
                 'keyword' => $filters['keyword'],
+                'body_keyword' => $filters['body_keyword'],
                 'date_from' => $filters['date_from_display'],
                 'date_to' => $filters['date_to_display'],
                 'sort' => $filters['sort'],
@@ -109,6 +110,7 @@ class ContactController extends Controller
         $queryParams = array_filter([
             'status' => $request->query('status'),
             'keyword' => $request->query('keyword'),
+            'body_keyword' => $request->query('body_keyword'),
             'date_from' => $request->query('date_from'),
             'date_to' => $request->query('date_to'),
             'sort' => $request->query('sort'),
@@ -132,6 +134,7 @@ class ContactController extends Controller
         $queryParams = array_filter([
             'status' => $request->query('status'),
             'keyword' => $request->query('keyword'),
+            'body_keyword' => $request->query('body_keyword'),
             'date_from' => $request->query('date_from'),
             'date_to' => $request->query('date_to'),
             'sort' => $request->query('sort'),
@@ -159,12 +162,13 @@ class ContactController extends Controller
      * 一覧の絞り込み・並び替え条件を安全な値に正規化する。
      * 内部管理画面の絞り込みという性質上、不正値はエラーにせずデフォルトへフォールバックする。
      *
-     * @return array{status: string, keyword: string, date_from: ?Carbon, date_to: ?Carbon, date_from_display: string, date_to_display: string, sort: string}
+     * @return array{status: string, keyword: string, body_keyword: string, date_from: ?Carbon, date_to: ?Carbon, date_from_display: string, date_to_display: string, sort: string}
      */
     private function normalizeFilters(Request $request): array
     {
         $status = ContactStatus::tryFrom((string) $request->query('status', ''))?->value ?? '';
         $keyword = trim((string) $request->query('keyword', ''));
+        $bodyKeyword = trim((string) $request->query('body_keyword', ''));
 
         $dateFromDisplay = $request->query('date_from');
         $dateToDisplay = $request->query('date_to');
@@ -183,6 +187,7 @@ class ContactController extends Controller
         return [
             'status' => $status,
             'keyword' => $keyword,
+            'body_keyword' => $bodyKeyword,
             'date_from' => $dateFrom,
             'date_to' => $dateTo,
             'date_from_display' => $dateFromDisplayOutput,

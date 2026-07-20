@@ -240,17 +240,28 @@ class ContactControllerTest extends TestCase
         $this->assertStringContainsString('件名1', $contacts->first()->subject);
     }
 
-    public function test_index_filters_by_keyword_matching_body(): void
+    public function test_index_filters_by_body_keyword_matching_body(): void
     {
         $user = User::factory()->admin()->create();
         Contact::factory()->create(['body' => 'お問い合わせの特別な本文内容です。']);
         Contact::factory()->create(['body' => '一般的な別の本文です。']);
 
-        $response = $this->actingAs($user)->get(route('admin.contacts.index', ['keyword' => '特別な本文']));
+        $response = $this->actingAs($user)->get(route('admin.contacts.index', ['body_keyword' => '特別な本文']));
 
         $contacts = $response->viewData('contacts');
         $this->assertCount(1, $contacts);
         $this->assertStringContainsString('特別な本文', $contacts->first()->body);
+    }
+
+    public function test_index_keyword_filter_does_not_match_body(): void
+    {
+        $user = User::factory()->admin()->create();
+        Contact::factory()->create(['name' => 'テスト太郎', 'body' => '特別な本文']);
+
+        $response = $this->actingAs($user)->get(route('admin.contacts.index', ['keyword' => '特別な本文']));
+
+        $contacts = $response->viewData('contacts');
+        $this->assertCount(0, $contacts);
     }
 
     public function test_index_filters_by_date_range(): void

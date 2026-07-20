@@ -11,6 +11,7 @@ window.Alpine = Alpine;
 Alpine.data('contactFilters', (initial) => ({
     status: initial.status ?? '',
     keyword: initial.keyword ?? '',
+    bodyKeyword: initial.body_keyword ?? '',
     dateFrom: initial.date_from ?? '',
     dateTo: initial.date_to ?? '',
     sort: initial.sort ?? 'created_at-desc',
@@ -29,6 +30,7 @@ Alpine.data('contactFilters', (initial) => ({
         const params = new URLSearchParams();
         if (this.status) params.set('status', this.status);
         if (this.keyword) params.set('keyword', this.keyword);
+        if (this.bodyKeyword) params.set('body_keyword', this.bodyKeyword);
         if (this.dateFrom) params.set('date_from', this.dateFrom);
         if (this.dateTo) params.set('date_to', this.dateTo);
         if (this.sort && this.sort !== 'created_at-desc') params.set('sort', this.sort);
@@ -73,6 +75,7 @@ Alpine.data('contactFilters', (initial) => ({
         const params = new URL(url, window.location.origin).searchParams;
         this.status = params.get('status') ?? '';
         this.keyword = params.get('keyword') ?? '';
+        this.bodyKeyword = params.get('body_keyword') ?? '';
         this.dateFrom = params.get('date_from') ?? '';
         this.dateTo = params.get('date_to') ?? '';
         this.sort = params.get('sort') ?? 'created_at-desc';
@@ -94,6 +97,7 @@ Alpine.data('contactFilters', (initial) => ({
     resetFilters() {
         this.status = '';
         this.keyword = '';
+        this.bodyKeyword = '';
         this.dateFrom = '';
         this.dateTo = '';
         this.sort = 'created_at-desc';

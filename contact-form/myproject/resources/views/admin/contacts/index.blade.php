@@ -9,18 +9,33 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- 絞り込み・並び替えフォーム -->
             <div class="bg-white dark:bg-stone-900 border border-brand-border rounded-xl p-6 mb-8 shadow-sm">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
                     <!-- キーワード検索 -->
                     <div>
                         <x-form-label for="keyword">
-                            {{ __('キーワード') }}
+                            {{ __('キーワード（名前・メール・件名）') }}
                         </x-form-label>
                         <x-form-input
                             id="keyword"
                             name="keyword"
                             type="text"
-                            placeholder="名前・メール・件名・本文"
+                            placeholder="名前・メール・件名"
                             x-model="keyword"
+                            @input.debounce.400ms="fetchResults()"
+                        />
+                    </div>
+
+                    <!-- 本文検索 -->
+                    <div>
+                        <x-form-label for="body_keyword">
+                            {{ __('本文キーワード') }}
+                        </x-form-label>
+                        <x-form-input
+                            id="body_keyword"
+                            name="body_keyword"
+                            type="text"
+                            placeholder="本文に含まれる文字"
+                            x-model="bodyKeyword"
                             @input.debounce.400ms="fetchResults()"
                         />
                     </div>

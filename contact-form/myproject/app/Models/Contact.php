@@ -35,7 +35,7 @@ class Contact extends Model
      * 絞り込み条件を適用するローカルスコープ。
      * 呼び出し側で正規化済みの値が渡される前提。
      *
-     * @param  array{status: string, keyword: string, date_from: ?Carbon, date_to: ?Carbon}  $filters
+     * @param  array{status: string, keyword: string, body_keyword?: string, date_from: ?Carbon, date_to: ?Carbon}  $filters
      */
     public function scopeFilter(Builder $query, array $filters): Builder
     {
@@ -48,9 +48,13 @@ class Contact extends Model
             $query->where(function (Builder $q) use ($keyword) {
                 $q->where('name', 'like', "%{$keyword}%")
                     ->orWhere('email', 'like', "%{$keyword}%")
-                    ->orWhere('subject', 'like', "%{$keyword}%")
-                    ->orWhere('body', 'like', "%{$keyword}%");
+                    ->orWhere('subject', 'like', "%{$keyword}%");
             });
+        }
+
+        if (! empty($filters['body_keyword'])) {
+            $bodyKeyword = $filters['body_keyword'];
+            $query->where('body', 'like', "%{$bodyKeyword}%");
         }
 
         if ($filters['date_from'] !== null) {

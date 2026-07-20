@@ -26,7 +26,7 @@
     @if ($contacts->count() > 0)
         <div class="space-y-4">
             @foreach ($contacts as $contact)
-                <a href="{{ route('admin.contacts.show', array_merge(['contact' => $contact], request()->only(['status', 'keyword', 'date_from', 'date_to', 'sort']))) }}" class="block bg-white dark:bg-stone-900 border border-brand-border rounded-xl p-6 hover:shadow-lg hover:-translate-y-0.5 hover:border-brand-primary/40 dark:hover:border-brand-primary/40 active:scale-[0.995] transition-all duration-200 animate-slideIn">
+                <a href="{{ route('admin.contacts.show', array_merge(['contact' => $contact], request()->only(['status', 'keyword', 'body_keyword', 'date_from', 'date_to', 'sort']))) }}" class="block bg-white dark:bg-stone-900 border border-brand-border rounded-xl p-6 hover:shadow-lg hover:-translate-y-0.5 hover:border-brand-primary/40 dark:hover:border-brand-primary/40 active:scale-[0.995] transition-all duration-200 animate-slideIn">
                     <div class="flex items-start justify-between gap-4">
                         <div class="flex-1 min-w-0">
                             <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mb-2">
