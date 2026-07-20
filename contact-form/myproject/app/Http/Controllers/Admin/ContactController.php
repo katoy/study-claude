@@ -48,11 +48,26 @@ class ContactController extends Controller
             ->paginate(20)
             ->withQueryString();
 
+        $filtersForCounts = array_merge($filters, ['status' => '']);
+        $statusCountsRaw = Contact::query()
+            ->filter($filtersForCounts)
+            ->selectRaw('status, count(*) as count')
+            ->groupBy('status')
+            ->pluck('count', 'status')
+            ->toArray();
+
+        $statusCounts = [
+            ContactStatus::New->value => $statusCountsRaw[ContactStatus::New->value] ?? 0,
+            ContactStatus::InProgress->value => $statusCountsRaw[ContactStatus::InProgress->value] ?? 0,
+            ContactStatus::Resolved->value => $statusCountsRaw[ContactStatus::Resolved->value] ?? 0,
+        ];
+
         // Ajax リクエスト時は一覧部分のパーシャルのみ返却し、通常時はフルページを返す
         $view = $request->ajax() ? 'admin.contacts._list' : 'admin.contacts.index';
 
         return view($view, [
             'contacts' => $contacts,
+            'statusCounts' => $statusCounts,
             'filters' => [
                 'status' => $filters['status'],
                 'keyword' => $filters['keyword'],

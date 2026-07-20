@@ -38,7 +38,8 @@ class ContactControllerTest extends TestCase
 
         $response->assertStatus(200)
             ->assertViewIs('admin.contacts.index')
-            ->assertViewHas('contacts');
+            ->assertViewHas('contacts')
+            ->assertViewHas('statusCounts');
     }
 
     public function test_index_shows_latest_contacts_first(): void

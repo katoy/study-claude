@@ -1,8 +1,26 @@
 <div class="py-6">
-    <div class="mb-4 flex items-center justify-between">
-        <span class="text-sm text-gray-600 dark:text-gray-400">
-            全 {{ $contacts->total() }} 件
-        </span>
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center gap-3">
+            <span class="text-sm font-bold text-gray-700 dark:text-gray-300">
+                全 {{ $contacts->total() }} 件
+            </span>
+            @if (isset($statusCounts))
+                <div class="flex flex-wrap items-center gap-2 text-xs">
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200 dark:bg-blue-900/50 dark:text-blue-200 dark:border-blue-800 font-semibold">
+                        <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                        新規: {{ $statusCounts['new'] ?? 0 }}件
+                    </span>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-900/50 dark:text-amber-200 dark:border-amber-800 font-semibold">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                        対応中: {{ $statusCounts['in_progress'] ?? 0 }}件
+                    </span>
+                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-900/50 dark:text-emerald-200 dark:border-emerald-800 font-semibold">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        解決済み: {{ $statusCounts['resolved'] ?? 0 }}件
+                    </span>
+                </div>
+            @endif
+        </div>
     </div>
 
     @if ($contacts->count() > 0)
