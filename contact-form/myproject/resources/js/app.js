@@ -9,7 +9,7 @@ window.Alpine = Alpine;
  * initial にはサーバー側で正規化済みの現在の絞り込み条件（filters）を渡す。
  */
 Alpine.data('contactFilters', (initial) => ({
-    status: initial.status ?? '',
+    status: Array.isArray(initial.status) ? initial.status : (initial.status ? String(initial.status).split(',') : []),
     keyword: initial.keyword ?? '',
     bodyKeyword: initial.body_keyword ?? '',
     dateFrom: initial.date_from ?? '',
@@ -24,10 +24,11 @@ Alpine.data('contactFilters', (initial) => ({
 
     /**
      * 現在適用されている絞り込み条件の数を返す。
+     * ステータスは全選択または未選択時は無効とみなし、1〜2個指定の場合にカウント。
      */
     get activeFilterCount() {
         let count = 0;
-        if (this.status) count++;
+        if (Array.isArray(this.status) && this.status.length > 0 && this.status.length < 3) count++;
         if (this.keyword) count++;
         if (this.bodyKeyword) count++;
         if (this.dateFrom) count++;
@@ -182,7 +183,9 @@ Alpine.data('contactFilters', (initial) => ({
      */
     buildQueryString() {
         const params = new URLSearchParams();
-        if (this.status) params.set('status', this.status);
+        if (Array.isArray(this.status) && this.status.length > 0) {
+            this.status.forEach((s) => params.append('status[]', s));
+        }
         if (this.keyword) params.set('keyword', this.keyword);
         if (this.bodyKeyword) params.set('body_keyword', this.bodyKeyword);
         if (this.dateFrom) params.set('date_from', this.dateFrom);
@@ -229,7 +232,14 @@ Alpine.data('contactFilters', (initial) => ({
      */
     syncStateFromUrl(url) {
         const params = new URL(url, window.location.origin).searchParams;
-        this.status = params.get('status') ?? '';
+        let statusValues = params.getAll('status[]');
+        if (statusValues.length === 0) {
+            statusValues = params.getAll('status');
+        }
+        if (statusValues.length === 1 && statusValues[0].includes(',')) {
+            statusValues = statusValues[0].split(',');
+        }
+        this.status = statusValues;
         this.keyword = params.get('keyword') ?? '';
         this.bodyKeyword = params.get('body_keyword') ?? '';
         this.dateFrom = params.get('date_from') ?? '';
@@ -252,7 +262,7 @@ Alpine.data('contactFilters', (initial) => ({
      * 絞り込み条件をクリアする。
      */
     resetFilters() {
-        this.status = '';
+        this.status = [];
         this.keyword = '';
         this.bodyKeyword = '';
         this.dateFrom = '';
@@ -260,6 +270,40 @@ Alpine.data('contactFilters', (initial) => ({
         this.sort = 'created_at-desc';
         this.perPage = 20;
         this.fetchResults();
+    },
+}));
+
+/**
+ * テーマ（ダーク／ライト）の切り替え。
+ */
+Alpine.data('themeToggle', () => ({
+    isDark: false,
+
+    init() {
+        const saved = localStorage.getItem('app_theme');
+        if (saved) {
+            this.isDark = saved === 'dark';
+        } else {
+            this.isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        }
+        this.applyTheme();
+    },
+
+    toggleTheme() {
+        this.isDark = !this.isDark;
+        this.applyTheme();
+        try {
+            localStorage.setItem('app_theme', this.isDark ? 'dark' : 'light');
+        } catch {}
+    },
+
+    applyTheme() {
+        const html = document.documentElement;
+        if (this.isDark) {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
     },
 }));
 

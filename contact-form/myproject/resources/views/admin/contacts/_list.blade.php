@@ -50,49 +50,53 @@
             @endif
         </div>
 
-        <div class="space-y-2">
-            @foreach ($contacts as $contact)
-                <div class="flex items-center gap-1.5 sm:gap-3 animate-slideIn">
-                    <div class="w-5 sm:w-9 shrink-0 text-right font-mono text-xs sm:text-sm font-bold text-gray-600 dark:text-gray-300 select-none">{{ $contacts->firstItem() + $loop->index }}</div>
-                    <a href="{{ route('admin.contacts.show', array_merge(['contact' => $contact], request()->only(['status', 'keyword', 'body_keyword', 'date_from', 'date_to', 'sort', 'per_page', 'page']))) }}" class="flex-1 min-w-0 bg-white dark:bg-stone-900 border border-brand-border rounded-lg p-2.5 sm:p-3.5 hover:shadow-md hover:-translate-y-0.5 hover:border-brand-primary/40 dark:hover:border-brand-primary/40 active:scale-[0.995] transition-all duration-200">
-                        <div class="flex items-center justify-between gap-3">
-                            <div class="flex-1 min-w-0">
-                                <div class="flex flex-wrap items-center gap-x-3 gap-y-0.5 mb-1">
-                                    <h3 class="text-sm sm:text-base font-bold text-brand-text truncate">
-                                        {{ $contact->name }}
-                                    </h3>
-                                    <x-contact-status-badge :status="$contact->status" />
-
-                                    <div class="hidden sm:flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 font-medium">
-                                        <svg class="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        <span>{{ __('登録日時:') }} {{ $contact->created_at->copy()->setTimezone(config('app.display_timezone'))->format('Y年m月d日 H:i') }}</span>
-                                    </div>
-
-                                    <div class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 font-medium truncate">
-                                        <svg class="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                                        </svg>
-                                        <span class="truncate">{{ $contact->email }}</span>
-                                    </div>
-                                </div>
-                                <p class="text-sm font-semibold text-brand-text truncate sm:mb-0.5">
+        <div class="overflow-x-auto border border-brand-border rounded-lg shadow-sm">
+            <table class="w-full bg-white dark:bg-stone-900">
+                <thead>
+                    <tr class="border-b border-brand-border/40 bg-gray-50 dark:bg-stone-800/50">
+                        <th scope="col" class="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-300 w-12">
+                            {{ __('No') }}
+                        </th>
+                        <th scope="col" class="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-300 w-20">
+                            {{ __('ステータス') }}
+                        </th>
+                        <th scope="col" class="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-300 w-32 sm:w-40">
+                            {{ __('名前') }}
+                        </th>
+                        <th scope="col" class="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-300 w-24 sm:w-32">
+                            {{ __('登録日') }}
+                        </th>
+                        <th scope="col" class="px-3 sm:px-4 py-2.5 sm:py-3 text-left text-xs sm:text-sm font-bold text-gray-700 dark:text-gray-300 flex-1 min-w-32">
+                            {{ __('件名') }}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-brand-border/40">
+                    @foreach ($contacts as $contact)
+                        <tr class="hover:bg-gray-50 dark:hover:bg-stone-800/30 transition-colors duration-150 animate-slideIn align-middle">
+                            <td class="px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-mono font-bold text-gray-600 dark:text-gray-300 text-right align-middle">{{ $contacts->firstItem() + $loop->index }}</td>
+                            <td class="px-3 sm:px-4 py-2 sm:py-2.5 align-middle whitespace-nowrap">
+                                <x-contact-status-badge :status="$contact->status" />
+                            </td>
+                            <td class="px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold text-brand-text truncate align-middle">
+                                <a href="{{ route('admin.contacts.show', array_merge(['contact' => $contact], request()->only(['status', 'keyword', 'body_keyword', 'date_from', 'date_to', 'sort', 'per_page', 'page']))) }}" class="hover:text-brand-primary transition-colors duration-150" :href>
+                                    {{ $contact->name }}
+                                </a>
+                            </td>
+                            <td class="px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap align-middle">
+                                <a href="{{ route('admin.contacts.show', array_merge(['contact' => $contact], request()->only(['status', 'keyword', 'body_keyword', 'date_from', 'date_to', 'sort', 'per_page', 'page']))) }}" class="hover:text-brand-primary transition-colors duration-150">
+                                    {{ $contact->formatted_created_at }}
+                                </a>
+                            </td>
+                            <td class="px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate align-middle">
+                                <a href="{{ route('admin.contacts.show', array_merge(['contact' => $contact], request()->only(['status', 'keyword', 'body_keyword', 'date_from', 'date_to', 'sort', 'per_page', 'page']))) }}" class="hover:text-brand-primary transition-colors duration-150">
                                     {{ $contact->subject }}
-                                </p>
-                                <p class="hidden text-xs text-gray-600 dark:text-gray-400 line-clamp-1 sm:block">
-                                    {{ \Illuminate\Support\Str::limit($contact->body, 100) }}
-                                </p>
-                            </div>
-                            <div class="flex-shrink-0 self-center">
-                                <svg class="w-4 h-4 text-gray-400 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            @endforeach
+                                </a>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
 
         <div class="mt-4 flex flex-wrap items-center justify-end gap-3 sm:gap-4">

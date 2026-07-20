@@ -17,21 +17,23 @@
         --color-brand-warning: 180 83 9; /* amber-700 */
     }
 
-    @media (prefers-color-scheme: dark) {
-        :root {
-            /* Dark Mode */
-            --color-brand-primary: 110 231 183; /* emerald-300: foreground */
-            --color-brand-action: 4 120 87; /* emerald-700: white text background */
-            --color-brand-action-hover: 6 95 70; /* emerald-800 */
-            --color-brand-light: 24 23 21; /* stone-900 */
-            --color-brand-dark: 245 244 242; /* stone-50 */
-            --color-brand-border: 87 83 82; /* stone-700 */
-            --color-brand-text: 245 244 242; /* stone-50 */
-            --color-brand-success: 110 231 183; /* emerald-300 */
-            --color-brand-error: 253 164 175; /* rose-300 */
-            --color-brand-warning: 252 211 77; /* amber-300 */
-        }
+    .dark {
+        /* Dark Mode */
+        --color-brand-primary: 110 231 183; /* emerald-300: foreground */
+        --color-brand-action: 4 120 87; /* emerald-700: white text background */
+        --color-brand-action-hover: 6 95 70; /* emerald-800 */
+        --color-brand-light: 24 23 21; /* stone-900 */
+        --color-brand-dark: 245 244 242; /* stone-50 */
+        --color-brand-border: 87 83 82; /* stone-700 */
+        --color-brand-text: 245 244 242; /* stone-50 */
+        --color-brand-success: 110 231 183; /* emerald-300 */
+        --color-brand-error: 253 164 175; /* rose-300 */
+        --color-brand-warning: 252 211 77; /* amber-300 */
     }
+}
+
+[x-cloak] {
+    display: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

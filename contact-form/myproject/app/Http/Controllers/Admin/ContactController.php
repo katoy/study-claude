@@ -60,7 +60,7 @@ class ContactController extends Controller
             ->paginate($filters['per_page'])
             ->withQueryString();
 
-        $filtersForCounts = array_merge($filters, ['status' => '']);
+        $filtersForCounts = array_merge($filters, ['status' => []]);
         $statusCountsRaw = Contact::query()
             ->filter($filtersForCounts)
             ->selectRaw('status, count(*) as count')
@@ -179,11 +179,25 @@ class ContactController extends Controller
      * 一覧の絞り込み・並び替え条件を安全な値に正規化する。
      * 内部管理画面の絞り込みという性質上、不正値はエラーにせずデフォルトへフォールバックする。
      *
-     * @return array{status: string, keyword: string, body_keyword: string, date_from: ?Carbon, date_to: ?Carbon, date_from_display: string, date_to_display: string, sort: string, per_page: int}
+     * @return array{status: array<string>, keyword: string, body_keyword: string, date_from: ?Carbon, date_to: ?Carbon, date_from_display: string, date_to_display: string, sort: string, per_page: int}
      */
     private function normalizeFilters(Request $request): array
     {
-        $status = ContactStatus::tryFrom((string) $request->query('status', ''))?->value ?? '';
+        $allStatuses = array_map(fn ($case) => $case->value, ContactStatus::cases());
+
+        $statusInput = $request->query('status');
+        if ($statusInput === null) {
+            $statusInput = $request->query('statuses');
+        }
+
+        $rawStatuses = [];
+        if (is_array($statusInput)) {
+            $rawStatuses = $statusInput;
+        } elseif (is_string($statusInput) && $statusInput !== '') {
+            $rawStatuses = explode(',', $statusInput);
+        }
+
+        $statuses = array_values(array_intersect($rawStatuses, $allStatuses));
         $keyword = trim((string) $request->query('keyword', ''));
         $bodyKeyword = trim((string) $request->query('body_keyword', ''));
 
@@ -205,7 +219,7 @@ class ContactController extends Controller
         $perPage = in_array($perPageInput, self::PER_PAGE_OPTIONS, true) ? $perPageInput : self::DEFAULT_PER_PAGE;
 
         return [
-            'status' => $status,
+            'status' => $statuses,
             'keyword' => $keyword,
             'body_keyword' => $bodyKeyword,
             'date_from' => $dateFrom,

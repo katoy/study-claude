@@ -233,10 +233,10 @@ class ContactControllerTest extends TestCase
 
         $this->actingAs($user)
             ->get(route('admin.contacts.index'))
-            ->assertSee('2026年07月19日 09:00');
+            ->assertSee('2026-07-19 (日) 09:00');
 
         $this->get(route('admin.contacts.show', $contact))
-            ->assertSee('2026年07月19日 09:00:00');
+            ->assertSee('2026-07-19 (日) 09:00');
     }
 
     public function test_index_filters_by_status(): void
@@ -246,12 +246,58 @@ class ContactControllerTest extends TestCase
         Contact::factory()->create(['status' => ContactStatus::InProgress]);
         Contact::factory()->create(['status' => ContactStatus::Resolved]);
 
-        $response = $this->actingAs($user)->get(route('admin.contacts.index', ['status' => ContactStatus::InProgress->value]));
+        $response = $this->actingAs($user)->get(route('admin.contacts.index', ['status' => [ContactStatus::InProgress->value]]));
 
         $response->assertStatus(200);
         $contacts = $response->viewData('contacts');
         $this->assertCount(1, $contacts);
         $this->assertEquals(ContactStatus::InProgress->value, $contacts->first()->status->value);
+    }
+
+    public function test_index_filters_by_multiple_statuses(): void
+    {
+        $user = User::factory()->admin()->create();
+        Contact::factory()->create(['status' => ContactStatus::New]);
+        Contact::factory()->create(['status' => ContactStatus::InProgress]);
+        Contact::factory()->create(['status' => ContactStatus::Resolved]);
+
+        $response = $this->actingAs($user)->get(route('admin.contacts.index', [
+            'status' => [ContactStatus::New->value, ContactStatus::InProgress->value],
+        ]));
+
+        $response->assertStatus(200);
+        $contacts = $response->viewData('contacts');
+        $this->assertCount(2, $contacts);
+    }
+
+    public function test_index_shows_all_when_no_status_checked(): void
+    {
+        $user = User::factory()->admin()->create();
+        Contact::factory()->create(['status' => ContactStatus::New]);
+        Contact::factory()->create(['status' => ContactStatus::InProgress]);
+        Contact::factory()->create(['status' => ContactStatus::Resolved]);
+
+        $response = $this->actingAs($user)->get(route('admin.contacts.index', ['status' => []]));
+
+        $response->assertStatus(200);
+        $contacts = $response->viewData('contacts');
+        $this->assertCount(3, $contacts);
+    }
+
+    public function test_index_shows_all_when_all_statuses_checked(): void
+    {
+        $user = User::factory()->admin()->create();
+        Contact::factory()->create(['status' => ContactStatus::New]);
+        Contact::factory()->create(['status' => ContactStatus::InProgress]);
+        Contact::factory()->create(['status' => ContactStatus::Resolved]);
+
+        $response = $this->actingAs($user)->get(route('admin.contacts.index', [
+            'status' => [ContactStatus::New->value, ContactStatus::InProgress->value, ContactStatus::Resolved->value],
+        ]));
+
+        $response->assertStatus(200);
+        $contacts = $response->viewData('contacts');
+        $this->assertCount(3, $contacts);
     }
 
     public function test_index_filters_by_keyword_matching_name(): void
@@ -593,5 +639,28 @@ class ContactControllerTest extends TestCase
         $response->assertSee('Per Page:');
 
         app()->setLocale(config('app.locale'));
+    }
+
+    public function test_index_filters_by_status_string_comma_separated(): void
+    {
+        $user = User::factory()->admin()->create();
+        Contact::factory()->create(['status' => ContactStatus::New]);
+        Contact::factory()->create(['status' => ContactStatus::InProgress]);
+        Contact::factory()->create(['status' => ContactStatus::Resolved]);
+
+        $response = $this->actingAs($user)->get(route('admin.contacts.index', [
+            'status' => 'new,in_progress',
+        ]));
+
+        $response->assertStatus(200);
+        $contacts = $response->viewData('contacts');
+        $this->assertCount(2, $contacts);
+
+        // Test scopeFilter directly with all variations
+        $base = ['keyword' => '', 'body_keyword' => '', 'date_from' => null, 'date_to' => null];
+        $this->assertCount(3, Contact::query()->filter(array_merge($base, ['status' => '']))->get());
+        $this->assertCount(3, Contact::query()->filter(array_merge($base, ['status' => []]))->get());
+        $this->assertCount(1, Contact::query()->filter(array_merge($base, ['status' => 'new']))->get());
+        $this->assertCount(2, Contact::query()->filter(array_merge($base, ['status' => 'new,in_progress']))->get());
     }
 }

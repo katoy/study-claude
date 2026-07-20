@@ -77,7 +77,7 @@
                         <!-- 受信日時 -->
                         <div class="p-4 bg-brand-light dark:bg-stone-950 rounded-xl border border-brand-border/40">
                             <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">{{ __('受信日時') }}</p>
-                            <p class="text-base text-brand-text font-medium">{{ $contact->created_at->copy()->setTimezone(config('app.display_timezone'))->format('Y年m月d日 H:i:s') }}</p>
+                            <p class="text-base text-brand-text font-medium">{{ $contact->formatted_created_at }}</p>
                         </div>
 
                         <!-- メールアドレス -->
