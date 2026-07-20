@@ -351,8 +351,8 @@ composer dev
 ```
 
 アクセス先：
-- アプリケーション: http://localhost:8000
-- Vite HMR: http://localhost:5173
+- アプリケーション: <http://localhost:8000>
+- Vite HMR: <http://localhost:5173>
 
 ### ビルド・アセット
 

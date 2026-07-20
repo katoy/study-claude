@@ -68,7 +68,7 @@ class ContactControllerTest extends TestCase
 
         $this->assertIsString($script);
         $this->assertStringContainsString(
-            "isExpanded: window.matchMedia('(min-width: 640px)').matches",
+            'isExpanded: window.matchMedia("(min-width: 640px)").matches',
             $script
         );
     }
