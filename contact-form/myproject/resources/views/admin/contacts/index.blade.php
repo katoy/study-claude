@@ -62,7 +62,7 @@
 
                     <!-- 本文検索 -->
                     <div>
-                        <x-form-label for="body_keyword">
+                        <x-form-label for="body_keyword" class="text-right">
                             {{ __('本文キーワード') }}
                         </x-form-label>
                         <x-form-input
@@ -80,7 +80,7 @@
                             </template>
                         </datalist>
                         <template x-if="bodyKeywordHistory.length > 0">
-                            <div class="flex flex-wrap items-center gap-1.5 mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                            <div class="flex flex-wrap items-center justify-end gap-1.5 mt-1.5 text-xs text-gray-500 dark:text-gray-400">
                                 <span class="font-medium text-gray-400">履歴:</span>
                                 <template x-for="item in bodyKeywordHistory.slice(0, 5)" :key="item">
                                     <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-stone-800 rounded-md border border-gray-200 dark:border-stone-700">
