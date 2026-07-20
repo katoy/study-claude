@@ -368,4 +368,32 @@ class ContactControllerTest extends TestCase
         // ページネーションリンクにステータスフィルタが含まれることを確認
         $this->assertStringContainsString('status='.urlencode(ContactStatus::InProgress->value), $html);
     }
+
+    public function test_update_handles_database_exception_gracefully(): void
+    {
+        $user = User::factory()->admin()->create();
+        $contact = Contact::factory()->create(['status' => ContactStatus::New]);
+
+        Contact::updating(function () {
+            throw new \Exception('DB Error');
+        });
+
+        $response = $this->actingAs($user)->patch(route('admin.contacts.update', $contact), [
+            'status' => ContactStatus::InProgress->value,
+        ]);
+
+        $response->assertRedirectToRoute('admin.contacts.show', $contact);
+        $response->assertSessionHas('error', 'ステータスの更新中にエラーが発生しました。時間をおいて再度お試しください。');
+    }
+
+    public function test_index_handles_out_of_range_calendar_date(): void
+    {
+        $user = User::factory()->admin()->create();
+        Contact::factory(2)->create();
+
+        $response = $this->actingAs($user)->get(route('admin.contacts.index', ['date_from' => '2026-02-31']));
+
+        $contacts = $response->viewData('contacts');
+        $this->assertCount(2, $contacts);
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Contact;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -203,5 +204,27 @@ class ContactFormTest extends TestCase
         $this->post(route('contact.confirm'), $data);
         $this->post(route('contact.store'))->assertTooManyRequests();
         $this->assertDatabaseCount('contacts', 5);
+    }
+
+    public function test_store_handles_database_exception_gracefully(): void
+    {
+        $data = [
+            'name' => 'テスト太郎',
+            'email' => 'test@example.com',
+            'subject' => 'テスト件名',
+            'body' => 'テスト本文です。',
+        ];
+
+        $this->post(route('contact.confirm'), $data);
+
+        Contact::creating(function () {
+            throw new \Exception('DB Error');
+        });
+
+        $response = $this->post(route('contact.store'));
+
+        $response->assertRedirectToRoute('contact.create');
+        $response->assertSessionHas('error');
+        $this->assertEquals($data, session('contact.input'));
     }
 }
