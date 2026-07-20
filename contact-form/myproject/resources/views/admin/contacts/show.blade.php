@@ -98,9 +98,7 @@
                     <!-- 本文 -->
                     <div class="mb-10">
                         <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">{{ __('本文') }}</p>
-                        <div class="text-base text-brand-text whitespace-pre-wrap leading-relaxed bg-brand-light dark:bg-stone-950 p-6 rounded-xl border border-brand-border/40 font-mono">
-                            {{ $contact->body }}
-                        </div>
+                        <div class="text-left text-base text-brand-text whitespace-pre-wrap leading-relaxed bg-brand-light dark:bg-stone-950 p-6 rounded-xl border border-brand-border/40">{{ $contact->body }}</div>
                     </div>
 
                     <!-- ステータス変更フォーム -->
