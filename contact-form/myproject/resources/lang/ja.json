@@ -72,5 +72,17 @@
   "Click here to re-send the verification email.": "ここをクリックして確認メールを再送信します。",
   "A new verification link has been sent to your email address.": "新しい確認リンクをメールアドレスに送信しました。",
   "Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.": "アカウントを削除すると、すべてのリソースとデータが永続的に削除されます。アカウントを削除する前に、保持したいデータまたは情報をダウンロードしてください。",
-  "Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.": "アカウントを削除すると、すべてのリソースとデータが永続的に削除されます。アカウントを永久に削除することを確認するために、パスワードを入力してください。"
+  "Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.": "アカウントを削除すると、すべてのリソースとデータが永続的に削除されます。アカウントを永久に削除することを確認するために、パスワードを入力してください。",
+  "All rights reserved.": "無断転載を禁じます。",
+  "Pagination Navigation": "ページネーション",
+  "Go to page :page": ":page ページへ",
+  "現在のページ": "現在のページ",
+  "全 :total 件中 :first〜:last 件を表示中": "全 :total 件中 :first〜:last 件を表示中",
+  "ナビゲーションメニューを開閉": "ナビゲーションメニューを開閉",
+  "メインナビゲーション": "メインナビゲーション",
+  "製品・サービスに関するお問い合わせを受け付けています。": "製品・サービスに関するお問い合わせを受け付けています。",
+  "お問い合わせの確認と対応状況を管理します。": "お問い合わせの確認と対応状況を管理します。",
+  "管理画面にログインします。": "管理画面にログインします。",
+  "件の条件適用中": "件の条件適用中",
+  "トップページ": "トップページ"
 }

@@ -1,7 +1,7 @@
 @extends('layouts.public')
 
 @section('content')
-<div class="text-center py-12 px-6 bg-white dark:bg-stone-900 border border-brand-border/60 rounded-2xl shadow-xl transition-all duration-300 animate-slideIn">
+<div class="text-center py-9 px-5 sm:py-12 sm:px-6 bg-white dark:bg-stone-900 border border-brand-border/60 rounded-2xl shadow-xl transition-all duration-300 animate-slideIn">
     <!-- Icon / Badge -->
     <div class="mb-6 inline-block">
         <div class="w-16 h-16 mx-auto bg-emerald-100 dark:bg-emerald-950/50 rounded-2xl flex items-center justify-center shadow-inner">
@@ -12,7 +12,7 @@
     </div>
 
     <!-- Main Heading -->
-    <h1 class="text-4xl font-extrabold text-brand-text mb-4 tracking-tight leading-tight">
+    <h1 class="text-3xl sm:text-4xl font-extrabold text-brand-text mb-4 tracking-tight leading-tight">
         {{ __('お気軽にお問い合わせください') }}
     </h1>
 
@@ -23,7 +23,7 @@
 
     <!-- CTAs -->
     <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-        <a href="{{ route('contact.create') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 bg-brand-primary text-white font-bold rounded-xl hover:bg-emerald-700 active:scale-98 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-150">
+        <a href="{{ route('contact.create') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 bg-brand-action text-white font-bold rounded-xl hover:bg-brand-action-hover active:scale-[0.98] hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-150">
             <span>{{ __('お問い合わせフォームを開く') }}</span>
             <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
@@ -35,7 +35,7 @@
     @auth
         <div class="mt-12 pt-8 border-t border-brand-border/60">
             <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ __('管理者メニュー') }}</p>
-            <a href="{{ route('admin.contacts.index') }}" class="inline-flex items-center text-brand-primary hover:text-emerald-700 font-semibold text-sm underline underline-offset-2">
+            <a href="{{ route('admin.contacts.index') }}" class="inline-flex items-center text-brand-primary hover:text-brand-primary/80 font-semibold text-sm underline underline-offset-2">
                 {{ __('お問い合わせ一覧を見る') }}
                 <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>

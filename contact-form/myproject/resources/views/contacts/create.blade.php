@@ -1,9 +1,9 @@
 @extends('layouts.public')
 
 @section('content')
-<div class="bg-white dark:bg-stone-900 p-8 border border-brand-border rounded-xl shadow-sm animate-slideIn">
-    <h2 class="text-3xl font-bold text-brand-text mb-2">{{ __('お問い合わせフォーム') }}</h2>
-    <p class="text-gray-600 dark:text-gray-400 mb-8">{{ __('ご不明な点やご質問がございましたら、下記のフォームよりお気軽にお問い合わせください。') }}</p>
+<div class="bg-white dark:bg-stone-900 p-5 sm:p-8 border border-brand-border rounded-xl shadow-sm animate-slideIn">
+    <h1 class="text-2xl sm:text-3xl font-bold text-brand-text mb-2">{{ __('お問い合わせフォーム') }}</h1>
+    <p class="text-gray-600 dark:text-gray-400 mb-6 sm:mb-8">{{ __('ご不明な点やご質問がございましたら、下記のフォームよりお気軽にお問い合わせください。') }}</p>
 
     @if (session('error'))
         <div class="mb-6 bg-rose-50 dark:bg-rose-950 border border-rose-200 dark:border-rose-800 rounded-lg p-4 text-rose-900 dark:text-rose-50 flex items-center gap-3 animate-slideIn">
@@ -17,47 +17,57 @@
     <form method="POST" action="{{ route('contact.confirm') }}" class="space-y-6">
         @csrf
 
-        <div>
-            <x-form-label for="name" :value="__('お名前')" />
-            <x-form-input id="name" name="name" type="text" :placeholder="__('山田太郎')" :value="$input['name'] ?? null" required />
-            <x-form-error :messages="$errors->get('name')" />
-        </div>
+        <x-counted-field
+            id="name"
+            name="name"
+            :label="__('お名前')"
+            :max-length="255"
+            :messages="$errors->get('name')"
+            :placeholder="__('山田太郎')"
+            :value="$input['name'] ?? null"
+            autocomplete="name"
+            required
+        />
 
-        <div>
-            <x-form-label for="email" :value="__('メールアドレス')" />
-            <x-form-input id="email" name="email" type="email" placeholder="example@example.com" :value="$input['email'] ?? null" required />
-            <x-form-error :messages="$errors->get('email')" />
-        </div>
+        <x-counted-field
+            id="email"
+            name="email"
+            type="email"
+            :label="__('メールアドレス')"
+            :max-length="255"
+            :messages="$errors->get('email')"
+            placeholder="example@example.com"
+            :value="$input['email'] ?? null"
+            autocomplete="email"
+            required
+        />
 
-        <div>
-            <x-form-label for="subject" :value="__('件名')" />
-            <x-form-input id="subject" name="subject" type="text" :placeholder="__('お問い合わせの内容をお聞かせください')" :value="$input['subject'] ?? null" required />
-            <x-form-error :messages="$errors->get('subject')" />
-        </div>
+        <x-counted-field
+            id="subject"
+            name="subject"
+            :label="__('件名')"
+            :max-length="255"
+            :messages="$errors->get('subject')"
+            :placeholder="__('お問い合わせの内容をお聞かせください')"
+            :value="$input['subject'] ?? null"
+            required
+        />
 
-        <div x-data="{ bodyText: {{ json_encode(old('body', $input['body'] ?? '')) }}, maxLength: 2000 }">
-            <x-form-label for="body" :value="__('本文')" />
-            <x-form-textarea
-                id="body"
-                name="body"
-                x-model="bodyText"
-                :value="$input['body'] ?? null"
-                :placeholder="__('詳しい内容をお聞かせください。')"
-                x-bind:class="bodyText.length > maxLength ? 'border-rose-500 text-rose-900 dark:text-rose-100 focus:border-rose-600 focus:ring-rose-200 dark:focus:ring-rose-950' : ''"
-                required
-            />
-            <div class="flex items-center justify-between mt-2 text-sm">
-                <p class="text-gray-600 dark:text-gray-400">{{ __('最大 2000 文字まで入力できます。') }}</p>
-                <p :class="bodyText.length > maxLength ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-gray-500 dark:text-gray-400'" class="transition-colors duration-150">
-                    <span x-text="bodyText.length">0</span> / <span x-text="maxLength">2000</span> {{ __('文字') }}
-                </p>
-            </div>
-            <x-form-error :messages="$errors->get('body')" />
-        </div>
+        <x-counted-field
+            id="body"
+            name="body"
+            :label="__('本文')"
+            :max-length="2000"
+            :messages="$errors->get('body')"
+            :placeholder="__('詳しい内容をお聞かせください。')"
+            :value="$input['body'] ?? null"
+            textarea
+            required
+        />
 
-        <div class="flex items-center justify-between gap-4 pt-4 border-t border-brand-border">
-            <a href="{{ route('welcome') }}" class="text-brand-primary hover:text-emerald-700 font-medium">{{ __('キャンセル') }}</a>
-            <x-button-primary type="submit">
+        <div class="flex flex-col-reverse items-stretch gap-3 pt-4 border-t border-brand-border sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <a href="{{ route('welcome') }}" class="min-h-11 inline-flex items-center justify-center text-brand-primary hover:text-brand-primary/80 font-medium sm:justify-start">{{ __('キャンセル') }}</a>
+            <x-button-primary type="submit" class="w-full sm:w-auto">
                 {{ __('確認画面へ進む') }}
             </x-button-primary>
         </div>

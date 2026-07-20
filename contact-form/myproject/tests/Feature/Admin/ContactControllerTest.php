@@ -42,6 +42,37 @@ class ContactControllerTest extends TestCase
             ->assertViewHas('statusCounts');
     }
 
+    public function test_admin_index_navigation_and_pagination_are_accessible_and_localized(): void
+    {
+        $user = User::factory()->admin()->create();
+        Contact::factory(21)->create();
+
+        $response = $this->actingAs($user)->get(route('admin.contacts.index'));
+
+        $response
+            ->assertSee('name="description"', false)
+            ->assertSee('aria-label="ナビゲーションメニューを開閉"', false)
+            ->assertSee('aria-controls="responsive-navigation"', false)
+            ->assertSee('aria-controls="contact-filters"', false)
+            ->assertSee('x-bind:aria-expanded="isExpanded.toString()"', false)
+            ->assertSee('表示中')
+            ->assertSee('2 ページへ')
+            ->assertDontSee('Showing')
+            ->assertDontSee('Go to page')
+            ->assertDontSee('aria-disabled="true" aria-label=', false);
+    }
+
+    public function test_admin_filters_default_to_collapsed_below_the_small_breakpoint(): void
+    {
+        $script = file_get_contents(resource_path('js/app.js'));
+
+        $this->assertIsString($script);
+        $this->assertStringContainsString(
+            "isExpanded: window.matchMedia('(min-width: 640px)').matches",
+            $script
+        );
+    }
+
     public function test_index_shows_latest_contacts_first(): void
     {
         $user = User::factory()->admin()->create();
@@ -111,6 +142,28 @@ class ContactControllerTest extends TestCase
             ->assertViewHas('position', null)
             ->assertViewHas('previousContactId', null)
             ->assertViewHas('nextContactId', null);
+    }
+
+    public function test_list_detail_and_status_update_preserve_pagination_state(): void
+    {
+        $user = User::factory()->admin()->create();
+        Contact::factory(12)->create();
+        $query = ['per_page' => 5, 'page' => 2];
+
+        $indexResponse = $this->actingAs($user)->get(route('admin.contacts.index', $query));
+        $contact = $indexResponse->viewData('contacts')->first();
+        $showUrl = route('admin.contacts.show', array_merge(['contact' => $contact], $query));
+
+        $indexResponse->assertSee($showUrl);
+
+        $showResponse = $this->get($showUrl);
+        $showResponse
+            ->assertViewHas('queryParams', ['per_page' => '5', 'page' => '2'])
+            ->assertSee(route('admin.contacts.index', $query));
+
+        $this->patch(route('admin.contacts.update', array_merge(['contact' => $contact], $query)), [
+            'status' => ContactStatus::InProgress->value,
+        ])->assertRedirect($showUrl);
     }
 
     public function test_unauthenticated_user_cannot_update_status(): void

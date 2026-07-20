@@ -17,6 +17,8 @@ export default {
             colors: {
                 brand: {
                     primary: 'rgb(var(--color-brand-primary) / <alpha-value>)',
+                    action: 'rgb(var(--color-brand-action) / <alpha-value>)',
+                    'action-hover': 'rgb(var(--color-brand-action-hover) / <alpha-value>)',
                     light: 'rgb(var(--color-brand-light) / <alpha-value>)',
                     dark: 'rgb(var(--color-brand-dark) / <alpha-value>)',
                     border: 'rgb(var(--color-brand-border) / <alpha-value>)',

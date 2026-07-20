@@ -5,28 +5,43 @@
 @layer base {
     :root {
         /* Light Mode */
-        --color-brand-primary: 16 185 129; /* emerald-600 */
+        --color-brand-primary: 4 120 87; /* emerald-700: foreground */
+        --color-brand-action: 4 120 87; /* emerald-700: white text background */
+        --color-brand-action-hover: 6 95 70; /* emerald-800 */
         --color-brand-light: 245 244 242; /* stone-50 */
         --color-brand-dark: 28 25 23; /* stone-900 */
         --color-brand-border: 231 229 228; /* stone-200 */
         --color-brand-text: 28 25 23; /* stone-900 */
-        --color-brand-success: 16 185 129; /* emerald-600 */
-        --color-brand-error: 225 29 72; /* rose-600 */
-        --color-brand-warning: 217 119 6; /* amber-600 */
+        --color-brand-success: 4 120 87; /* emerald-700 */
+        --color-brand-error: 190 18 60; /* rose-700 */
+        --color-brand-warning: 180 83 9; /* amber-700 */
     }
 
     @media (prefers-color-scheme: dark) {
         :root {
             /* Dark Mode */
-            --color-brand-primary: 16 185 129; /* emerald-600 (same) */
+            --color-brand-primary: 110 231 183; /* emerald-300: foreground */
+            --color-brand-action: 4 120 87; /* emerald-700: white text background */
+            --color-brand-action-hover: 6 95 70; /* emerald-800 */
             --color-brand-light: 24 23 21; /* stone-900 */
             --color-brand-dark: 245 244 242; /* stone-50 */
             --color-brand-border: 87 83 82; /* stone-700 */
             --color-brand-text: 245 244 242; /* stone-50 */
-            --color-brand-success: 16 185 129; /* emerald-600 (same) */
-            --color-brand-error: 225 29 72; /* rose-600 (same) */
-            --color-brand-warning: 217 119 6; /* amber-600 (same) */
+            --color-brand-success: 110 231 183; /* emerald-300 */
+            --color-brand-error: 253 164 175; /* rose-300 */
+            --color-brand-warning: 252 211 77; /* amber-300 */
         }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
 }
 

@@ -13,7 +13,7 @@
         このページにアクセスするための権限がありません。ログインアカウントを確認するか、管理者にお問い合わせください。
     </p>
     <div class="flex justify-center gap-4">
-        <a href="{{ route('welcome') }}" class="px-6 py-3 border border-brand-border text-brand-text rounded-lg hover:bg-brand-light dark:hover:bg-stone-850 font-medium transition-colors">
+        <a href="{{ route('welcome') }}" class="px-6 py-3 border border-brand-border text-brand-text rounded-lg hover:bg-brand-light dark:hover:bg-stone-800 font-medium transition-colors">
             ホームに戻る
         </a>
     </div>

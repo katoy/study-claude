@@ -128,6 +128,7 @@ class ContactController extends Controller
             'date_to' => $request->query('date_to'),
             'sort' => $request->query('sort'),
             'per_page' => $request->query('per_page'),
+            'page' => $request->query('page'),
         ], fn ($val) => $val !== null && $val !== '');
 
         return view('admin.contacts.show', [
@@ -153,6 +154,7 @@ class ContactController extends Controller
             'date_to' => $request->query('date_to'),
             'sort' => $request->query('sort'),
             'per_page' => $request->query('per_page'),
+            'page' => $request->query('page'),
         ], fn ($val) => $val !== null && $val !== '');
 
         try {
