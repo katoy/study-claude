@@ -70,6 +70,20 @@ Alpine.data('contactFilters', (initial) => ({
         this.fetchResults();
     },
 
+    removeKeywordHistoryItem(val) {
+        this.keywordHistory = this.keywordHistory.filter((item) => item !== val);
+        try {
+            localStorage.setItem('contact_keyword_history', JSON.stringify(this.keywordHistory));
+        } catch {}
+    },
+
+    removeBodyKeywordHistoryItem(val) {
+        this.bodyKeywordHistory = this.bodyKeywordHistory.filter((item) => item !== val);
+        try {
+            localStorage.setItem('contact_body_keyword_history', JSON.stringify(this.bodyKeywordHistory));
+        } catch {}
+    },
+
     clearKeywordHistory() {
         this.keywordHistory = [];
         try {

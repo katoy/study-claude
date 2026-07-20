@@ -31,17 +31,31 @@
                             </template>
                         </datalist>
                         <template x-if="keywordHistory.length > 0">
-                            <div class="flex flex-wrap items-center gap-1 mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                            <div class="flex flex-wrap items-center gap-1.5 mt-1.5 text-xs text-gray-500 dark:text-gray-400">
                                 <span class="font-medium text-gray-400">履歴:</span>
                                 <template x-for="item in keywordHistory.slice(0, 5)" :key="item">
-                                    <button
-                                        type="button"
-                                        @click="selectKeywordHistory(item)"
-                                        class="px-2 py-0.5 bg-gray-100 dark:bg-stone-800 hover:bg-emerald-50 hover:text-brand-primary dark:hover:bg-stone-700 rounded-md transition-colors border border-gray-200 dark:border-stone-700 truncate max-w-[120px]"
-                                        :title="item"
-                                        x-text="item"
-                                    ></button>
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-stone-800 rounded-md border border-gray-200 dark:border-stone-700">
+                                        <button
+                                            type="button"
+                                            @click="selectKeywordHistory(item)"
+                                            class="hover:text-brand-primary truncate max-w-[100px] transition-colors"
+                                            :title="'引用: ' + item"
+                                            x-text="item"
+                                        ></button>
+                                        <button
+                                            type="button"
+                                            @click.stop="removeKeywordHistoryItem(item)"
+                                            class="text-gray-400 hover:text-rose-500 font-bold ml-0.5 leading-none transition-colors"
+                                            title="この履歴を削除"
+                                        >&times;</button>
+                                    </span>
                                 </template>
+                                <button
+                                    type="button"
+                                    @click="clearKeywordHistory()"
+                                    class="text-[11px] text-gray-400 hover:text-rose-500 underline ml-1 transition-colors"
+                                    title="履歴を全削除"
+                                >全削除</button>
                             </div>
                         </template>
                     </div>
@@ -66,17 +80,31 @@
                             </template>
                         </datalist>
                         <template x-if="bodyKeywordHistory.length > 0">
-                            <div class="flex flex-wrap items-center gap-1 mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                            <div class="flex flex-wrap items-center gap-1.5 mt-1.5 text-xs text-gray-500 dark:text-gray-400">
                                 <span class="font-medium text-gray-400">履歴:</span>
                                 <template x-for="item in bodyKeywordHistory.slice(0, 5)" :key="item">
-                                    <button
-                                        type="button"
-                                        @click="selectBodyKeywordHistory(item)"
-                                        class="px-2 py-0.5 bg-gray-100 dark:bg-stone-800 hover:bg-emerald-50 hover:text-brand-primary dark:hover:bg-stone-700 rounded-md transition-colors border border-gray-200 dark:border-stone-700 truncate max-w-[120px]"
-                                        :title="item"
-                                        x-text="item"
-                                    ></button>
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-stone-800 rounded-md border border-gray-200 dark:border-stone-700">
+                                        <button
+                                            type="button"
+                                            @click="selectBodyKeywordHistory(item)"
+                                            class="hover:text-brand-primary truncate max-w-[100px] transition-colors"
+                                            :title="'引用: ' + item"
+                                            x-text="item"
+                                        ></button>
+                                        <button
+                                            type="button"
+                                            @click.stop="removeBodyKeywordHistoryItem(item)"
+                                            class="text-gray-400 hover:text-rose-500 font-bold ml-0.5 leading-none transition-colors"
+                                            title="この履歴を削除"
+                                        >&times;</button>
+                                    </span>
                                 </template>
+                                <button
+                                    type="button"
+                                    @click="clearBodyKeywordHistory()"
+                                    class="text-[11px] text-gray-400 hover:text-rose-500 underline ml-1 transition-colors"
+                                    title="履歴を全削除"
+                                >全削除</button>
                             </div>
                         </template>
                     </div>
