@@ -17,6 +17,7 @@ Alpine.data('contactFilters', (initial) => ({
     sort: initial.sort ?? 'created_at-desc',
     keywordHistory: [],
     bodyKeywordHistory: [],
+    dateHistory: [],
     loading: false,
 
     /**
@@ -51,14 +52,16 @@ Alpine.data('contactFilters', (initial) => ({
         try {
             this.keywordHistory = JSON.parse(localStorage.getItem('contact_keyword_history') || '[]');
             this.bodyKeywordHistory = JSON.parse(localStorage.getItem('contact_body_keyword_history') || '[]');
+            this.dateHistory = JSON.parse(localStorage.getItem('contact_date_history') || '[]');
         } catch {
             this.keywordHistory = [];
             this.bodyKeywordHistory = [];
+            this.dateHistory = [];
         }
     },
 
     /**
-     * 現在入力されているキーワードを履歴に保存する（直近10件、重複除去）。
+     * 現在入力されているキーワードおよび日付指定を履歴に保存する（直近10件、重複除去）。
      */
     saveCurrentKeywordsToHistory() {
         if (this.keyword.trim()) {
@@ -76,6 +79,29 @@ Alpine.data('contactFilters', (initial) => ({
                 localStorage.setItem('contact_body_keyword_history', JSON.stringify(this.bodyKeywordHistory));
             } catch {}
         }
+
+        if (this.dateFrom || this.dateTo) {
+            const from = this.dateFrom || '';
+            const to = this.dateTo || '';
+            let label = '';
+            if (from && to) {
+                label = `${from} ～ ${to}`;
+            } else if (from) {
+                label = `${from} ～`;
+            } else {
+                label = `～ ${to}`;
+            }
+
+            const item = { from, to, label };
+            this.dateHistory = [
+                item,
+                ...this.dateHistory.filter((i) => i.from !== from || i.to !== to),
+            ].slice(0, 10);
+
+            try {
+                localStorage.setItem('contact_date_history', JSON.stringify(this.dateHistory));
+            } catch {}
+        }
     },
 
     selectKeywordHistory(val) {
@@ -85,6 +111,12 @@ Alpine.data('contactFilters', (initial) => ({
 
     selectBodyKeywordHistory(val) {
         this.bodyKeyword = val;
+        this.fetchResults();
+    },
+
+    selectDateHistory(item) {
+        this.dateFrom = item.from;
+        this.dateTo = item.to;
         this.fetchResults();
     },
 
@@ -102,6 +134,13 @@ Alpine.data('contactFilters', (initial) => ({
         } catch {}
     },
 
+    removeDateHistoryItem(item) {
+        this.dateHistory = this.dateHistory.filter((i) => i.from !== item.from || i.to !== item.to);
+        try {
+            localStorage.setItem('contact_date_history', JSON.stringify(this.dateHistory));
+        } catch {}
+    },
+
     clearKeywordHistory() {
         this.keywordHistory = [];
         try {
@@ -113,6 +152,13 @@ Alpine.data('contactFilters', (initial) => ({
         this.bodyKeywordHistory = [];
         try {
             localStorage.removeItem('contact_body_keyword_history');
+        } catch {}
+    },
+
+    clearDateHistory() {
+        this.dateHistory = [];
+        try {
+            localStorage.removeItem('contact_date_history');
         } catch {}
     },
 

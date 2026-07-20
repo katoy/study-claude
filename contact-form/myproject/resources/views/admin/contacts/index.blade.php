@@ -193,6 +193,37 @@
                             @change="fetchResults()"
                         />
                     </div>
+
+                    <!-- 登録日 履歴一覧 -->
+                    <template x-if="dateHistory.length > 0">
+                        <div class="col-span-1 sm:col-span-2 lg:col-span-4 pt-2 border-t border-brand-border/40 flex flex-wrap items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+                            <span class="font-medium text-gray-400">登録日履歴:</span>
+                            <template x-for="item in dateHistory.slice(0, 5)" :key="item.label">
+                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-gray-100 dark:bg-stone-800 rounded-md border border-gray-200 dark:border-stone-700">
+                                    <button
+                                        type="button"
+                                        @click="selectDateHistory(item)"
+                                        class="hover:text-brand-primary font-medium transition-colors"
+                                        :title="'この指定日をセット: ' + item.label"
+                                        x-text="item.label"
+                                    ></button>
+                                    <button
+                                        type="button"
+                                        @click.stop="removeDateHistoryItem(item)"
+                                        class="text-gray-400 hover:text-rose-500 font-bold ml-0.5 leading-none transition-colors"
+                                        title="この履歴を削除"
+                                    >&times;</button>
+                                </span>
+                            </template>
+                            <button
+                                type="button"
+                                @click="clearDateHistory()"
+                                class="text-[11px] text-gray-400 hover:text-rose-500 underline ml-1 transition-colors"
+                                title="日付履歴を全削除"
+                            >全削除</button>
+                        </div>
+                    </template>
+                </div>
                 </div>
             </div>
 
