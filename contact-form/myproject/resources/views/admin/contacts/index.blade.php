@@ -9,15 +9,38 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- 絞り込み・並び替えフォーム -->
             <div class="bg-white dark:bg-stone-900 border border-brand-border rounded-xl p-6 mb-8 shadow-sm">
-                <!-- 1行目: キーワード検索 & 本文検索（ラベル垂直位置を完全同期） -->
+                <!-- 条件指定エリア最上部ヘッダー（文字上端） -->
+                <div class="flex items-center justify-between mb-5 pb-3 border-b border-brand-border/40">
+                    <h3 class="text-sm font-bold text-brand-text flex items-center gap-2">
+                        <svg class="w-4 h-4 text-brand-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                        </svg>
+                        絞り込み条件
+                    </h3>
+                    <button
+                        type="button"
+                        @click="resetFilters()"
+                        :disabled="!hasActiveFilters"
+                        :class="{
+                            'bg-rose-50 text-rose-700 hover:bg-rose-100 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800 dark:hover:bg-rose-900/80 shadow-2xs cursor-pointer': hasActiveFilters,
+                            'bg-gray-100 text-gray-400 border-gray-200 dark:bg-stone-800/60 dark:text-gray-600 dark:border-stone-800 cursor-not-allowed opacity-60': !hasActiveFilters
+                        }"
+                        class="px-3.5 py-1.5 text-xs font-semibold rounded-lg border transition-all duration-200 flex items-center gap-1.5"
+                    >
+                        <svg class="w-3.5 h-3.5 shrink-0 transition-transform duration-300" :class="{ 'rotate-180': hasActiveFilters }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        <span x-text="hasActiveFilters ? `条件をクリア (${activeFilterCount})` : '絞り込みなし'"></span>
+                    </button>
+                </div>
+
+                <!-- 1行目: キーワード検索 & 本文検索 -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <!-- キーワード検索 -->
                     <div>
-                        <div class="flex items-center justify-between min-h-[26px] mb-2">
-                            <label for="keyword" class="block text-sm font-semibold text-brand-text">
-                                {{ __('キーワード（名前・メール・件名）') }}
-                            </label>
-                        </div>
+                        <x-form-label for="keyword">
+                            {{ __('キーワード（名前・メール・件名）') }}
+                        </x-form-label>
                         <x-form-input
                             id="keyword"
                             name="keyword"
@@ -64,26 +87,9 @@
 
                     <!-- 本文検索 -->
                     <div>
-                        <div class="flex items-center justify-between min-h-[26px] mb-2">
-                            <label for="body_keyword" class="block text-sm font-semibold text-brand-text">
-                                {{ __('本文キーワード') }}
-                            </label>
-                            <button
-                                type="button"
-                                @click="resetFilters()"
-                                :disabled="!hasActiveFilters"
-                                :class="{
-                                    'bg-rose-50 text-rose-700 hover:bg-rose-100 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800 dark:hover:bg-rose-900/80 shadow-2xs cursor-pointer': hasActiveFilters,
-                                    'bg-gray-100 text-gray-400 border-gray-200 dark:bg-stone-800/60 dark:text-gray-600 dark:border-stone-800 cursor-not-allowed opacity-60': !hasActiveFilters
-                                }"
-                                class="px-3 py-1 text-xs font-semibold rounded-md border transition-all duration-200 flex items-center gap-1"
-                            >
-                                <svg class="w-3.5 h-3.5 shrink-0 transition-transform duration-300" :class="{ 'rotate-180': hasActiveFilters }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                                </svg>
-                                <span x-text="hasActiveFilters ? `条件をクリア (${activeFilterCount})` : '絞り込みなし'"></span>
-                            </button>
-                        </div>
+                        <x-form-label for="body_keyword">
+                            {{ __('本文キーワード') }}
+                        </x-form-label>
                         <x-form-input
                             id="body_keyword"
                             name="body_keyword"
