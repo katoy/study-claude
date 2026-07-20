@@ -16,6 +16,15 @@ class ContactFormTest extends TestCase
 
         $response->assertStatus(200)
             ->assertViewIs('contacts.create')
+            ->assertSee('nameMaxLength: 255', false)
+            ->assertSee('x-text="nameText.length"', false)
+            ->assertSee('nameText.length > nameMaxLength', false)
+            ->assertSee('emailMaxLength: 255', false)
+            ->assertSee('x-text="emailText.length"', false)
+            ->assertSee('emailText.length > emailMaxLength', false)
+            ->assertSee('subjectMaxLength: 255', false)
+            ->assertSee('x-text="subjectText.length"', false)
+            ->assertSee('subjectText.length > subjectMaxLength', false)
             ->assertSee('maxLength: 2000', false)
             ->assertSee('x-text="bodyText.length"', false);
     }

@@ -17,21 +17,87 @@
     <form method="POST" action="{{ route('contact.confirm') }}" class="space-y-6">
         @csrf
 
-        <div>
+        <div x-data="{ nameText: {{ json_encode(old('name', $input['name'] ?? '')) }}, nameMaxLength: 255 }">
             <x-form-label for="name" :value="__('お名前')" />
-            <x-form-input id="name" name="name" type="text" :placeholder="__('山田太郎')" :value="$input['name'] ?? null" required />
+            <x-form-input
+                id="name"
+                name="name"
+                type="text"
+                x-model="nameText"
+                aria-describedby="name-character-count"
+                x-bind:aria-invalid="nameText.length > nameMaxLength"
+                :placeholder="__('山田太郎')"
+                :value="$input['name'] ?? null"
+                x-bind:class="nameText.length > nameMaxLength ? 'border-rose-500 text-rose-900 dark:text-rose-100 focus:border-rose-600 focus:ring-rose-200 dark:focus:ring-rose-950' : ''"
+                required
+            />
+            <div class="flex items-center justify-between mt-2 text-sm">
+                <p class="text-gray-600 dark:text-gray-400">{{ __('最大 255 文字まで入力できます。') }}</p>
+                <p
+                    id="name-character-count"
+                    aria-live="polite"
+                    :class="nameText.length > nameMaxLength ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-gray-500 dark:text-gray-400'"
+                    class="transition-colors duration-150"
+                >
+                    <span x-text="nameText.length">0</span> / <span x-text="nameMaxLength">255</span> {{ __('文字') }}
+                </p>
+            </div>
             <x-form-error :messages="$errors->get('name')" />
         </div>
 
-        <div>
+        <div x-data="{ emailText: {{ json_encode(old('email', $input['email'] ?? '')) }}, emailMaxLength: 255 }">
             <x-form-label for="email" :value="__('メールアドレス')" />
-            <x-form-input id="email" name="email" type="email" placeholder="example@example.com" :value="$input['email'] ?? null" required />
+            <x-form-input
+                id="email"
+                name="email"
+                type="email"
+                x-model="emailText"
+                aria-describedby="email-character-count"
+                x-bind:aria-invalid="emailText.length > emailMaxLength"
+                placeholder="example@example.com"
+                :value="$input['email'] ?? null"
+                x-bind:class="emailText.length > emailMaxLength ? 'border-rose-500 text-rose-900 dark:text-rose-100 focus:border-rose-600 focus:ring-rose-200 dark:focus:ring-rose-950' : ''"
+                required
+            />
+            <div class="flex items-center justify-between mt-2 text-sm">
+                <p class="text-gray-600 dark:text-gray-400">{{ __('最大 255 文字まで入力できます。') }}</p>
+                <p
+                    id="email-character-count"
+                    aria-live="polite"
+                    :class="emailText.length > emailMaxLength ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-gray-500 dark:text-gray-400'"
+                    class="transition-colors duration-150"
+                >
+                    <span x-text="emailText.length">0</span> / <span x-text="emailMaxLength">255</span> {{ __('文字') }}
+                </p>
+            </div>
             <x-form-error :messages="$errors->get('email')" />
         </div>
 
-        <div>
+        <div x-data="{ subjectText: {{ json_encode(old('subject', $input['subject'] ?? '')) }}, subjectMaxLength: 255 }">
             <x-form-label for="subject" :value="__('件名')" />
-            <x-form-input id="subject" name="subject" type="text" :placeholder="__('お問い合わせの内容をお聞かせください')" :value="$input['subject'] ?? null" required />
+            <x-form-input
+                id="subject"
+                name="subject"
+                type="text"
+                x-model="subjectText"
+                aria-describedby="subject-character-count"
+                x-bind:aria-invalid="subjectText.length > subjectMaxLength"
+                :placeholder="__('お問い合わせの内容をお聞かせください')"
+                :value="$input['subject'] ?? null"
+                x-bind:class="subjectText.length > subjectMaxLength ? 'border-rose-500 text-rose-900 dark:text-rose-100 focus:border-rose-600 focus:ring-rose-200 dark:focus:ring-rose-950' : ''"
+                required
+            />
+            <div class="flex items-center justify-between mt-2 text-sm">
+                <p class="text-gray-600 dark:text-gray-400">{{ __('最大 255 文字まで入力できます。') }}</p>
+                <p
+                    id="subject-character-count"
+                    aria-live="polite"
+                    :class="subjectText.length > subjectMaxLength ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-gray-500 dark:text-gray-400'"
+                    class="transition-colors duration-150"
+                >
+                    <span x-text="subjectText.length">0</span> / <span x-text="subjectMaxLength">255</span> {{ __('文字') }}
+                </p>
+            </div>
             <x-form-error :messages="$errors->get('subject')" />
         </div>
 
