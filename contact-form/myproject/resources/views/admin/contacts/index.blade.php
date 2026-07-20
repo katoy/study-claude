@@ -9,7 +9,8 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- 絞り込み・並び替えフォーム -->
             <div class="bg-white dark:bg-stone-900 border border-brand-border rounded-xl p-6 mb-8 shadow-sm">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
+                <!-- 1行目: キーワード検索 & 本文検索 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <!-- キーワード検索 -->
                     <div>
                         <x-form-label for="keyword">
@@ -39,7 +40,10 @@
                             @input.debounce.400ms="fetchResults()"
                         />
                     </div>
+                </div>
 
+                <!-- 2行目: ステータス, 登録日(開始), 登録日(終了), 並び順, 絞り込み解除 -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                     <!-- ステータス -->
                     <div>
                         <x-form-label for="status">
@@ -82,9 +86,7 @@
                             @change="fetchResults()"
                         />
                     </div>
-                </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- 並び順 -->
                     <div>
                         <x-form-label for="sort">
@@ -105,12 +107,12 @@
                         />
                     </div>
 
-                    <!-- クリアボタン -->
+                    <!-- 絞り込み解除ボタン -->
                     <div class="flex items-end">
                         <button
                             type="button"
                             @click="resetFilters()"
-                            class="w-full px-5 py-3 bg-gray-200 hover:bg-gray-300 dark:bg-stone-700 dark:hover:bg-stone-600 text-gray-800 dark:text-gray-200 font-semibold rounded-lg transition-colors duration-200"
+                            class="w-full px-4 py-2.5 bg-gray-200 hover:bg-gray-300 dark:bg-stone-700 dark:hover:bg-stone-600 text-gray-800 dark:text-gray-200 font-semibold rounded-lg transition-colors duration-200"
                         >
                             {{ __('絞り込みを解除') }}
                         </button>
