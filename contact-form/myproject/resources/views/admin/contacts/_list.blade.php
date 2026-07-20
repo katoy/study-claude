@@ -85,7 +85,7 @@
                             </td>
                             <td class="px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap align-middle">
                                 <a href="{{ route('admin.contacts.show', array_merge(['contact' => $contact], request()->only(['status', 'keyword', 'body_keyword', 'date_from', 'date_to', 'sort', 'per_page', 'page']))) }}" class="hover:text-brand-primary transition-colors duration-150">
-                                    {{ $contact->created_at->copy()->setTimezone(config('app.display_timezone'))->format('Y年m月d日 H:i') }}
+                                    {{ $contact->formatted_created_at }}
                                 </a>
                             </td>
                             <td class="px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate align-middle">

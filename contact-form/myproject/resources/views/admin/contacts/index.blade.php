@@ -128,8 +128,8 @@
                         </div>
                     </div>
 
-                    <!-- 2行目: 並び順, 表示件数, ステータス, 登録日(開始), 登録日(終了) -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                    <!-- 2行目: 並び順, 表示件数, 登録日(開始), 登録日(終了) -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <!-- 並び順 -->
                         <div>
                             <x-form-label for="sort">
@@ -172,21 +172,6 @@
                             />
                         </div>
 
-                        <!-- ステータス -->
-                        <div>
-                            <x-form-label for="status">
-                                {{ __('ステータス') }}
-                            </x-form-label>
-                            <x-form-select
-                                id="status"
-                                name="status"
-                                :options="['' => __('すべて')] + collect(\App\Enums\ContactStatus::cases())->mapWithKeys(fn($case) => [$case->value => $case->label()])->toArray()"
-                                :selected="$filters['status']"
-                                x-model="status"
-                                @change="fetchResults()"
-                            />
-                        </div>
-
                         <!-- 登録日 開始日 -->
                         <div>
                             <x-form-label for="date_from">
@@ -218,6 +203,32 @@
                                 class="cursor-pointer"
                             />
                         </div>
+                    </div>
+
+                    <!-- ステータス（複数選択チェックボックス） -->
+                    <div class="pt-3 border-t border-brand-border/40">
+                        <x-form-label class="mb-2">
+                            {{ __('ステータス') }}
+                        </x-form-label>
+                        <div class="flex flex-wrap items-center gap-3">
+                            @foreach (\App\Enums\ContactStatus::cases() as $case)
+                                <label class="inline-flex items-center gap-2 px-3 py-2 border border-brand-border rounded-lg bg-brand-light dark:bg-stone-950 text-sm font-medium text-brand-text cursor-pointer hover:border-brand-primary transition-colors select-none">
+                                    <input
+                                        type="checkbox"
+                                        name="status[]"
+                                        value="{{ $case->value }}"
+                                        x-model="status"
+                                        @change="fetchResults()"
+                                        class="rounded border-brand-border text-brand-primary focus:ring-brand-primary dark:bg-stone-900"
+                                    />
+                                    <x-contact-status-badge :status="$case->value" />
+                                </label>
+                            @endforeach
+                            <span class="text-xs text-gray-500 dark:text-gray-400 ms-auto">
+                                {{ __('※選択なし・全選択時はすべてのステータスを表示') }}
+                            </span>
+                        </div>
+                    </div>
 
                         <!-- 登録日 履歴一覧 -->
                         <x-filter-history-tags
