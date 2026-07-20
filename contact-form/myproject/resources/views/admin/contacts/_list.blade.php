@@ -17,8 +17,11 @@
                                 </h3>
                                 <x-contact-status-badge :status="$contact->status" />
                             </div>
-                            <p class="text-gray-600 dark:text-gray-400 mb-3 truncate">
+                            <p class="text-base font-semibold text-brand-text mb-1 truncate">
                                 {{ $contact->subject }}
+                            </p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+                                {{ \Illuminate\Support\Str::limit($contact->body, 100) }}
                             </p>
                             <div class="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs text-gray-500 dark:text-gray-400 font-medium pt-2 border-t border-brand-border/40">
                                 <div class="flex items-center gap-1.5">
