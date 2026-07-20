@@ -81,9 +81,47 @@ class ContactController extends Controller
     /**
      * お問い合わせ詳細を表示する。
      */
-    public function show(Contact $contact): View
+    public function show(Request $request, Contact $contact): View
     {
-        return view('admin.contacts.show', ['contact' => $contact]);
+        $filters = $this->normalizeFilters($request);
+        [$sortColumn, $sortDirection] = self::SORT_OPTIONS[$filters['sort']];
+
+        $contactIds = Contact::query()
+            ->filter($filters)
+            ->orderBy($sortColumn, $sortDirection)
+            ->pluck('id')
+            ->toArray();
+
+        $currentIndex = array_search($contact->id, $contactIds, true);
+
+        if ($currentIndex === false) {
+            $totalCount = count($contactIds);
+            $position = null;
+            $previousContactId = null;
+            $nextContactId = null;
+        } else {
+            $totalCount = count($contactIds);
+            $position = $currentIndex + 1;
+            $previousContactId = $currentIndex > 0 ? $contactIds[$currentIndex - 1] : null;
+            $nextContactId = $currentIndex < $totalCount - 1 ? $contactIds[$currentIndex + 1] : null;
+        }
+
+        $queryParams = array_filter([
+            'status' => $request->query('status'),
+            'keyword' => $request->query('keyword'),
+            'date_from' => $request->query('date_from'),
+            'date_to' => $request->query('date_to'),
+            'sort' => $request->query('sort'),
+        ], fn ($val) => $val !== null && $val !== '');
+
+        return view('admin.contacts.show', [
+            'contact' => $contact,
+            'position' => $position,
+            'totalCount' => $totalCount,
+            'previousContactId' => $previousContactId,
+            'nextContactId' => $nextContactId,
+            'queryParams' => $queryParams,
+        ]);
     }
 
     /**
@@ -91,6 +129,14 @@ class ContactController extends Controller
      */
     public function update(UpdateContactStatusRequest $request, Contact $contact): RedirectResponse
     {
+        $queryParams = array_filter([
+            'status' => $request->query('status'),
+            'keyword' => $request->query('keyword'),
+            'date_from' => $request->query('date_from'),
+            'date_to' => $request->query('date_to'),
+            'sort' => $request->query('sort'),
+        ], fn ($val) => $val !== null && $val !== '');
+
         try {
             $contact->update(['status' => $request->validated('status')]);
         } catch (\Exception $e) {
@@ -100,12 +146,12 @@ class ContactController extends Controller
             ]);
 
             return redirect()
-                ->route('admin.contacts.show', $contact)
+                ->route('admin.contacts.show', array_merge(['contact' => $contact], $queryParams))
                 ->with('error', 'ステータスの更新中にエラーが発生しました。時間をおいて再度お試しください。');
         }
 
         return redirect()
-            ->route('admin.contacts.show', $contact)
+            ->route('admin.contacts.show', array_merge(['contact' => $contact], $queryParams))
             ->with('status_updated', 'ステータスを更新しました。');
     }
 

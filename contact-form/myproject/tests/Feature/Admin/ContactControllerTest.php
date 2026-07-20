@@ -80,6 +80,39 @@ class ContactControllerTest extends TestCase
             ->assertViewHas('contact', $contact);
     }
 
+    public function test_show_displays_position_and_prev_next_links(): void
+    {
+        $user = User::factory()->admin()->create();
+        $contact1 = Contact::factory()->create(['created_at' => now()->subMinutes(2)]);
+        $contact2 = Contact::factory()->create(['created_at' => now()->subMinute()]);
+        $contact3 = Contact::factory()->create(['created_at' => now()]);
+
+        $response = $this->actingAs($user)->get(route('admin.contacts.show', $contact2));
+
+        $response->assertStatus(200)
+            ->assertViewHas('position', 2)
+            ->assertViewHas('totalCount', 3)
+            ->assertViewHas('previousContactId', $contact3->id)
+            ->assertViewHas('nextContactId', $contact1->id)
+            ->assertSee('3 件中 2 件目');
+    }
+
+    public function test_show_handles_contact_not_in_filtered_results(): void
+    {
+        $user = User::factory()->admin()->create();
+        $contact = Contact::factory()->create(['status' => ContactStatus::New]);
+
+        $response = $this->actingAs($user)->get(route('admin.contacts.show', [
+            'contact' => $contact,
+            'status' => ContactStatus::Resolved->value,
+        ]));
+
+        $response->assertStatus(200)
+            ->assertViewHas('position', null)
+            ->assertViewHas('previousContactId', null)
+            ->assertViewHas('nextContactId', null);
+    }
+
     public function test_unauthenticated_user_cannot_update_status(): void
     {
         $contact = Contact::factory()->create();

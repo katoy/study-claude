@@ -1,15 +1,56 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <h2 class="font-semibold text-2xl text-brand-text leading-tight">
                 {{ __('お問い合わせ詳細') }}
             </h2>
-            <a href="{{ route('admin.contacts.index') }}" class="text-sm font-semibold text-brand-primary hover:text-emerald-700 transition-colors flex items-center gap-1">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                </svg>
-                一覧に戻る
-            </a>
+            <div class="flex flex-wrap items-center gap-3">
+                @if ($position !== null)
+                    <span class="text-sm font-semibold text-gray-600 dark:text-gray-400 bg-white dark:bg-stone-800 px-3 py-1.5 rounded-lg border border-brand-border/60 shadow-2xs">
+                        {{ $totalCount }} 件中 {{ $position }} 件目
+                    </span>
+                @endif
+                <div class="flex items-center gap-2">
+                    @if ($previousContactId)
+                        <a href="{{ route('admin.contacts.show', array_merge(['contact' => $previousContactId], $queryParams)) }}" class="px-3.5 py-1.5 bg-white dark:bg-stone-800 border border-brand-border rounded-lg text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-stone-700 active:scale-95 transition-all flex items-center gap-1 shadow-2xs">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                            前へ
+                        </a>
+                    @else
+                        <button disabled class="px-3.5 py-1.5 bg-gray-100 dark:bg-stone-900 border border-gray-200 dark:border-stone-800 rounded-lg text-sm font-semibold text-gray-400 dark:text-gray-600 cursor-not-allowed flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                            前へ
+                        </button>
+                    @endif
+
+                    @if ($nextContactId)
+                        <a href="{{ route('admin.contacts.show', array_merge(['contact' => $nextContactId], $queryParams)) }}" class="px-3.5 py-1.5 bg-white dark:bg-stone-800 border border-brand-border rounded-lg text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-stone-700 active:scale-95 transition-all flex items-center gap-1 shadow-2xs">
+                            次へ
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </a>
+                    @else
+                        <button disabled class="px-3.5 py-1.5 bg-gray-100 dark:bg-stone-900 border border-gray-200 dark:border-stone-800 rounded-lg text-sm font-semibold text-gray-400 dark:text-gray-600 cursor-not-allowed flex items-center gap-1">
+                            次へ
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </button>
+                    @endif
+
+                    <a href="{{ route('admin.contacts.index', $queryParams) }}" class="ml-2 text-sm font-semibold text-brand-primary hover:text-emerald-700 transition-colors flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7 7-7"></path>
+                        </svg>
+                        一覧に戻る
+                    </a>
+                </div>
+            </div>
         </div>
     </x-slot>
 
@@ -65,7 +106,7 @@
                     <!-- ステータス変更フォーム -->
                     <div class="pt-8 border-t border-brand-border/60">
                         <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">対応ステータスの変更</p>
-                        <form method="POST" action="{{ route('admin.contacts.update', $contact) }}" class="flex flex-col sm:flex-row items-stretch sm:items-end gap-4 max-w-md">
+                        <form method="POST" action="{{ route('admin.contacts.update', array_merge(['contact' => $contact], $queryParams)) }}" class="flex flex-col sm:flex-row items-stretch sm:items-end gap-4 max-w-md">
                             @csrf
                             @method('PATCH')
 
