@@ -7,7 +7,7 @@
     "dev": "vite",
     "lint": "npm run lint:php && npm run lint:md && npm run lint:html && npm run lint:js",
     "lint:php": "vendor/bin/pint --test",
-    "lint:md": "remark --frail \"*.md\" \"docs/**/*.md\"",
+    "lint:md": "remark --frail --silently-ignore --ignore-pattern \"node_modules/**\" --ignore-pattern \"vendor/**\" \"**/*.md\"",
     "lint:html": "htmlhint \"resources/views/**/*.blade.php\" \"**/*.html\"",
     "lint:js": "eslint .",
     "prepare": "cd ../.. && husky contact-form/myproject/.husky",
