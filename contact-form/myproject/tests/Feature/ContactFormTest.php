@@ -16,17 +16,31 @@ class ContactFormTest extends TestCase
 
         $response->assertStatus(200)
             ->assertViewIs('contacts.create')
-            ->assertSee('nameMaxLength: 255', false)
-            ->assertSee('x-text="nameText.length"', false)
-            ->assertSee('nameText.length > nameMaxLength', false)
-            ->assertSee('emailMaxLength: 255', false)
-            ->assertSee('x-text="emailText.length"', false)
-            ->assertSee('emailText.length > emailMaxLength', false)
-            ->assertSee('subjectMaxLength: 255', false)
-            ->assertSee('x-text="subjectText.length"', false)
-            ->assertSee('subjectText.length > subjectMaxLength', false)
-            ->assertSee('maxLength: 2000', false)
-            ->assertSee('x-text="bodyText.length"', false);
+            ->assertSee('id="name-character-count"', false)
+            ->assertSee('id="email-character-count"', false)
+            ->assertSee('id="subject-character-count"', false)
+            ->assertSee('id="body-character-count"', false);
+    }
+
+    public function test_character_counters_match_server_length_and_validation_errors_are_described(): void
+    {
+        $this->get(route('contact.create'))
+            ->assertSee('Array.from(fieldText).length', false)
+            ->assertSee('id="body-character-count"', false)
+            ->assertSee('aria-live="polite"', false);
+
+        $this->from(route('contact.create'))->post(route('contact.confirm'), [
+            'name' => '',
+            'email' => 'invalid-email',
+            'subject' => '',
+            'body' => '',
+        ])->assertRedirect(route('contact.create'));
+
+        $this->get(route('contact.create'))
+            ->assertSee('aria-describedby="email-hint email-character-count email-error"', false)
+            ->assertSee('aria-invalid="true"', false)
+            ->assertSee('id="email-error"', false)
+            ->assertSee('role="alert"', false);
     }
 
     public function test_confirm_with_valid_input(): void
