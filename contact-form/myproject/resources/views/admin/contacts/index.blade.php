@@ -92,8 +92,28 @@
                     </div>
                 </div>
 
-                <!-- 2行目: ステータス, 登録日(開始), 登録日(終了), 並び順 -->
+                <!-- 2行目: 並び順, ステータス, 登録日(開始), 登録日(終了) -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- 並び順 -->
+                    <div>
+                        <x-form-label for="sort">
+                            {{ __('並び順') }}
+                        </x-form-label>
+                        <x-form-select
+                            id="sort"
+                            name="sort"
+                            :options="[
+                                'created_at-desc' => __('登録日時が新しい順'),
+                                'created_at-asc' => __('登録日時が古い順'),
+                                'status-asc' => __('ステータス順'),
+                                'name-asc' => __('名前順'),
+                            ]"
+                            :selected="$filters['sort']"
+                            x-model="sort"
+                            @change="fetchResults()"
+                        />
+                    </div>
+
                     <!-- ステータス -->
                     <div>
                         <x-form-label for="status">
@@ -138,26 +158,6 @@
                             @click="$el.showPicker && $el.showPicker()"
                             @change="fetchResults()"
                             class="cursor-pointer"
-                        />
-                    </div>
-
-                    <!-- 並び順 -->
-                    <div>
-                        <x-form-label for="sort">
-                            {{ __('並び順') }}
-                        </x-form-label>
-                        <x-form-select
-                            id="sort"
-                            name="sort"
-                            :options="[
-                                'created_at-desc' => __('登録日時が新しい順'),
-                                'created_at-asc' => __('登録日時が古い順'),
-                                'status-asc' => __('ステータス順'),
-                                'name-asc' => __('名前順'),
-                            ]"
-                            :selected="$filters['sort']"
-                            x-model="sort"
-                            @change="fetchResults()"
                         />
                     </div>
 
