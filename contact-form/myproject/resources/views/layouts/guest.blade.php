@@ -7,6 +7,10 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
+        <!-- Favicon -->
+        <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+        <link rel="alternate icon" href="{{ asset('favicon.ico') }}">
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -17,8 +21,9 @@
     <body class="font-sans text-brand-text antialiased bg-brand-light dark:bg-stone-950 transition-colors duration-200">
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0">
             <div class="animate-slideIn">
-                <a href="/">
-                    <x-application-logo class="w-16 h-16 fill-current text-brand-primary" />
+                <a href="/" class="flex flex-col items-center gap-2 group">
+                    <x-application-logo class="w-16 h-16 group-hover:scale-105 transition-transform duration-200" />
+                    <span class="font-black text-xl text-brand-text tracking-tight">{{ config('app.name', 'Contact') }}</span>
                 </a>
             </div>
 

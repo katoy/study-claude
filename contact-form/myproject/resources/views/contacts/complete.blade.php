@@ -10,16 +10,16 @@
         </div>
     </div>
 
-    <h2 class="text-4xl font-bold text-brand-text mb-3">お問い合わせありがとうございました</h2>
+    <h2 class="text-4xl font-bold text-brand-text mb-3">{{ __('お問い合わせありがとうございました') }}</h2>
     <p class="text-lg text-gray-600 dark:text-gray-400 mb-4 leading-relaxed max-w-md mx-auto">
-        お問い合わせいただき、誠にありがとうございます。
+        {{ __('お問い合わせいただき、誠にありがとうございます。') }}
     </p>
     <p class="text-base text-gray-600 dark:text-gray-400 mb-8 leading-relaxed max-w-md mx-auto">
-        内容を確認させていただき、後ほどご連絡させていただきます。
+        {{ __('内容を確認させていただき、後ほどご連絡させていただきます。') }}
     </p>
 
     <a href="{{ route('welcome') }}" class="inline-block px-8 py-3 bg-brand-primary text-white font-semibold rounded-lg hover:bg-emerald-700 active:scale-95 transition-all duration-150">
-        トップページへ戻る
+        {{ __('トップページへ戻る') }}
     </a>
 </div>
 @endsection

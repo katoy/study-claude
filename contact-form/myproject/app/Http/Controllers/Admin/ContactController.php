@@ -23,6 +23,18 @@ class ContactController extends Controller
     private const DEFAULT_SORT = 'created_at-desc';
 
     /**
+     * デフォルトの1ページあたり表示件数。
+     */
+    private const DEFAULT_PER_PAGE = 20;
+
+    /**
+     * 選択可能な1ページあたり表示件数の一覧。
+     *
+     * @var array<int, int>
+     */
+    private const PER_PAGE_OPTIONS = [5, 10, 20, 50, 100, 200];
+
+    /**
      * 許可された並び順（列, 方向）の一覧。
      *
      * @var array<string, array{0: string, 1: string}>
@@ -45,7 +57,7 @@ class ContactController extends Controller
         $contacts = Contact::query()
             ->filter($filters)
             ->orderBy($sortColumn, $sortDirection)
-            ->paginate(20)
+            ->paginate($filters['per_page'])
             ->withQueryString();
 
         $filtersForCounts = array_merge($filters, ['status' => '']);
@@ -75,6 +87,7 @@ class ContactController extends Controller
                 'date_from' => $filters['date_from_display'],
                 'date_to' => $filters['date_to_display'],
                 'sort' => $filters['sort'],
+                'per_page' => $filters['per_page'],
             ],
         ]);
     }
@@ -114,6 +127,7 @@ class ContactController extends Controller
             'date_from' => $request->query('date_from'),
             'date_to' => $request->query('date_to'),
             'sort' => $request->query('sort'),
+            'per_page' => $request->query('per_page'),
         ], fn ($val) => $val !== null && $val !== '');
 
         return view('admin.contacts.show', [
@@ -138,6 +152,7 @@ class ContactController extends Controller
             'date_from' => $request->query('date_from'),
             'date_to' => $request->query('date_to'),
             'sort' => $request->query('sort'),
+            'per_page' => $request->query('per_page'),
         ], fn ($val) => $val !== null && $val !== '');
 
         try {
@@ -162,7 +177,7 @@ class ContactController extends Controller
      * 一覧の絞り込み・並び替え条件を安全な値に正規化する。
      * 内部管理画面の絞り込みという性質上、不正値はエラーにせずデフォルトへフォールバックする。
      *
-     * @return array{status: string, keyword: string, body_keyword: string, date_from: ?Carbon, date_to: ?Carbon, date_from_display: string, date_to_display: string, sort: string}
+     * @return array{status: string, keyword: string, body_keyword: string, date_from: ?Carbon, date_to: ?Carbon, date_from_display: string, date_to_display: string, sort: string, per_page: int}
      */
     private function normalizeFilters(Request $request): array
     {
@@ -184,6 +199,9 @@ class ContactController extends Controller
         $sortInput = (string) $request->query('sort', self::DEFAULT_SORT);
         $sort = array_key_exists($sortInput, self::SORT_OPTIONS) ? $sortInput : self::DEFAULT_SORT;
 
+        $perPageInput = (int) $request->query('per_page', self::DEFAULT_PER_PAGE);
+        $perPage = in_array($perPageInput, self::PER_PAGE_OPTIONS, true) ? $perPageInput : self::DEFAULT_PER_PAGE;
+
         return [
             'status' => $status,
             'keyword' => $keyword,
@@ -193,6 +211,7 @@ class ContactController extends Controller
             'date_from_display' => $dateFromDisplayOutput,
             'date_to_display' => $dateToDisplayOutput,
             'sort' => $sort,
+            'per_page' => $perPage,
         ];
     }
 

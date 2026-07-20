@@ -5,8 +5,9 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('admin.contacts.index') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-brand-primary" />
+                    <a href="{{ route('admin.contacts.index') }}" class="flex items-center gap-2.5 hover:opacity-90 transition-opacity">
+                        <x-application-logo class="w-9 h-9" />
+                        <span class="font-extrabold text-lg text-brand-text tracking-tight hidden sm:inline-block">{{ config('app.name', 'Contact') }}</span>
                     </a>
                 </div>
 

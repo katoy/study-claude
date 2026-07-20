@@ -7,6 +7,10 @@
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
+        <!-- Favicon -->
+        <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+        <link rel="alternate icon" href="{{ asset('favicon.ico') }}">
+
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
@@ -15,12 +19,10 @@
     <body class="font-sans antialiased bg-brand-light dark:bg-stone-950 text-brand-text transition-colors duration-200">
         <div class="min-h-screen flex flex-col">
             <header class="bg-white dark:bg-stone-900 border-b border-brand-border/60 shadow-sm transition-colors duration-200">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex items-center justify-between">
-                    <a href="{{ route('welcome') }}" class="text-2xl font-black text-brand-primary tracking-tight hover:opacity-90 transition-opacity flex items-center gap-2">
-                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
-                        </svg>
-                        <span>{{ config('app.name', 'Contact') }}</span>
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+                    <a href="{{ route('welcome') }}" class="text-xl font-extrabold text-brand-text tracking-tight hover:opacity-90 transition-opacity flex items-center gap-2.5">
+                        <x-application-logo class="w-9 h-9" />
+                        <span class="font-extrabold text-lg text-brand-text tracking-tight">{{ config('app.name', 'Contact') }}</span>
                     </a>
 
                     <nav class="flex items-center gap-4">

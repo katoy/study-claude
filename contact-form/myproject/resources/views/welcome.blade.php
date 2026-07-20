@@ -13,18 +13,18 @@
 
     <!-- Main Heading -->
     <h1 class="text-4xl font-extrabold text-brand-text mb-4 tracking-tight leading-tight">
-        お気軽にお問い合わせください
+        {{ __('お気軽にお問い合わせください') }}
     </h1>
 
     <!-- Subtext -->
     <p class="text-base text-gray-600 dark:text-gray-400 mb-8 max-w-lg mx-auto leading-relaxed">
-        製品やサービスに関するご質問、お見積もりのご依頼、その他ご意見など、何でもお寄せください。通常2営業日以内に専任スタッフよりご返信いたします。
+        {{ __('製品やサービスに関するご質問、お見積もりのご依頼、その他ご意見など、何でもお寄せください。通常2営業日以内に専任スタッフよりご返信いたします。') }}
     </p>
 
     <!-- CTAs -->
     <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
         <a href="{{ route('contact.create') }}" class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 bg-brand-primary text-white font-bold rounded-xl hover:bg-emerald-700 active:scale-98 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-150">
-            <span>お問い合わせフォームを開く</span>
+            <span>{{ __('お問い合わせフォームを開く') }}</span>
             <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
             </svg>
@@ -34,9 +34,9 @@
     <!-- Additional Info (like admin stats or links) -->
     @auth
         <div class="mt-12 pt-8 border-t border-brand-border/60">
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">管理者メニュー</p>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ __('管理者メニュー') }}</p>
             <a href="{{ route('admin.contacts.index') }}" class="inline-flex items-center text-brand-primary hover:text-emerald-700 font-semibold text-sm underline underline-offset-2">
-                お問い合わせ一覧を見る
+                {{ __('お問い合わせ一覧を見る') }}
                 <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                 </svg>

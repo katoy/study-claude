@@ -15,6 +15,7 @@ Alpine.data('contactFilters', (initial) => ({
     dateFrom: initial.date_from ?? '',
     dateTo: initial.date_to ?? '',
     sort: initial.sort ?? 'created_at-desc',
+    perPage: initial.per_page ?? 20,
     keywordHistory: [],
     bodyKeywordHistory: [],
     dateHistory: [],
@@ -32,6 +33,7 @@ Alpine.data('contactFilters', (initial) => ({
         if (this.dateFrom) count++;
         if (this.dateTo) count++;
         if (this.sort && this.sort !== 'created_at-desc') count++;
+        if (this.perPage && Number(this.perPage) !== 20) count++;
         return count;
     },
 
@@ -186,6 +188,7 @@ Alpine.data('contactFilters', (initial) => ({
         if (this.dateFrom) params.set('date_from', this.dateFrom);
         if (this.dateTo) params.set('date_to', this.dateTo);
         if (this.sort && this.sort !== 'created_at-desc') params.set('sort', this.sort);
+        if (this.perPage && Number(this.perPage) !== 20) params.set('per_page', this.perPage);
         return params.toString();
     },
 
@@ -232,6 +235,7 @@ Alpine.data('contactFilters', (initial) => ({
         this.dateFrom = params.get('date_from') ?? '';
         this.dateTo = params.get('date_to') ?? '';
         this.sort = params.get('sort') ?? 'created_at-desc';
+        this.perPage = Number(params.get('per_page')) || 20;
     },
 
     /**
@@ -254,6 +258,7 @@ Alpine.data('contactFilters', (initial) => ({
         this.dateFrom = '';
         this.dateTo = '';
         this.sort = 'created_at-desc';
+        this.perPage = 20;
         this.fetchResults();
     },
 }));

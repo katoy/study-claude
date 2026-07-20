@@ -122,8 +122,8 @@
                         </div>
                     </div>
 
-                    <!-- 2行目: 並び順, ステータス, 登録日(開始), 登録日(終了) -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- 2行目: 並び順, 表示件数, ステータス, 登録日(開始), 登録日(終了) -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                         <!-- 並び順 -->
                         <div>
                             <x-form-label for="sort">
@@ -140,6 +140,28 @@
                                 ]"
                                 :selected="$filters['sort']"
                                 x-model="sort"
+                                @change="fetchResults()"
+                            />
+                        </div>
+
+                        <!-- 表示件数 -->
+                        <div>
+                            <x-form-label for="per_page">
+                                {{ __('表示件数') }}
+                            </x-form-label>
+                            <x-form-select
+                                id="per_page"
+                                name="per_page"
+                                :options="[
+                                    20 => __('20件（デフォルト）'),
+                                    5 => __('5件'),
+                                    10 => __('10件'),
+                                    50 => __('50件'),
+                                    100 => __('100件'),
+                                    200 => __('200件'),
+                                ]"
+                                :selected="$filters['per_page']"
+                                x-model="perPage"
                                 @change="fetchResults()"
                             />
                         </div>
@@ -199,7 +221,7 @@
                             onRemove="removeDateHistoryItem(item)"
                             onClear="clearDateHistory()"
                             displayKey="label"
-                            class="col-span-1 sm:col-span-2 lg:col-span-4 pt-3 border-t border-brand-border/40"
+                            class="col-span-1 sm:col-span-2 lg:col-span-5 pt-3 border-t border-brand-border/40"
                         />
                     </div>
                 </div>

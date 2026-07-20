@@ -454,4 +454,91 @@ class ContactControllerTest extends TestCase
         $contacts = $response->viewData('contacts');
         $this->assertCount(2, $contacts);
     }
+
+    public function test_index_displays_sequence_numbers(): void
+    {
+        $user = User::factory()->admin()->create();
+        Contact::factory(3)->create();
+
+        $response = $this->actingAs($user)->get(route('admin.contacts.index'));
+
+        $response->assertStatus(200);
+        $response->assertSee('>1<', false);
+        $response->assertSee('>2<', false);
+        $response->assertSee('>3<', false);
+    }
+
+    public function test_index_defaults_to_20_per_page(): void
+    {
+        $user = User::factory()->admin()->create();
+        Contact::factory(25)->create();
+
+        $response = $this->actingAs($user)->get(route('admin.contacts.index'));
+
+        $contacts = $response->viewData('contacts');
+        $this->assertCount(20, $contacts);
+    }
+
+    public function test_index_filters_by_custom_per_page(): void
+    {
+        $user = User::factory()->admin()->create();
+        Contact::factory(25)->create();
+
+        $response = $this->actingAs($user)->get(route('admin.contacts.index', ['per_page' => '10']));
+
+        $contacts = $response->viewData('contacts');
+        $this->assertCount(10, $contacts);
+    }
+
+    public function test_index_supports_5_and_200_per_page_options(): void
+    {
+        $user = User::factory()->admin()->create();
+        Contact::factory(25)->create();
+
+        $response5 = $this->actingAs($user)->get(route('admin.contacts.index', ['per_page' => '5']));
+        $this->assertCount(5, $response5->viewData('contacts'));
+
+        $response200 = $this->actingAs($user)->get(route('admin.contacts.index', ['per_page' => '200']));
+        $this->assertCount(25, $response200->viewData('contacts'));
+    }
+
+    public function test_index_falls_back_to_default_per_page_for_invalid_value(): void
+    {
+        $user = User::factory()->admin()->create();
+        Contact::factory(25)->create();
+
+        $response = $this->actingAs($user)->get(route('admin.contacts.index', ['per_page' => 'invalid']));
+
+        $contacts = $response->viewData('contacts');
+        $this->assertCount(20, $contacts);
+    }
+
+    public function test_pagination_translations_for_japanese_and_english(): void
+    {
+        app()->setLocale('ja');
+        $this->assertSame('&laquo; 前へ', __('pagination.previous'));
+        $this->assertSame('次へ &raquo;', __('pagination.next'));
+
+        app()->setLocale('en');
+        $this->assertSame('&laquo; Previous', __('pagination.previous'));
+        $this->assertSame('Next &raquo;', __('pagination.next'));
+
+        app()->setLocale(config('app.locale'));
+    }
+
+    public function test_multilingual_screen_labels_render_in_english(): void
+    {
+        app()->setLocale('en');
+        $user = User::factory()->admin()->create();
+        Contact::factory(1)->create();
+
+        $response = $this->actingAs($user)->get(route('admin.contacts.index'));
+
+        $response->assertStatus(200);
+        $response->assertSee('Contact List');
+        $response->assertSee('Filter Conditions');
+        $response->assertSee('Per Page:');
+
+        app()->setLocale(config('app.locale'));
+    }
 }

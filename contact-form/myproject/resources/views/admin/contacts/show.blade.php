@@ -7,7 +7,7 @@
             <div class="flex flex-wrap items-center gap-3">
                 @if ($position !== null)
                     <span class="text-sm font-semibold text-gray-600 dark:text-gray-400 bg-white dark:bg-stone-800 px-3 py-1.5 rounded-lg border border-brand-border/60 shadow-2xs">
-                        {{ $totalCount }} 件中 {{ $position }} 件目
+                        {{ __(':total 件中 :pos 件目', ['total' => $totalCount, 'pos' => $position]) }}
                     </span>
                 @endif
                 <div class="flex items-center gap-2">
@@ -16,27 +16,27 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                             </svg>
-                            前へ
+                            {{ __('前へ') }}
                         </a>
                     @else
                         <button disabled class="px-3.5 py-1.5 bg-gray-100 dark:bg-stone-900 border border-gray-200 dark:border-stone-800 rounded-lg text-sm font-semibold text-gray-400 dark:text-gray-600 cursor-not-allowed flex items-center gap-1">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                             </svg>
-                            前へ
+                            {{ __('前へ') }}
                         </button>
                     @endif
 
                     @if ($nextContactId)
                         <a href="{{ route('admin.contacts.show', array_merge(['contact' => $nextContactId], $queryParams)) }}" class="px-3.5 py-1.5 bg-white dark:bg-stone-800 border border-brand-border rounded-lg text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-stone-700 active:scale-95 transition-all flex items-center gap-1 shadow-2xs">
-                            次へ
+                            {{ __('次へ') }}
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                             </svg>
                         </a>
                     @else
                         <button disabled class="px-3.5 py-1.5 bg-gray-100 dark:bg-stone-900 border border-gray-200 dark:border-stone-800 rounded-lg text-sm font-semibold text-gray-400 dark:text-gray-600 cursor-not-allowed flex items-center gap-1">
-                            次へ
+                            {{ __('次へ') }}
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                             </svg>
@@ -47,7 +47,7 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7 7-7"></path>
                         </svg>
-                        一覧に戻る
+                        {{ __('一覧に戻る') }}
                     </a>
                 </div>
             </div>
@@ -64,11 +64,11 @@
                     <!-- ヘッダー情報: 名前 + ステータスバッジ -->
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-brand-border/60 mb-8">
                         <div>
-                            <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">お名前</span>
+                            <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ __('お名前') }}</span>
                             <h3 class="text-2xl font-bold text-brand-text mt-1">{{ $contact->name }}</h3>
                         </div>
                         <div class="flex items-center gap-3">
-                            <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 sm:text-right block">現在のステータス</span>
+                            <span class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 sm:text-right block">{{ __('現在のステータス') }}</span>
                             <x-contact-status-badge :status="$contact->status" />
                         </div>
                     </div>
@@ -76,13 +76,13 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                         <!-- 受信日時 -->
                         <div class="p-4 bg-brand-light dark:bg-stone-950 rounded-xl border border-brand-border/40">
-                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">受信日時</p>
+                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">{{ __('受信日時') }}</p>
                             <p class="text-base text-brand-text font-medium">{{ $contact->created_at->copy()->setTimezone(config('app.display_timezone'))->format('Y年m月d日 H:i:s') }}</p>
                         </div>
 
                         <!-- メールアドレス -->
                         <div class="p-4 bg-brand-light dark:bg-stone-950 rounded-xl border border-brand-border/40">
-                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">メールアドレス</p>
+                            <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">{{ __('メールアドレス') }}</p>
                             <a href="mailto:{{ $contact->email }}" class="text-base text-brand-primary hover:text-emerald-700 font-medium break-all hover:underline">
                                 {{ $contact->email }}
                             </a>
@@ -91,13 +91,13 @@
 
                     <!-- 件名 -->
                     <div class="mb-8 pb-6 border-b border-brand-border/60">
-                        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">件名</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">{{ __('件名') }}</p>
                         <p class="text-xl text-brand-text font-bold leading-snug">{{ $contact->subject }}</p>
                     </div>
 
                     <!-- 本文 -->
                     <div class="mb-10">
-                        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">本文</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">{{ __('本文') }}</p>
                         <div class="text-base text-brand-text whitespace-pre-wrap leading-relaxed bg-brand-light dark:bg-stone-950 p-6 rounded-xl border border-brand-border/40 font-mono">
                             {{ $contact->body }}
                         </div>
@@ -105,7 +105,7 @@
 
                     <!-- ステータス変更フォーム -->
                     <div class="pt-8 border-t border-brand-border/60">
-                        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">対応ステータスの変更</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">{{ __('対応ステータスの変更') }}</p>
                         <form method="POST" action="{{ route('admin.contacts.update', array_merge(['contact' => $contact], $queryParams)) }}" class="flex flex-col sm:flex-row items-stretch sm:items-end gap-4 max-w-md">
                             @csrf
                             @method('PATCH')
@@ -121,7 +121,7 @@
                             </div>
 
                             <x-button-primary type="submit" size="sm">
-                                ステータスを更新
+                                {{ __('ステータスを更新') }}
                             </x-button-primary>
                         </form>
                     </div>
