@@ -33,11 +33,21 @@ php artisan db:seed
 composer dev
 ```
 
-- **スクリーンショット**:
+- **静的スクリーンショット (JPEG)**:
   - 表示領域 `1280x800`、device scale factor `2`、ロケール `ja-JP`、ダークテーマに統一して撮影する（JPEG 画像サイズ `2560x1600`）。
   - 公開フォームは入力例を入れた確認画面まで、管理画面はシーダーの管理者でログインして一覧・詳細を撮影する。
-- **操作デモ (GIF)**:
-  - Playwright ＋ `ffmpeg` （パレット最適化 palettegen/paletteuse 適用）による自動スクリプト（`python3` + `playwright`）で撮影・生成する。
+
+- **操作デモ GIF アニメーションの作成方法**:
+  - **ツール構成**: Python の `playwright` ライブラリでブラウザ操作とフレーム撮影を行い、`ffmpeg` でパレット最適化 GIF へ変換する。
+  - **カーソル移動・クリックの可視化技術**:
+    - `page.evaluate()` を使用して DOM 上にカスタムマウスポインター（赤色の円形オーバレイ `#custom-mouse-pointer`）と波紋エフェクト用 CSS (`custom-ripple`) を注入する。
+    - 各操作要素（フォーム入力欄、ボタン、チェックボックス、詳細リンク等）のバウンディングボックス (`bounding_box()`) 座標を計算し、ポインターを目的の座標へ段階的に滑らか移動 (`moveCustomPointer(x, y)`) させてからクリック発火 (`clickCustomPointer(x, y)`) することで、カーソル位置とクリック動作をアニメーション上で明瞭に可視化する。
+  - **FFmpeg コマンド（高画質・軽量化パレット最適化）**:
+    ```bash
+    ffmpeg -y -framerate 8 -i frame_%04d.png \
+      -vf "scale=800:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=128[p];[s1][p]paletteuse=dither=bayer" \
+      screenshots/demo_public_form.gif
+    ```
 
 **スクリーンショット・操作デモ一覧:**
 - `screenshots/contact_input.jpg` — 公開フォーム入力画面（ダークモード）
@@ -45,8 +55,8 @@ composer dev
 - `screenshots/admin_dashboard.jpg` — 管理画面一覧（絞り込み・ソート UI 含む、ダークモード）
 - `screenshots/admin_login.jpg` — ログイン画面（ダークモード）
 - `screenshots/admin_show.jpg` — 詳細・ステータス管理画面（ダークモード）
-- `screenshots/demo_public_form.gif` — 公開フォーム操作アニメーション（GIF）
-- `screenshots/demo_admin_dashboard.gif` — 管理画面操作・テーマ切り替えアニメーション（GIF）
+- `screenshots/demo_public_form.gif` — 公開フォーム操作アニメーション（カーソル・クリック波紋演出付き GIF）
+- `screenshots/demo_admin_dashboard.gif` — 管理画面操作・テーマ切り替えアニメーション（カーソル・クリック波紋演出付き GIF）
 
 ## 機能要件
 
