@@ -119,7 +119,9 @@
                             name="date_from"
                             type="date"
                             x-model="dateFrom"
+                            @click="$el.showPicker && $el.showPicker()"
                             @change="fetchResults()"
+                            class="cursor-pointer"
                         />
                     </div>
 
@@ -133,7 +135,9 @@
                             name="date_to"
                             type="date"
                             x-model="dateTo"
+                            @click="$el.showPicker && $el.showPicker()"
                             @change="fetchResults()"
+                            class="cursor-pointer"
                         />
                     </div>
 
