@@ -1,11 +1,11 @@
 # お問い合わせフォーム
 
 ## プロジェクト概要
-Laravelで作るお問い合わせフォーム。
+Laravelで構築したお問い合わせフォーム。公開側の入力・確認・送信フローと、管理者向けの一覧検索・詳細確認・ステータス更新を提供する。
 
 ## 技術仕様
 - **Backend**: Laravel 13.x (PHP 8.3+)
-- **Frontend**: Vite, Tailwind CSS v3
+- **Frontend**: Vite 8.x, Tailwind CSS 3.4.x, Alpine.js 3.x
 - **Database**: SQLite (`database/database.sqlite`)
 
 ## 主要コマンド
@@ -18,31 +18,25 @@ Laravelで作るお問い合わせフォーム。
 
 ### テスト
 - **テスト実行**: `composer test` (または `php artisan test`)
+- **カバレッジ測定**: `php artisan test --coverage`（全クラス 100.0% を維持）
 
 ### コード品質・スタイル
 - **コード整形 (Laravel Pint)**: `vendor/bin/pint`
+- **整形チェック**: `vendor/bin/pint --test`
 
 ### スクリーンショット更新
-管理画面や UI に変更があった場合は、スクリーンショットを更新します。以下のコマンドで開発サーバーを起動してスクリーンショットを撮影・置き換えます：
+管理画面や UI に変更があった場合は、関連するスクリーンショットを更新する。
 
 ```bash
-# 1. 開発サーバーを起動
+# 1. ダミーデータを用意して開発サーバーを起動
+php artisan db:seed
 composer dev
-
-# 2. ブラウザで http://localhost:8000/admin/contacts にアクセスしてログイン
-#    （必要に応じて管理者アカウントを作成: php artisan tinker で User::factory()->admin()->create()）
-
-# 3. ブラウザで現在のページのスクリーンショットを確認してから、別のターミナルで実行：
-screencapture -x /tmp/admin_dashboard_new.jpg
-mv /tmp/admin_dashboard_new.jpg screenshots/admin_dashboard.jpg
-
-# 4. コミット
-git add screenshots/admin_dashboard.jpg
-git commit -m "refactor: Update admin dashboard screenshot"
-
-# 5. 開発サーバーを停止
-kill $(lsof -ti:8000,5173) 2>/dev/null
 ```
+
+- ブラウザの表示領域を `1280x800`、device scale factor を `2`、ロケールを `ja-JP`、ライトテーマに統一する。
+- OS 全体ではなくブラウザのページ領域を JPEG で撮影し、画像サイズを `2560x1600` に揃える。
+- 公開フォームは入力例を入れた確認画面まで、管理画面はシーダーの管理者でログインして一覧・詳細を撮影する。
+- 更新後は `320px` と `1440px` の両方で横スクロール、折り返し、タップ領域を確認する。
 
 **スクリーンショット一覧:**
 - `screenshots/contact_input.jpg` — 公開フォーム入力画面
@@ -55,7 +49,8 @@ kill $(lsof -ti:8000,5173) 2>/dev/null
 
 ### お問い合わせフォーム
 - 「名前」「メールアドレス」「件名」（各必須・最大255文字）と「本文」（必須・最大2000文字）を入力して送信する。メールアドレスは有効な形式であること。
-- 全入力項目で文字数をリアルタイム表示し、各項目の最大文字数を超えた場合はカウンターおよび入力欄の枠線・文字色を赤色警告表示する。
+- 全入力項目で文字数をリアルタイム表示する。JavaScript は `Array.from()`、サーバーは `mb_strlen()` を使用し、絵文字を含む Unicode コードポイント単位で判定を一致させる。
+- 最大文字数を超えた場合はカウンターおよび入力欄の枠線・文字色を赤色警告表示し、`aria-invalid`、説明、エラーを入力欄へ関連付ける。
 - 送信前の「確認画面」有り
 - 送信後には「お問い合わせありがとうございました」の出力
 
@@ -67,9 +62,10 @@ kill $(lsof -ti:8000,5173) 2>/dev/null
   - 検索・指定履歴機能（LocalStorage 連携、オートコンプリート、ワンタップ引用、個別 `×` 削除、一括全削除）
   - ステータス絞り込み（新規、対応中、解決済み）およびリアルタイムステータス別件数バッジ表示
   - 登録日範囲検索（ブラウザ標準カレンダーピッカー連動）
-  - アコーディオンによる絞り込みエリアの折りたたみ・展開（開閉状態・適用中件数バッジ維持）
+  - アコーディオンによる絞り込みエリアの折りたたみ・展開（初回は `sm` 未満で閉じ、`sm` 以上で開く。以後は開閉状態・適用中件数バッジを維持）
 - お問い合わせ詳細表示＆ステータス更新機能:
   - 現在の絞り込み・ソート順を維持した「前へ」「次へ」ナビゲーション（「X件中Y件目」表示）
+  - 詳細表示、ステータス更新、一覧へ戻る操作でも `page` と `per_page` を保持
   - ステータスの3段階変更（新規、対応中、解決済み）
 
 ### データベース・シーダー
@@ -83,13 +79,21 @@ kill $(lsof -ti:8000,5173) 2>/dev/null
 - カスタムエラー画面（403, 404, 429, 500）を用意し、共通の公開レイアウトを適用する
 - ブランド統一アイコン SVG (`application-logo.blade.php`, `public/favicon.svg`) を新設し、アプリ画面左上およびブラウザ Favicon に適用
 
+### UI・アクセシビリティ・CSS
+- モバイルファーストで実装し、`320px` でも横スクロールを発生させない。主要な操作要素は原則 `44px` 以上のタップ領域を確保する。
+- ナビゲーション、絞り込み、文字数カウンター、エラー、ページネーションには適切な `aria-label`、`aria-controls`、`aria-expanded`、`aria-describedby`、`aria-live` を付与する。
+- `prefers-color-scheme` によるライト／ダークテーマと、`prefers-reduced-motion` によるモーション抑制に対応する。
+- ブランドカラーは `resources/css/app.css` の CSS カスタムプロパティで定義し、`tailwind.config.js` の `brand.*` トークンから利用する。文字・リンク用の `brand-primary` と、白文字を載せる背景用の `brand-action` を混同しない。
+- ページネーションは `resources/views/vendor/pagination/tailwind.blade.php` を使用し、日本語表示、現在ページ、無効状態、44px 操作領域を維持する。
+- Tailwind CSS は v3 系に統一する。v4 用の `@tailwindcss/vite` や、設定に存在しないユーティリティクラスを追加しない。
+
 ## コーディング規約
 - PSR-12に準拠
 - コメントは日本語
 
 ## 作業ルール
 - 変更前に必ずgit commitすること
-- テストカバレッジ 100% を維持（keep）すること（現在全89テスト PASS & カバレッジ100.0%）
+- テストカバレッジ 100% を維持（keep）すること（2026-07-20 時点で全93テスト・280アサーション PASS、カバレッジ100.0%）
 - git commit を行う際は、UI・ビュー・データ等の変更によりスクリーンショットの更新が必要かを判断し、必要な場合は必ず撮影・更新してから commit すること
 - エラー処理およびセキュリティのレビューを忘れないこと
 
