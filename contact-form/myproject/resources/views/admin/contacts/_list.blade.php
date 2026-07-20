@@ -54,7 +54,7 @@
             @foreach ($contacts as $contact)
                 <div class="flex items-center gap-2.5 sm:gap-3 animate-slideIn">
                     <div class="w-7 sm:w-9 shrink-0 text-right font-mono text-xs sm:text-sm font-bold text-gray-500 dark:text-gray-400 select-none">{{ $contacts->firstItem() + $loop->index }}</div>
-                    <a href="{{ route('admin.contacts.show', array_merge(['contact' => $contact], request()->only(['status', 'keyword', 'body_keyword', 'date_from', 'date_to', 'sort']))) }}" class="flex-1 min-w-0 bg-white dark:bg-stone-900 border border-brand-border rounded-lg p-3 sm:p-3.5 hover:shadow-md hover:-translate-y-0.5 hover:border-brand-primary/40 dark:hover:border-brand-primary/40 active:scale-[0.995] transition-all duration-200">
+                    <a href="{{ route('admin.contacts.show', array_merge(['contact' => $contact], request()->only(['status', 'keyword', 'body_keyword', 'date_from', 'date_to', 'sort', 'per_page', 'page']))) }}" class="flex-1 min-w-0 bg-white dark:bg-stone-900 border border-brand-border rounded-lg p-3 sm:p-3.5 hover:shadow-md hover:-translate-y-0.5 hover:border-brand-primary/40 dark:hover:border-brand-primary/40 active:scale-[0.995] transition-all duration-200">
                         <div class="flex items-center justify-between gap-3">
                             <div class="flex-1 min-w-0">
                                 <div class="flex flex-wrap items-center gap-x-3 gap-y-0.5 mb-1">

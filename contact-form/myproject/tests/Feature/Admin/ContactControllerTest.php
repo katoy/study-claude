@@ -113,6 +113,28 @@ class ContactControllerTest extends TestCase
             ->assertViewHas('nextContactId', null);
     }
 
+    public function test_list_detail_and_status_update_preserve_pagination_state(): void
+    {
+        $user = User::factory()->admin()->create();
+        Contact::factory(12)->create();
+        $query = ['per_page' => 5, 'page' => 2];
+
+        $indexResponse = $this->actingAs($user)->get(route('admin.contacts.index', $query));
+        $contact = $indexResponse->viewData('contacts')->first();
+        $showUrl = route('admin.contacts.show', array_merge(['contact' => $contact], $query));
+
+        $indexResponse->assertSee($showUrl);
+
+        $showResponse = $this->get($showUrl);
+        $showResponse
+            ->assertViewHas('queryParams', ['per_page' => '5', 'page' => '2'])
+            ->assertSee(route('admin.contacts.index', $query));
+
+        $this->patch(route('admin.contacts.update', array_merge(['contact' => $contact], $query)), [
+            'status' => ContactStatus::InProgress->value,
+        ])->assertRedirect($showUrl);
+    }
+
     public function test_unauthenticated_user_cannot_update_status(): void
     {
         $contact = Contact::factory()->create();
