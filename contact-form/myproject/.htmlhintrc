@@ -1,0 +1,9 @@
+{
+  "alt-require": true,
+  "attr-no-duplication": true,
+  "attr-unsafe-chars": true,
+  "id-unique": true,
+  "src-not-empty": true,
+  "tag-no-obsolete": true,
+  "tagname-lowercase": true
+}

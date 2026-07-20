@@ -5,19 +5,31 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite",
+    "lint": "npm run lint:php && npm run lint:md && npm run lint:html && npm run lint:js",
+    "lint:php": "vendor/bin/pint --test",
+    "lint:md": "remark --frail \"*.md\" \"docs/**/*.md\"",
+    "lint:html": "htmlhint \"resources/views/**/*.blade.php\" \"**/*.html\"",
+    "lint:js": "eslint .",
     "prepare": "cd ../.. && husky contact-form/myproject/.husky",
     "test": "php artisan test"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@tailwindcss/forms": "^0.5.2",
     "alpinejs": "^3.4.2",
     "autoprefixer": "^10.4.2",
     "concurrently": "^9.0.1",
+    "eslint": "^10.7.0",
+    "globals": "^17.7.0",
+    "htmlhint": "^1.9.2",
     "husky": "^9.1.7",
     "laravel-vite-plugin": "^3.1",
     "lint-staged": "^16.4.0",
     "postcss": "^8.4.31",
     "prettier": "^3.9.5",
+    "remark-cli": "^12.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-preset-lint-recommended": "^7.0.1",
     "tailwindcss": "^3.1.0",
     "vite": "^8.0.0"
   }
