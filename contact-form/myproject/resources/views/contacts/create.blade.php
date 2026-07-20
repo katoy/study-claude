@@ -35,10 +35,23 @@
             <x-form-error :messages="$errors->get('subject')" />
         </div>
 
-        <div>
+        <div x-data="{ bodyText: {{ json_encode(old('body', $input['body'] ?? '')) }}, maxLength: 2000 }">
             <x-form-label for="body" :value="__('本文')" />
-            <x-form-textarea id="body" name="body" :placeholder="__('詳しい内容をお聞かせください。')" :value="$input['body'] ?? null" required />
-            <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">{{ __('最大 2000 文字まで入力できます。') }}</p>
+            <x-form-textarea
+                id="body"
+                name="body"
+                x-model="bodyText"
+                :value="$input['body'] ?? null"
+                :placeholder="__('詳しい内容をお聞かせください。')"
+                x-bind:class="bodyText.length > maxLength ? 'border-rose-500 text-rose-900 dark:text-rose-100 focus:border-rose-600 focus:ring-rose-200 dark:focus:ring-rose-950' : ''"
+                required
+            />
+            <div class="flex items-center justify-between mt-2 text-sm">
+                <p class="text-gray-600 dark:text-gray-400">{{ __('最大 2000 文字まで入力できます。') }}</p>
+                <p :class="bodyText.length > maxLength ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-gray-500 dark:text-gray-400'" class="transition-colors duration-150">
+                    <span x-text="bodyText.length">0</span> / <span x-text="maxLength">2000</span> {{ __('文字') }}
+                </p>
+            </div>
             <x-form-error :messages="$errors->get('body')" />
         </div>
 

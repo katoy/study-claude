@@ -47,6 +47,10 @@ EC（ショッピング）サイトを想定したダミー問い合わせデー
 10. **[tests/Feature/ContactSeederTest.php](file:///Users/katoy/github/study-claude/contact-form/myproject/tests/Feature/ContactSeederTest.php) & [tests/Feature/Admin/ContactControllerTest.php](file:///Users/katoy/github/study-claude/contact-form/myproject/tests/Feature/Admin/ContactControllerTest.php)**
    - シーダー実行テスト、`per_page` (5, 10, 20, 50, 100, 200件) 動作テスト、および画面表示ラベル・ページネーションの多言語翻訳検証テストを完備（全89テスト PASS, カバレッジ **100.0%**）。
 
+11. **[resources/views/contacts/create.blade.php](file:///Users/katoy/github/study-claude/contact-form/myproject/resources/views/contacts/create.blade.php)**
+   - Alpine.js （`x-data`, `x-model`）による本文入力文字数のリアルタイムカウント機能を追加。
+   - 上限（2,000文字）超過時に文字数カウント表示およびテキストエリア枠線を動的に赤色警告（`text-rose-600`, `border-rose-500`）へ切り替える視覚的UXを導入。
+
 ---
 
 ## 検証結果 (Validation Results)

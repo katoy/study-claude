@@ -15,7 +15,9 @@ class ContactFormTest extends TestCase
         $response = $this->get(route('contact.create'));
 
         $response->assertStatus(200)
-            ->assertViewIs('contacts.create');
+            ->assertViewIs('contacts.create')
+            ->assertSee('maxLength: 2000', false)
+            ->assertSee('x-text="bodyText.length"', false);
     }
 
     public function test_confirm_with_valid_input(): void
