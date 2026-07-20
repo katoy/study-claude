@@ -38,12 +38,14 @@ composer dev
 - 公開フォームは入力例を入れた確認画面まで、管理画面はシーダーの管理者でログインして一覧・詳細を撮影する。
 - 更新後は `320px` と `1440px` の両方で横スクロール、折り返し、タップ領域を確認する。
 
-**スクリーンショット一覧:**
+**スクリーンショット・操作デモ一覧:**
 - `screenshots/contact_input.jpg` — 公開フォーム入力画面
 - `screenshots/contact_confirm.jpg` — 確認画面
 - `screenshots/admin_dashboard.jpg` — 管理画面一覧（絞り込み・ソート UI 含む）
 - `screenshots/admin_login.jpg` — ログイン画面
 - `screenshots/admin_show.jpg` — 詳細・ステータス管理画面
+- `screenshots/demo_public_form.gif` — 公開フォーム操作アニメーション（GIF）
+- `screenshots/demo_admin_dashboard.gif` — 管理画面操作・テーマ切り替えアニメーション（GIF）
 
 ## 機能要件
 
