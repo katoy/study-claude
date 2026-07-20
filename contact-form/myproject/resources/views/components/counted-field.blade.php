@@ -39,7 +39,7 @@
             :aria-describedby="$describedBy"
             :aria-invalid="$hasError ? 'true' : 'false'"
             x-bind:aria-invalid="(hasServerError || Array.from(fieldText).length > maxLength).toString()"
-            x-bind:class="Array.from(fieldText).length > maxLength ? 'border-brand-error text-brand-error focus:border-brand-error focus:ring-rose-200 dark:focus:ring-rose-950' : ''"
+            x-bind:class="Array.from(fieldText).length > maxLength ? '!border-brand-error !text-brand-error focus:!border-brand-error focus:!ring-rose-200 dark:focus:!ring-rose-950' : ''"
         />
     @else
         <x-form-input
@@ -54,7 +54,7 @@
             :aria-describedby="$describedBy"
             :aria-invalid="$hasError ? 'true' : 'false'"
             x-bind:aria-invalid="(hasServerError || Array.from(fieldText).length > maxLength).toString()"
-            x-bind:class="Array.from(fieldText).length > maxLength ? 'border-brand-error text-brand-error focus:border-brand-error focus:ring-rose-200 dark:focus:ring-rose-950' : ''"
+            x-bind:class="Array.from(fieldText).length > maxLength ? '!border-brand-error !text-brand-error focus:!border-brand-error focus:!ring-rose-200 dark:focus:!ring-rose-950' : ''"
         />
     @endif
 

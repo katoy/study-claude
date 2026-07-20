@@ -13,7 +13,7 @@
         短時間に多くの送信リクエストを受け取りました。セキュリティおよび負荷軽減のため一時的に制限されています。少し時間をおいてから再度お試しください。
     </p>
     <div class="flex justify-center gap-4">
-        <a href="{{ route('contact.create') }}" class="px-6 py-3 bg-brand-primary text-white rounded-lg hover:bg-emerald-700 font-semibold transition-colors">
+        <a href="{{ route('contact.create') }}" class="px-6 py-3 bg-brand-action text-white rounded-lg hover:bg-brand-action-hover font-semibold transition-colors">
             お問い合わせに戻る
         </a>
     </div>

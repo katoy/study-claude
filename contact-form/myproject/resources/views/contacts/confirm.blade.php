@@ -29,7 +29,7 @@
     <div class="flex items-center justify-between gap-4 pt-6 border-t border-brand-border">
         <a
             href="{{ route('contact.create') }}"
-            class="text-brand-primary hover:text-emerald-700 font-semibold underline underline-offset-2"
+            class="text-brand-primary hover:text-brand-primary/80 font-semibold underline underline-offset-2"
         >
             {{ __('戻る') }}
         </a>

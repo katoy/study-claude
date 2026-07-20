@@ -19,7 +19,7 @@ Alpine.data('contactFilters', (initial) => ({
     keywordHistory: [],
     bodyKeywordHistory: [],
     dateHistory: [],
-    isExpanded: true,
+    isExpanded: window.matchMedia('(min-width: 640px)').matches,
     loading: false,
 
     /**

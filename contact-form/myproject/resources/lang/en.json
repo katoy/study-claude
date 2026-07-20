@@ -67,5 +67,21 @@
   "製品やサービスに関するご質問、お見積もりのご依頼、その他ご意見など、何でもお寄せください。通常2営業日以内に専任スタッフよりご返信いたします。": "Have a question about our products or services, request a quote, or leave feedback? We usually reply within 2 business days.",
   "お問い合わせフォームを開く": "Open Contact Form",
   "管理者メニュー": "Admin Menu",
-  "お問い合わせ一覧を見る": "View Contact List"
+  "お問い合わせ一覧を見る": "View Contact List",
+  "お問い合わせ": "Contact",
+  "管理画面": "Admin",
+  "ログイン": "Log in",
+  "メインナビゲーション": "Main navigation",
+  "ナビゲーションメニューを開閉": "Toggle navigation menu",
+  "件の条件適用中": " active filters",
+  "最大 :count 文字まで入力できます。": "Up to :count characters allowed.",
+  "製品・サービスに関するお問い合わせを受け付けています。": "Contact us about our products and services.",
+  "お問い合わせの確認と対応状況を管理します。": "Review inquiries and manage their response status.",
+  "管理画面にログインします。": "Log in to the administration area.",
+  "全 :total 件中 :first〜:last 件を表示中": "Showing :first to :last of :total results",
+  "現在のページ": "Current page",
+  "Pagination Navigation": "Pagination navigation",
+  "Go to page :page": "Go to page :page",
+  "All rights reserved.": "All rights reserved.",
+  "トップページ": "Home"
 }

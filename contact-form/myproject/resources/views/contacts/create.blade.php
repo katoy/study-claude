@@ -1,9 +1,9 @@
 @extends('layouts.public')
 
 @section('content')
-<div class="bg-white dark:bg-stone-900 p-8 border border-brand-border rounded-xl shadow-sm animate-slideIn">
-    <h2 class="text-3xl font-bold text-brand-text mb-2">{{ __('お問い合わせフォーム') }}</h2>
-    <p class="text-gray-600 dark:text-gray-400 mb-8">{{ __('ご不明な点やご質問がございましたら、下記のフォームよりお気軽にお問い合わせください。') }}</p>
+<div class="bg-white dark:bg-stone-900 p-5 sm:p-8 border border-brand-border rounded-xl shadow-sm animate-slideIn">
+    <h1 class="text-2xl sm:text-3xl font-bold text-brand-text mb-2">{{ __('お問い合わせフォーム') }}</h1>
+    <p class="text-gray-600 dark:text-gray-400 mb-6 sm:mb-8">{{ __('ご不明な点やご質問がございましたら、下記のフォームよりお気軽にお問い合わせください。') }}</p>
 
     @if (session('error'))
         <div class="mb-6 bg-rose-50 dark:bg-rose-950 border border-rose-200 dark:border-rose-800 rounded-lg p-4 text-rose-900 dark:text-rose-50 flex items-center gap-3 animate-slideIn">
@@ -65,9 +65,9 @@
             required
         />
 
-        <div class="flex items-center justify-between gap-4 pt-4 border-t border-brand-border">
-            <a href="{{ route('welcome') }}" class="text-brand-primary hover:text-emerald-700 font-medium">{{ __('キャンセル') }}</a>
-            <x-button-primary type="submit">
+        <div class="flex flex-col-reverse items-stretch gap-3 pt-4 border-t border-brand-border sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+            <a href="{{ route('welcome') }}" class="min-h-11 inline-flex items-center justify-center text-brand-primary hover:text-brand-primary/80 font-medium sm:justify-start">{{ __('キャンセル') }}</a>
+            <x-button-primary type="submit" class="w-full sm:w-auto">
                 {{ __('確認画面へ進む') }}
             </x-button-primary>
         </div>

@@ -5,23 +5,25 @@
         </h2>
     </x-slot>
 
-    <div class="py-12" x-data="contactFilters(@js($filters))">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-6 sm:py-12" x-data="contactFilters(@js($filters))">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
             <!-- 絞り込み・並び替えフォーム -->
-            <div class="bg-white dark:bg-stone-900 border border-brand-border rounded-xl p-6 mb-8 shadow-sm">
+            <div class="bg-white dark:bg-stone-900 border border-brand-border rounded-xl p-4 sm:p-6 mb-5 sm:mb-8 shadow-sm">
                 <!-- 条件指定エリア最上部ヘッダー（折りたたみトグル付き） -->
-                <div class="flex items-center justify-between pb-3 transition-all duration-200" :class="{ 'border-b border-brand-border/40 mb-5': isExpanded }">
+                <div class="flex flex-wrap items-center justify-between gap-2 pb-3 transition-all duration-200" :class="{ 'border-b border-brand-border/40 mb-5': isExpanded }">
                     <button
                         type="button"
                         @click="toggleExpanded()"
-                        class="text-sm font-bold text-brand-text flex items-center gap-2 hover:text-brand-primary transition-colors cursor-pointer group"
+                        aria-controls="contact-filters"
+                        x-bind:aria-expanded="isExpanded.toString()"
+                        class="min-h-11 flex flex-1 items-center gap-2 text-sm font-bold text-brand-text hover:text-brand-primary transition-colors cursor-pointer group"
                     >
                         <svg class="w-4 h-4 text-brand-primary transition-transform duration-300" :class="{ 'rotate-180': !isExpanded }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                         </svg>
                         <span>{{ __('絞り込み条件') }}</span>
                         <span x-show="!isExpanded && hasActiveFilters" class="inline-flex items-center px-2.5 py-0.5 text-xs font-semibold bg-brand-primary/10 text-brand-primary rounded-full">
-                            <span x-text="`${activeFilterCount}件の条件適用中`"></span>
+                            <span x-text="`${activeFilterCount}{{ __('件の条件適用中') }}`"></span>
                         </span>
                     </button>
 
@@ -31,21 +33,24 @@
                             @click="resetFilters()"
                             :disabled="!hasActiveFilters"
                             :class="{
-                                'bg-rose-50 text-rose-700 hover:bg-rose-100 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800 dark:hover:bg-rose-900/80 shadow-2xs cursor-pointer': hasActiveFilters,
+                                'bg-rose-50 text-rose-700 hover:bg-rose-100 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800 dark:hover:bg-rose-900/80 shadow-sm cursor-pointer': hasActiveFilters,
                                 'bg-gray-100 text-gray-400 border-gray-200 dark:bg-stone-800/60 dark:text-gray-600 dark:border-stone-800 cursor-not-allowed opacity-60': !hasActiveFilters
                             }"
-                            class="px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all duration-200 flex items-center gap-1.5"
+                            class="min-h-11 px-2 sm:px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all duration-200 flex items-center gap-1.5"
                         >
                             <svg class="w-3.5 h-3.5 shrink-0 transition-transform duration-300" :class="{ 'rotate-180': hasActiveFilters }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                             </svg>
-                            <span x-text="hasActiveFilters ? `条件をクリア (${activeFilterCount})` : '{{ __('絞り込みなし') }}'"></span>
+                            <span x-text="hasActiveFilters ? `{{ __('条件をクリア') }} (${activeFilterCount})` : '{{ __('絞り込みなし') }}'"></span>
                         </button>
 
                         <button
                             type="button"
                             @click="toggleExpanded()"
-                            class="p-1.5 text-gray-400 hover:text-brand-text rounded-lg hover:bg-gray-100 dark:hover:bg-stone-800 transition-colors"
+                            aria-controls="contact-filters"
+                            x-bind:aria-expanded="isExpanded.toString()"
+                            x-bind:aria-label="isExpanded ? '{{ __('折りたたむ') }}' : '{{ __('展開する') }}'"
+                            class="hidden min-h-11 min-w-11 p-1.5 text-gray-500 hover:text-brand-text rounded-lg hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-stone-800 transition-colors sm:inline-flex sm:items-center sm:justify-center"
                             :title="isExpanded ? '{{ __('折りたたむ') }}' : '{{ __('展開する') }}'"
                         >
                             <svg class="w-4 h-4 transition-transform duration-300" :class="{ 'rotate-180': !isExpanded }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -57,6 +62,7 @@
 
                 <!-- フォームボディ (折りたたみ対象) -->
                 <div
+                    id="contact-filters"
                     x-show="isExpanded"
                     x-transition:enter="transition ease-out duration-200"
                     x-transition:enter-start="opacity-0 -translate-y-2"
@@ -76,7 +82,7 @@
                                 id="keyword"
                                 name="keyword"
                                 type="text"
-                                placeholder="名前・メール・件名"
+                                :placeholder="__('名前・メール・件名')"
                                 x-model="keyword"
                                 list="keyword-history-list"
                                 @input.debounce.400ms="fetchResults()"
@@ -103,7 +109,7 @@
                                 id="body_keyword"
                                 name="body_keyword"
                                 type="text"
-                                placeholder="本文に含まれる文字"
+                                :placeholder="__('本文に含まれる文字')"
                                 x-model="bodyKeyword"
                                 list="body-keyword-history-list"
                                 @input.debounce.400ms="fetchResults()"

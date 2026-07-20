@@ -6,15 +6,15 @@
             </span>
             @if (isset($statusCounts))
                 <div class="flex flex-wrap items-center gap-1.5 text-xs">
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200 dark:bg-blue-900/50 dark:text-blue-200 dark:border-blue-800 font-semibold text-2xs sm:text-xs">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200 dark:bg-blue-900/50 dark:text-blue-200 dark:border-blue-800 font-semibold text-[11px] sm:text-xs">
                         <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
                         {{ __('新規') }}: {{ $statusCounts['new'] ?? 0 }}{{ __('件') }}
                     </span>
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-900/50 dark:text-amber-200 dark:border-amber-800 font-semibold text-2xs sm:text-xs">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-900/50 dark:text-amber-200 dark:border-amber-800 font-semibold text-[11px] sm:text-xs">
                         <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
                         {{ __('対応中') }}: {{ $statusCounts['in_progress'] ?? 0 }}{{ __('件') }}
                     </span>
-                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-900/50 dark:text-emerald-200 dark:border-emerald-800 font-semibold text-2xs sm:text-xs">
+                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-900/50 dark:text-emerald-200 dark:border-emerald-800 font-semibold text-[11px] sm:text-xs">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                         {{ __('解決済み') }}: {{ $statusCounts['resolved'] ?? 0 }}{{ __('件') }}
                     </span>
@@ -32,7 +32,7 @@
                     name="per_page"
                     x-model="perPage"
                     @change="fetchResults()"
-                    class="px-2.5 py-1 border border-brand-border rounded-lg bg-white dark:bg-stone-900 text-brand-text text-xs font-semibold focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary cursor-pointer shadow-2xs"
+                    class="min-h-11 px-2.5 py-1 border border-brand-border rounded-lg bg-white dark:bg-stone-900 text-brand-text text-xs font-semibold focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary cursor-pointer shadow-sm"
                 >
                     <option value="5">{{ __('5件') }}</option>
                     <option value="10">{{ __('10件') }}</option>
@@ -52,18 +52,18 @@
 
         <div class="space-y-2">
             @foreach ($contacts as $contact)
-                <div class="flex items-center gap-2.5 sm:gap-3 animate-slideIn">
-                    <div class="w-7 sm:w-9 shrink-0 text-right font-mono text-xs sm:text-sm font-bold text-gray-500 dark:text-gray-400 select-none">{{ $contacts->firstItem() + $loop->index }}</div>
-                    <a href="{{ route('admin.contacts.show', array_merge(['contact' => $contact], request()->only(['status', 'keyword', 'body_keyword', 'date_from', 'date_to', 'sort', 'per_page', 'page']))) }}" class="flex-1 min-w-0 bg-white dark:bg-stone-900 border border-brand-border rounded-lg p-3 sm:p-3.5 hover:shadow-md hover:-translate-y-0.5 hover:border-brand-primary/40 dark:hover:border-brand-primary/40 active:scale-[0.995] transition-all duration-200">
+                <div class="flex items-center gap-1.5 sm:gap-3 animate-slideIn">
+                    <div class="w-5 sm:w-9 shrink-0 text-right font-mono text-xs sm:text-sm font-bold text-gray-600 dark:text-gray-300 select-none">{{ $contacts->firstItem() + $loop->index }}</div>
+                    <a href="{{ route('admin.contacts.show', array_merge(['contact' => $contact], request()->only(['status', 'keyword', 'body_keyword', 'date_from', 'date_to', 'sort', 'per_page', 'page']))) }}" class="flex-1 min-w-0 bg-white dark:bg-stone-900 border border-brand-border rounded-lg p-2.5 sm:p-3.5 hover:shadow-md hover:-translate-y-0.5 hover:border-brand-primary/40 dark:hover:border-brand-primary/40 active:scale-[0.995] transition-all duration-200">
                         <div class="flex items-center justify-between gap-3">
                             <div class="flex-1 min-w-0">
                                 <div class="flex flex-wrap items-center gap-x-3 gap-y-0.5 mb-1">
-                                    <h3 class="text-base font-bold text-brand-text truncate">
+                                    <h3 class="text-sm sm:text-base font-bold text-brand-text truncate">
                                         {{ $contact->name }}
                                     </h3>
                                     <x-contact-status-badge :status="$contact->status" />
 
-                                    <div class="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 font-medium">
+                                    <div class="hidden sm:flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 font-medium">
                                         <svg class="w-3.5 h-3.5 text-gray-400 dark:text-gray-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                         </svg>
@@ -77,10 +77,10 @@
                                         <span class="truncate">{{ $contact->email }}</span>
                                     </div>
                                 </div>
-                                <p class="text-sm font-semibold text-brand-text mb-0.5 truncate">
+                                <p class="text-sm font-semibold text-brand-text truncate sm:mb-0.5">
                                     {{ $contact->subject }}
                                 </p>
-                                <p class="text-xs text-gray-600 dark:text-gray-400 line-clamp-1">
+                                <p class="hidden text-xs text-gray-600 dark:text-gray-400 line-clamp-1 sm:block">
                                     {{ \Illuminate\Support\Str::limit($contact->body, 100) }}
                                 </p>
                             </div>
@@ -103,7 +103,7 @@
                     name="per_page"
                     x-model="perPage"
                     @change="fetchResults()"
-                    class="px-2.5 py-1 border border-brand-border rounded-lg bg-white dark:bg-stone-900 text-brand-text text-xs font-semibold focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary cursor-pointer shadow-2xs"
+                    class="min-h-11 px-2.5 py-1 border border-brand-border rounded-lg bg-white dark:bg-stone-900 text-brand-text text-xs font-semibold focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary cursor-pointer shadow-sm"
                 >
                     <option value="5">{{ __('5件') }}</option>
                     <option value="10">{{ __('10件') }}</option>

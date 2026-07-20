@@ -13,7 +13,7 @@
         申し訳ありません。システムの一時的なエラーにより、リクエストを処理できませんでした。エラーが解消されるまで時間をおいてから、再度お試しください。
     </p>
     <div class="flex justify-center gap-4">
-        <a href="{{ route('welcome') }}" class="px-6 py-3 border border-brand-border text-brand-text rounded-lg hover:bg-brand-light dark:hover:bg-stone-850 font-medium transition-colors">
+        <a href="{{ route('welcome') }}" class="px-6 py-3 border border-brand-border text-brand-text rounded-lg hover:bg-brand-light dark:hover:bg-stone-800 font-medium transition-colors">
             ホームに戻る
         </a>
     </div>

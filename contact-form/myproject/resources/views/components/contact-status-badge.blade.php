@@ -24,7 +24,7 @@
     $style = $styles[$statusValue] ?? $styles['new'];
 @endphp
 
-<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border shadow-xs transition-colors duration-150 {{ $style['badge'] }}">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border shadow-sm transition-colors duration-150 {{ $style['badge'] }}">
     <span class="w-1.5 h-1.5 rounded-full {{ $style['dot'] }}"></span>
     {{ $style['label'] }}
 </span>

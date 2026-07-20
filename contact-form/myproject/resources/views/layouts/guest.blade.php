@@ -4,6 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        <meta name="description" content="{{ __('管理画面にログインします。') }}">
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
@@ -27,7 +28,7 @@
                 </a>
             </div>
 
-            <div class="w-full sm:max-w-md mt-6 p-8 bg-white dark:bg-stone-900 border border-brand-border rounded-xl shadow-sm overflow-hidden animate-slideIn" style="animation-delay: 100ms;">
+            <div class="w-full sm:max-w-md mt-6 p-5 sm:p-8 bg-white dark:bg-stone-900 border border-brand-border rounded-xl shadow-sm overflow-hidden animate-slideIn" style="animation-delay: 100ms;">
                 {{ $slot }}
             </div>
         </div>

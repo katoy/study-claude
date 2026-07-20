@@ -6,20 +6,20 @@
             </h2>
             <div class="flex flex-wrap items-center gap-3">
                 @if ($position !== null)
-                    <span class="text-sm font-semibold text-gray-600 dark:text-gray-400 bg-white dark:bg-stone-800 px-3 py-1.5 rounded-lg border border-brand-border/60 shadow-2xs">
+                    <span class="text-sm font-semibold text-gray-600 dark:text-gray-300 bg-white dark:bg-stone-800 px-3 py-1.5 rounded-lg border border-brand-border/60 shadow-sm">
                         {{ __(':total 件中 :pos 件目', ['total' => $totalCount, 'pos' => $position]) }}
                     </span>
                 @endif
                 <div class="flex items-center gap-2">
                     @if ($previousContactId)
-                        <a href="{{ route('admin.contacts.show', array_merge(['contact' => $previousContactId], $queryParams)) }}" class="px-3.5 py-1.5 bg-white dark:bg-stone-800 border border-brand-border rounded-lg text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-stone-700 active:scale-95 transition-all flex items-center gap-1 shadow-2xs">
+                        <a href="{{ route('admin.contacts.show', array_merge(['contact' => $previousContactId], $queryParams)) }}" class="min-h-11 px-3.5 py-1.5 bg-white dark:bg-stone-800 border border-brand-border rounded-lg text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-stone-700 active:scale-95 transition-all flex items-center gap-1 shadow-sm">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                             </svg>
                             {{ __('前へ') }}
                         </a>
                     @else
-                        <button disabled class="px-3.5 py-1.5 bg-gray-100 dark:bg-stone-900 border border-gray-200 dark:border-stone-800 rounded-lg text-sm font-semibold text-gray-400 dark:text-gray-600 cursor-not-allowed flex items-center gap-1">
+                        <button disabled class="min-h-11 px-3.5 py-1.5 bg-gray-100 dark:bg-stone-900 border border-gray-200 dark:border-stone-800 rounded-lg text-sm font-semibold text-gray-400 dark:text-gray-600 cursor-not-allowed flex items-center gap-1">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                             </svg>
@@ -28,14 +28,14 @@
                     @endif
 
                     @if ($nextContactId)
-                        <a href="{{ route('admin.contacts.show', array_merge(['contact' => $nextContactId], $queryParams)) }}" class="px-3.5 py-1.5 bg-white dark:bg-stone-800 border border-brand-border rounded-lg text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-stone-700 active:scale-95 transition-all flex items-center gap-1 shadow-2xs">
+                        <a href="{{ route('admin.contacts.show', array_merge(['contact' => $nextContactId], $queryParams)) }}" class="min-h-11 px-3.5 py-1.5 bg-white dark:bg-stone-800 border border-brand-border rounded-lg text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-stone-700 active:scale-95 transition-all flex items-center gap-1 shadow-sm">
                             {{ __('次へ') }}
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                             </svg>
                         </a>
                     @else
-                        <button disabled class="px-3.5 py-1.5 bg-gray-100 dark:bg-stone-900 border border-gray-200 dark:border-stone-800 rounded-lg text-sm font-semibold text-gray-400 dark:text-gray-600 cursor-not-allowed flex items-center gap-1">
+                        <button disabled class="min-h-11 px-3.5 py-1.5 bg-gray-100 dark:bg-stone-900 border border-gray-200 dark:border-stone-800 rounded-lg text-sm font-semibold text-gray-400 dark:text-gray-600 cursor-not-allowed flex items-center gap-1">
                             {{ __('次へ') }}
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -43,7 +43,7 @@
                         </button>
                     @endif
 
-                    <a href="{{ route('admin.contacts.index', $queryParams) }}" class="ml-2 text-sm font-semibold text-brand-primary hover:text-emerald-700 transition-colors flex items-center gap-1">
+                    <a href="{{ route('admin.contacts.index', $queryParams) }}" class="min-h-11 ml-0 sm:ml-2 text-sm font-semibold text-brand-primary hover:text-brand-primary/80 transition-colors flex items-center gap-1">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7 7-7"></path>
                         </svg>
@@ -54,13 +54,13 @@
         </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="py-6 sm:py-12">
+        <div class="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 space-y-6">
             <x-status-badge status="success" :message="session('status_updated')" />
             <x-status-badge status="error" :message="session('error')" />
 
             <div class="bg-white dark:bg-stone-900 border border-brand-border rounded-xl shadow-sm overflow-hidden animate-slideIn">
-                <div class="p-8">
+                <div class="p-5 sm:p-8">
                     <!-- ヘッダー情報: 名前 + ステータスバッジ -->
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-brand-border/60 mb-8">
                         <div>
@@ -83,7 +83,7 @@
                         <!-- メールアドレス -->
                         <div class="p-4 bg-brand-light dark:bg-stone-950 rounded-xl border border-brand-border/40">
                             <p class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1">{{ __('メールアドレス') }}</p>
-                            <a href="mailto:{{ $contact->email }}" class="text-base text-brand-primary hover:text-emerald-700 font-medium break-all hover:underline">
+                            <a href="mailto:{{ $contact->email }}" class="text-base text-brand-primary hover:text-brand-primary/80 font-medium break-all hover:underline">
                                 {{ $contact->email }}
                             </a>
                         </div>
