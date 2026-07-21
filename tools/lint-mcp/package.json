@@ -1,0 +1,29 @@
+{
+  "name": "lint-mcp",
+  "version": "1.0.0",
+  "description": "汎用 Lint MCP サーバー - ESLint, Prettier, PyLint, Black, PHPStan, Pint, HTMLHint に対応",
+  "main": "server.js",
+  "bin": {
+    "lint-mcp": "server.js"
+  },
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test.js"
+  },
+  "keywords": [
+    "mcp",
+    "lint",
+    "eslint",
+    "prettier",
+    "pylint",
+    "black",
+    "phpstan",
+    "pint"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
