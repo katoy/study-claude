@@ -19,6 +19,15 @@
       "type": "stdio",
       "command": "npx",
       "args": ["playwright-mcp"]
+    },
+    "sqlite": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "mcp-server-sqlite",
+        "--db-path",
+        "/Users/katoy/github/study-claude/contact-form/myproject/database/database.sqlite"
+      ]
     }
   }
 }

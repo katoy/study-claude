@@ -201,7 +201,7 @@ def generate_static_screenshots(playwright):
         });
     """)
     page.wait_for_timeout(300)
-    page.screenshot(path=f"{SCREENSHOT_DIR}/contact_input.jpg", type="jpeg", quality=90)
+    page.screenshot(path=f"{SCREENSHOT_DIR}/contact_input.jpg", type="jpeg", quality=90, full_page=True)
 
     # 2. 確認画面 (contact_confirm.jpg)
     print("Capturing contact_confirm.jpg...")
@@ -209,7 +209,7 @@ def generate_static_screenshots(playwright):
     page.wait_for_selector('h2:has-text("お問い合わせ内容確認")')
     set_dark_theme(page)
     page.wait_for_timeout(300)
-    page.screenshot(path=f"{SCREENSHOT_DIR}/contact_confirm.jpg", type="jpeg", quality=90)
+    page.screenshot(path=f"{SCREENSHOT_DIR}/contact_confirm.jpg", type="jpeg", quality=90, full_page=True)
 
     # 3. ログイン画面 (admin_login.jpg)
     print("Capturing admin_login.jpg...")
@@ -217,7 +217,7 @@ def generate_static_screenshots(playwright):
     set_dark_theme(page)
     page.fill("#email", "admin@example.test")
     page.wait_for_timeout(300)
-    page.screenshot(path=f"{SCREENSHOT_DIR}/admin_login.jpg", type="jpeg", quality=90)
+    page.screenshot(path=f"{SCREENSHOT_DIR}/admin_login.jpg", type="jpeg", quality=90, full_page=True)
 
     # 4. 管理画面一覧 (admin_dashboard.jpg)
     print("Capturing admin_dashboard.jpg...")
@@ -234,7 +234,7 @@ def generate_static_screenshots(playwright):
         }
     """)
     page.wait_for_timeout(500)
-    page.screenshot(path=f"{SCREENSHOT_DIR}/admin_dashboard.jpg", type="jpeg", quality=90)
+    page.screenshot(path=f"{SCREENSHOT_DIR}/admin_dashboard.jpg", type="jpeg", quality=90, full_page=True)
 
     # 5. 詳細画面 (admin_show.jpg)
     print("Capturing admin_show.jpg...")
@@ -243,7 +243,7 @@ def generate_static_screenshots(playwright):
     page.wait_for_selector('h2:has-text("お問い合わせ詳細")')
     set_dark_theme(page)
     page.wait_for_timeout(300)
-    page.screenshot(path=f"{SCREENSHOT_DIR}/admin_show.jpg", type="jpeg", quality=90)
+    page.screenshot(path=f"{SCREENSHOT_DIR}/admin_show.jpg", type="jpeg", quality=90, full_page=True)
 
     browser.close()
     print("Static screenshots generated successfully.")
