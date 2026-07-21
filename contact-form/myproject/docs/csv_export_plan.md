@@ -366,7 +366,48 @@ Contact::factory()->create([
 - `screenshots/demo_admin_dashboard.gif`
 - `docs/csv_export_plan.md`（新規）
 
-## 9. 検証方法
+## 9. 実装開始前の重要確認事項
+
+### リファクタリング段階での注意
+
+`index()` と `show()` への `filteredContactsQuery()` 統合は、**TDD ステップ 15（リファクタ）でのみ実施** すること。理由：
+
+- 既存の `index()` (54行) と `show()` (101行) は既に動作中のロジック
+- `export()` のテスト (ステップ 1〜14) が全て Green になるまで、既存メソッドの動作を変更しない
+- リファクタ段階で並び順の統合に思ったより複雑さが生じた場合は、`export()` と `show()` の前後ナビゲーション専用で一度成功させてから、`index()` の統合は技術負債として次 PR に記録することを推奨
+
+### 実装時の確認項目
+
+1. **`$exportQuery` に含めるべき項目**:
+   - 含める：`status`, `keyword`, `body_keyword`, `date_from_display`, `date_to_display`, `sort`
+   - 除外：`page`, `per_page`（ページネーションは無視）
+   - 既存の `show()` でクエリ文字列を保持する時と同じパターンを踏襲
+
+2. **テスト 14（`test_index_csv_export_link_uses_normalized_filters`）実装時**:
+   - `$exportQuery` が `array_filter()` で全て空になり `[]` になった場合も、URL が正しく生成されることを確認
+   - `route('admin.contacts.export', $exportQuery ?? [])` で安全に処理される
+
+3. **`sanitizeCsvField()` の引数型**:
+   - 計画書では `?string` を許容と記載
+   - 実装前に、名前、メール、件名、本文のすべてが必ず文字列か、`null` 許容かを確認
+
+4. **メモリ計測（§10.3）の実行タイミング**:
+   - テスト全体が Green になった直後に実施
+   - ローカル開発環境で計測（CI/CD ではなく、メモリ環境に依存）
+   - 計測用コードと結果は commit しない
+
+### 実装開始チェックリスト
+
+実装を開始する前に、以下を確認してください：
+
+- [ ] `git status` がクリーンであることを確認
+- [ ] 現在の commit が基準点（`docs: CSV エクスポート計画書の微調整を反映`）であることを確認
+- [ ] TDD ステップ 1（Red テスト `test_unauthenticated_user_cannot_export_csv`）から開始
+- [ ] ステップ 15（リファクタ）まで完了するまで、既存の `index()` と `show()` は変更しない
+- [ ] ステップ 15 でのみ `filteredContactsQuery()` に統合を試みる
+- [ ] 統合に高い複雑さが生じた場合は、`export()` のみで一度成功させてから次 PR に記録する
+
+## 10. 検証方法
 
 1. `vendor/bin/pint` で整形し、`vendor/bin/pint --test` が PASS することを確認する。
 2. `php artisan test --coverage` を実行し、全テスト PASS・カバレッジ 100.0% 維持を確認する。
