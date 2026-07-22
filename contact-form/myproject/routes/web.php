@@ -21,6 +21,9 @@ Route::get('/contact/complete', [ContactController::class, 'complete'])->name('c
 
 // 管理画面（認証必須）
 Route::middleware(['auth', 'can:manage-contacts'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('contacts/export', [AdminContactController::class, 'export'])
+        ->middleware('throttle:2,1')
+        ->name('contacts.export');
     Route::resource('contacts', AdminContactController::class)->only(['index', 'show', 'update']);
 });
 

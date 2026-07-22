@@ -176,6 +176,14 @@ class ContactController extends Controller
     }
 
     /**
+     * お問い合わせデータをCSV形式でエクスポートする。
+     */
+    public function export(Request $request)
+    {
+        return response('dummy csv content', 200);
+    }
+
+    /**
      * 一覧の絞り込み・並び替え条件を安全な値に正規化する。
      * 内部管理画面の絞り込みという性質上、不正値はエラーにせずデフォルトへフォールバックする。
      *
