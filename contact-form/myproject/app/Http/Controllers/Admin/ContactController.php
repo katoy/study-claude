@@ -6,7 +6,9 @@ use App\Enums\ContactStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateContactStatusRequest;
 use App\Models\Contact;
+use App\Services\ContactCsvExporter;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -52,11 +54,8 @@ class ContactController extends Controller
     public function index(Request $request): View
     {
         $filters = $this->normalizeFilters($request);
-        [$sortColumn, $sortDirection] = self::SORT_OPTIONS[$filters['sort']];
 
-        $contacts = Contact::query()
-            ->filter($filters)
-            ->orderBy($sortColumn, $sortDirection)
+        $contacts = $this->buildFilteredQuery($filters)
             ->paginate($filters['per_page'])
             ->withQueryString();
 
@@ -77,9 +76,19 @@ class ContactController extends Controller
         // Ajax リクエスト時は一覧部分のパーシャルのみ返却し、通常時はフルページを返す
         $view = $request->ajax() ? 'admin.contacts._list' : 'admin.contacts.index';
 
+        $exportQuery = array_filter([
+            'status' => $filters['status'],
+            'keyword' => $filters['keyword'],
+            'body_keyword' => $filters['body_keyword'],
+            'date_from' => $filters['date_from_display'],
+            'date_to' => $filters['date_to_display'],
+            'sort' => $filters['sort'],
+        ], fn ($val) => $val !== null && $val !== '' && $val !== []);
+
         return view($view, [
             'contacts' => $contacts,
             'statusCounts' => $statusCounts,
+            'exportQuery' => $exportQuery,
             'filters' => [
                 'status' => $filters['status'],
                 'keyword' => $filters['keyword'],
@@ -98,11 +107,8 @@ class ContactController extends Controller
     public function show(Request $request, Contact $contact): View
     {
         $filters = $this->normalizeFilters($request);
-        [$sortColumn, $sortDirection] = self::SORT_OPTIONS[$filters['sort']];
 
-        $contactIds = Contact::query()
-            ->filter($filters)
-            ->orderBy($sortColumn, $sortDirection)
+        $contactIds = $this->buildFilteredQuery($filters)
             ->pluck('id')
             ->toArray();
 
@@ -178,9 +184,47 @@ class ContactController extends Controller
     /**
      * お問い合わせデータをCSV形式でエクスポートする。
      */
-    public function export(Request $request)
+    public function export(Request $request, ContactCsvExporter $exporter)
     {
-        return response('dummy csv content', 200);
+        $filters = $this->normalizeFilters($request);
+        $query = $this->buildFilteredQuery($filters);
+
+        $count = $query->count();
+        $limit = config('contact.export_limit', 10000);
+
+        if ($count > $limit) {
+            return response()->view('admin.contacts.export-limit-exceeded', [], 422);
+        }
+
+        Log::info('CSVエクスポートを実行しました。', [
+            'admin_id' => auth()->id(),
+            'filters' => [
+                'status' => $filters['status'],
+                'keyword' => $filters['keyword'],
+                'body_keyword' => $filters['body_keyword'],
+                'date_from' => $filters['date_from_display'],
+                'date_to' => $filters['date_to_display'],
+                'sort' => $filters['sort'],
+            ],
+            'count' => $count,
+        ]);
+
+        return $exporter->export($query);
+    }
+
+    /**
+     * フィルターと統一されたソート順を適用したクエリビルダーを取得する。
+     *
+     * @param  array  $filters  正規化済みのフィルター条件
+     */
+    private function buildFilteredQuery(array $filters): Builder
+    {
+        [$sortColumn, $sortDirection] = self::SORT_OPTIONS[$filters['sort']];
+
+        return Contact::query()
+            ->filter($filters)
+            ->orderBy($sortColumn, $sortDirection)
+            ->orderBy('id', 'desc'); // IDによるタイブレーカー
     }
 
     /**

@@ -83,5 +83,8 @@
   "Pagination Navigation": "Pagination navigation",
   "Go to page :page": "Go to page :page",
   "All rights reserved.": "All rights reserved.",
-  "トップページ": "Home"
+  "トップページ": "Home",
+  "CSVエクスポート": "Export CSV",
+  "CSVエクスポート上限を超えました": "CSV export limit exceeded",
+  "条件を絞り込んで再実行してください。": "Please narrow down the search conditions and try again."
 }
