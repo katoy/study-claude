@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TODOリスト</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- Quill Rich Text Editor CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
+
+  <style>
+    /* CSS Variables for Premium Dark Aesthetic */
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+      --glass-bg: rgba(30, 41, 59, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      --glass-border-hover: rgba(255, 255, 255, 0.15);
+      --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+      --accent-hover-gradient: linear-gradient(135deg, #4f46e5 0%, #9333ea 100%);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
+      --success: #10b981;
+      --card-bg: rgba(15, 23, 42, 0.6);
+      --input-bg: rgba(15, 23, 42, 0.8);
+      --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+      --shadow-neon: 0 0 15px rgba(99, 102, 241, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', 'Noto Sans JP', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px 20px;
+      overflow-y: scroll;
+    }
+
+    /* Main Container with Glassmorphism */
+    .app-container {
+      width: 100%;
+      max-width: 900px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    /* Header styling */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.05em;
+    }
+
+    /* Button styles */
+    .btn {
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 10px 24px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: var(--accent-gradient);
+      color: white;
+      box-shadow: var(--shadow-neon);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover-gradient);
+      transform: translateY(-2px);
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.6);
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .btn-danger:hover {
+      background: var(--danger);
+      color: white;
+      border-color: transparent;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-primary);
+      border: 1px solid var(--glass-border);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--glass-border-hover);
+    }
+
+    /* Tabs & Filters Navigation */
+    .controls-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 16px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.4);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--glass-border);
+    }
+
+    .tab {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      padding: 8px 16px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .tab:hover {
+      color: var(--text-primary);
+    }
+
+    .tab.active {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-primary);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Section styling */
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin: 32px 0 16px 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .todo-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* Todo Item row */
+    .todo-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--card-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      padding: 16px 24px;
+      transition: all 0.3s ease;
+    }
+
+    .todo-item:hover {
+      border-color: var(--glass-border-hover);
+      transform: translateX(4px);
+      background: rgba(30, 41, 59, 0.5);
+    }
+
+    .todo-content {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      cursor: pointer;
+      flex: 1;
+      margin-right: 20px;
+    }
+
+    .todo-title {
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      transition: color 0.2s ease;
+      word-break: break-all;
+    }
+
+    .todo-item:hover .todo-title {
+      color: #a855f7;
+    }
+
+    .todo-date {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Completed state */
+    .todo-item.completed {
+      opacity: 0.55;
+    }
+
+    .todo-item.completed .todo-title {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .todo-item.completed:hover .todo-title {
+      color: var(--text-muted);
+    }
+
+    /* Done Toggle Button */
+    .btn-toggle-complete {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid var(--glass-border-hover);
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .btn-toggle-complete:hover {
+      border-color: #6366f1;
+      background: rgba(99, 102, 241, 0.1);
+    }
+
+    .todo-item.completed .btn-toggle-complete {
+      border-color: var(--success);
+      background: var(--success);
+    }
+
+    .todo-item.completed .btn-toggle-complete::after {
+      content: '✓';
+      color: white;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    /* Modal dialog styling */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-container {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      width: 100%;
+      max-width: 650px;
+      padding: 32px;
+      box-shadow: var(--shadow-lg);
+      transform: scale(0.95);
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .modal-overlay.open .modal-container {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 12px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    /* Input controls */
+    .input-text {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .input-text:focus {
+      outline: none;
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+
+    .input-text::placeholder {
+      color: var(--text-muted);
+    }
+
+    /* Radio Group */
+    .radio-group {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 8px;
+    }
+
+    .radio-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      user-select: none;
+    }
+
+    .radio-label input[type="radio"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--glass-border-hover);
+      border-radius: 50%;
+      outline: none;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .radio-label input[type="radio"]:checked {
+      border-color: #a855f7;
+      background: rgba(168, 85, 247, 0.1);
+    }
+
+    .radio-label input[type="radio"]:checked::after {
+      content: '';
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #a855f7;
+    }
+
+    /* Quill custom styling */
+    .ql-container.ql-snow {
+      border: 1px solid var(--glass-border) !important;
+      border-bottom-left-radius: 12px;
+      border-bottom-right-radius: 12px;
+      background: var(--input-bg);
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 1rem;
+      min-height: 150px;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+
+    .ql-toolbar.ql-snow {
+      border: 1px solid var(--glass-border) !important;
+      border-top-left-radius: 12px;
+      border-top-right-radius: 12px;
+      background: rgba(30, 41, 59, 0.9);
+    }
+
+    .ql-snow .ql-stroke {
+      stroke: var(--text-secondary) !important;
+    }
+    .ql-snow .ql-fill {
+      fill: var(--text-secondary) !important;
+    }
+    .ql-snow .ql-picker {
+      color: var(--text-secondary) !important;
+    }
+
+    /* Validation Errors */
+    .error-msg {
+      color: var(--danger);
+      font-size: 0.8rem;
+      margin-top: 4px;
+      display: none;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 20px;
+      margin-top: 8px;
+    }
+
+    /* Date controls wrapper */
+    .date-input-wrapper {
+      display: none;
+    }
+
+    .date-input-wrapper.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <header>
+      <h1>TODOリスト</h1>
+      <button class="btn btn-primary" id="btn-new">＋ 新規</button>
+    </header>
+
+    <div class="controls-row">
+      <div class="tabs">
+        <button class="tab active" id="tab-all">すべて</button>
+        <button class="tab" id="tab-pending">未完了</button>
+        <button class="tab" id="tab-completed">完了済</button>
+      </div>
+      <button class="btn btn-danger" id="btn-delete-completed">完済を削除</button>
+    </div>
+
+    <!-- Section container: Today -->
+    <div id="section-today" style="display: none;">
+      <h2 class="section-title">本日中</h2>
+      <div class="todo-list" id="list-today"></div>
+    </div>
+
+    <!-- Section container: Tomorrow -->
+    <div id="section-tomorrow" style="display: none;">
+      <h2 class="section-title">明日まで</h2>
+      <div class="todo-list" id="list-tomorrow"></div>
+    </div>
+
+    <!-- Section container: Other -->
+    <div id="section-other" style="display: none;">
+      <h2 class="section-title">それ以外</h2>
+      <div class="todo-list" id="list-other"></div>
+    </div>
+  </div>
+
+  <!-- Modal Dialog -->
+  <div class="modal-overlay" id="modal-todo">
+    <div class="modal-container">
+      <div class="modal-header" id="modal-title-text">新規登録</div>
+      
+      <!-- Form fields -->
+      <div class="form-group">
+        <label class="form-label" for="input-title">タイトル *</label>
+        <input type="text" id="input-title" class="input-text" placeholder="タイトルを入力" maxlength="120">
+        <div class="error-msg" id="error-title">タイトルを入力してください</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">日時</label>
+        <div class="radio-group">
+          <label class="radio-label">
+            <input type="radio" name="date-type" value="none" id="radio-date-none" checked> なし
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="date-type" value="date" id="radio-date-day"> 日のみ
+          </label>
+          <label class="radio-label">
+            <input type="radio" name="date-type" value="datetime" id="radio-date-time"> 時まで
+          </label>
+        </div>
+
+        <div class="date-input-wrapper" id="wrapper-date-day">
+          <input type="date" id="input-date" class="input-text">
+        </div>
+        <div class="date-input-wrapper" id="wrapper-date-time">
+          <input type="datetime-local" id="input-datetime" class="input-text">
+        </div>
+        <div class="error-msg" id="error-date">日時を入力してください</div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">詳細</label>
+        <div id="editor-detail"></div>
+        <div class="error-msg" id="error-detail-msg">詳細は2000文字以内で入力してください</div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btn-cancel">キャンセル</button>
+        <button class="btn btn-primary" id="btn-save">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logic script -->
+  <script id="todo-app-logic">
+    // State management
+    let todos = [];
+    let currentTab = 'all'; // 'all', 'pending', 'completed'
+    let currentEditingId = null; // null for new, UUID string for edit
+    let quill = null;
+
+    // Local Storage Configuration
+    const STORAGE_KEY = 'todo-app-items';
+
+    // Elements
+    const btnNew = document.getElementById('btn-new');
+    const tabAll = document.getElementById('tab-all');
+    const tabPending = document.getElementById('tab-pending');
+    const tabCompleted = document.getElementById('tab-completed');
+    const btnDeleteCompleted = document.getElementById('btn-delete-completed');
+    
+    const sectionToday = document.getElementById('section-today');
+    const sectionTomorrow = document.getElementById('section-tomorrow');
+    const sectionOther = document.getElementById('section-other');
+    const listToday = document.getElementById('list-today');
+    const listTomorrow = document.getElementById('list-tomorrow');
+    const listOther = document.getElementById('list-other');
+
+    // Modal elements
+    const modalTodo = document.getElementById('modal-todo');
+    const modalTitleText = document.getElementById('modal-title-text');
+    const inputTitle = document.getElementById('input-title');
+    const radioDateNone = document.getElementById('radio-date-none');
+    const radioDateDay = document.getElementById('radio-date-day');
+    const radioDateTime = document.getElementById('radio-date-time');
+    const wrapperDateDay = document.getElementById('wrapper-date-day');
+    const wrapperDateTime = document.getElementById('wrapper-date-time');
+    const inputDate = document.getElementById('input-date');
+    const inputDatetime = document.getElementById('input-datetime');
+    const btnCancel = document.getElementById('btn-cancel');
+    const btnSave = document.getElementById('btn-save');
+
+    // Error elements
+    const errorTitle = document.getElementById('error-title');
+    const errorDate = document.getElementById('error-date');
+    const errorDetailMsg = document.getElementById('error-detail-msg');
+
+    // Initialize Quill
+    const initQuill = () => {
+      quill = new Quill('#editor-detail', {
+        theme: 'snow',
+        placeholder: '詳細を入力してください...',
+        modules: {
+          toolbar: [
+            ['bold', 'italic', 'underline'],
+            [{ 'list': 'ordered' }, { 'list': 'bullet' }]
+          ]
+        }
+      });
+    };
+
+    // UUID Generator (with fallback)
+    const generateUUID = () => {
+      if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return crypto.randomUUID();
+      }
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+        const r = (Math.random() * 16) | 0;
+        const v = c === 'x' ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      });
+    };
+
+    // Load from Local Storage
+    const loadTodos = () => {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            todos = parsed;
+          } else {
+            todos = [];
+          }
+        } else {
+          todos = [];
+        }
+      } catch (e) {
+        todos = [];
+      }
+    };
+
+    // Save to Local Storage
+    const saveTodos = () => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+    };
+
+    // Section classification logic
+    const getDeadlineSection = (deadline, dateType) => {
+      if (dateType === 'none' || !deadline) return 'other';
+
+      const now = new Date();
+      // 今日の終わり: 23:59:59.999
+      const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+      // 明日の終わり: 23:59:59.999
+      const tomorrowEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 23, 59, 59, 999);
+
+      let dlDate;
+      if (dateType === 'date') {
+        // Spec: dateType === "date" の場合、deadlineは指定日の00:00:00として扱う
+        // 指定日(YYYY-MM-DD)の00:00:00を表すオブジェクトを作る
+        const [year, month, day] = deadline.split('T')[0].split('-').map(Number);
+        dlDate = new Date(year, month - 1, day, 0, 0, 0, 0);
+      } else {
+        dlDate = new Date(deadline);
+      }
+
+      if (dlDate <= todayEnd) {
+        return 'today';
+      } else if (dlDate <= tomorrowEnd) {
+        return 'tomorrow';
+      } else {
+        return 'other';
+      }
+    };
+
+    // Sort function for lists
+    const sortItems = (a, b) => {
+      const hasA = a.dateType !== 'none' && a.deadline;
+      const hasB = b.dateType !== 'none' && b.deadline;
+
+      if (hasA && !hasB) return -1;
+      if (!hasA && hasB) return 1;
+
+      if (hasA && hasB) {
+        const timeA = new Date(a.deadline).getTime();
+        const timeB = new Date(b.deadline).getTime();
+        if (timeA !== timeB) {
+          return timeA - timeB;
+        }
+      }
+
+      // どちらも期限なしか、期限が同一の場合はcreatedAt昇順
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    };
+
+    // Date formatting for output display
+    const formatDateDisplay = (deadline, dateType) => {
+      if (dateType === 'none' || !deadline) return '';
+      
+      const date = new Date(deadline);
+      const m = date.getMonth() + 1;
+      const d = date.getDate();
+
+      if (dateType === 'date') {
+        return `${m}月${d}日`;
+      } else if (dateType === 'datetime') {
+        const h = String(date.getHours()).padStart(2, '0');
+        const min = String(date.getMinutes()).padStart(2, '0');
+        // Spec says: "○月○日○時○分" (Note: Hour and Minute could be formatted as is or padded. Standard is as written, but spec says "○月○日○時○分". Let's do standard integers for hours/minutes but without leading zero if spec exact is required, or with padding. We'll use natural integers or pad. Let's use simple integers to match "○月○日○時○分" exactly or pad. Let's just output integers to be safe or pad. Spec: "3月15日14時30分". We will parse it exactly.
+        const hr = date.getHours();
+        const mn = date.getMinutes();
+        return `${m}月${d}日${hr}時${mn}分`;
+      }
+      return '';
+    };
+
+    // Create Todo Element in the DOM
+    const createTodoDOM = (todo) => {
+      const item = document.createElement('div');
+      item.className = `todo-item ${todo.completed ? 'completed' : ''}`;
+      item.setAttribute('data-id', todo.id);
+
+      const content = document.createElement('div');
+      content.className = 'todo-content';
+      
+      // Setup title click to trigger editing
+      content.addEventListener('click', () => {
+        openModal(todo.id);
+      });
+
+      const titleEl = document.createElement('span');
+      titleEl.className = 'todo-title';
+      titleEl.textContent = todo.title;
+      content.appendChild(titleEl);
+
+      const dateStr = formatDateDisplay(todo.deadline, todo.dateType);
+      if (dateStr) {
+        const dateEl = document.createElement('span');
+        dateEl.className = 'todo-date';
+        dateEl.textContent = dateStr;
+        content.appendChild(dateEl);
+      }
+
+      const toggleBtn = document.createElement('button');
+      toggleBtn.className = 'btn-toggle-complete';
+      toggleBtn.title = todo.completed ? '未完了に戻す' : '完了にする';
+      toggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleComplete(todo.id);
+      });
+
+      item.appendChild(content);
+      item.appendChild(toggleBtn);
+      return item;
+    };
+
+    // Render list by sections
+    const renderTodos = () => {
+      // Clear containers
+      listToday.innerHTML = '';
+      listTomorrow.innerHTML = '';
+      listOther.innerHTML = '';
+
+      // Filter by tab
+      let filtered = [];
+      if (currentTab === 'all') {
+        filtered = todos;
+      } else if (currentTab === 'pending') {
+        filtered = todos.filter(t => !t.completed);
+      } else if (currentTab === 'completed') {
+        filtered = todos.filter(t => t.completed);
+      }
+
+      // Classify into sections
+      const sections = {
+        today: [],
+        tomorrow: [],
+        other: []
+      };
+
+      filtered.forEach(todo => {
+        const section = getDeadlineSection(todo.deadline, todo.dateType);
+        sections[section].push(todo);
+      });
+
+      // Sort each section
+      sections.today.sort(sortItems);
+      sections.tomorrow.sort(sortItems);
+      sections.other.sort(sortItems);
+
+      // Render today section
+      if (sections.today.length > 0) {
+        sectionToday.style.display = 'block';
+        sections.today.forEach(todo => {
+          listToday.appendChild(createTodoDOM(todo));
+        });
+      } else {
+        sectionToday.style.display = 'none';
+      }
+
+      // Render tomorrow section
+      if (sections.tomorrow.length > 0) {
+        sectionTomorrow.style.display = 'block';
+        sections.tomorrow.forEach(todo => {
+          listTomorrow.appendChild(createTodoDOM(todo));
+        });
+      } else {
+        sectionTomorrow.style.display = 'none';
+      }
+
+      // Render other section
+      if (sections.other.length > 0) {
+        sectionOther.style.display = 'block';
+        sections.other.forEach(todo => {
+          listOther.appendChild(createTodoDOM(todo));
+        });
+      } else {
+        sectionOther.style.display = 'none';
+      }
+    };
+
+    // Toggle Complete state
+    const toggleComplete = (id) => {
+      const todo = todos.find(t => t.id === id);
+      if (todo) {
+        todo.completed = !todo.completed;
+        saveTodos();
+        renderTodos();
+      }
+    };
+
+    // Tab switcher
+    const switchTab = (tab) => {
+      currentTab = tab;
+      
+      tabAll.classList.remove('active');
+      tabPending.classList.remove('active');
+      tabCompleted.classList.remove('active');
+
+      if (tab === 'all') tabAll.classList.add('active');
+      if (tab === 'pending') tabPending.classList.add('active');
+      if (tab === 'completed') tabCompleted.classList.add('active');
+
+      renderTodos();
+    };
+
+    // Delete completed todos
+    const deleteCompleted = () => {
+      const hasCompleted = todos.some(t => t.completed);
+      if (!hasCompleted) return; // Spec: "完了済アイテムがない状態で削除" -> 何もしない (またはダイアログ出しても出さなくてもいいが、変化なし)
+      
+      if (confirm('完了済みのToDoをすべて削除しますか？')) {
+        todos = todos.filter(t => !t.completed);
+        saveTodos();
+        renderTodos();
+      }
+    };
+
+    // Modal Control: Show date fields dynamically
+    const updateDateFieldsVisibility = () => {
+      const selected = document.querySelector('input[name="date-type"]:checked').value;
+      wrapperDateDay.classList.remove('active');
+      wrapperDateTime.classList.remove('active');
+
+      if (selected === 'date') {
+        wrapperDateDay.classList.add('active');
+      } else if (selected === 'datetime') {
+        wrapperDateTime.classList.add('active');
+      }
+    };
+
+    // Clear validation error messages
+    const clearErrors = () => {
+      errorTitle.style.display = 'none';
+      errorDate.style.display = 'none';
+      errorDetailMsg.style.display = 'none';
+    };
+
+    // Open Modal (id is null for new, string for edit)
+    const openModal = (id = null) => {
+      currentEditingId = id;
+      clearErrors();
+
+      if (id === null) {
+        // New Mode
+        modalTitleText.textContent = '新規登録';
+        inputTitle.value = '';
+        radioDateNone.checked = true;
+        inputDate.value = '';
+        inputDatetime.value = '';
+        if (quill) {
+          quill.setContents([]);
+        }
+      } else {
+        // Edit Mode
+        modalTitleText.textContent = '編集';
+        const todo = todos.find(t => t.id === id);
+        if (todo) {
+          inputTitle.value = todo.title;
+          
+          if (todo.dateType === 'none') {
+            radioDateNone.checked = true;
+            inputDate.value = '';
+            inputDatetime.value = '';
+          } else if (todo.dateType === 'date') {
+            radioDateDay.checked = true;
+            // YYYY-MM-DD
+            inputDate.value = todo.deadline ? todo.deadline.split('T')[0] : '';
+            inputDatetime.value = '';
+          } else if (todo.dateType === 'datetime') {
+            radioDateTime.checked = true;
+            // datetime-local input requires format YYYY-MM-DDTHH:MM
+            inputDate.value = '';
+            if (todo.deadline) {
+              const dt = new Date(todo.deadline);
+              const year = dt.getFullYear();
+              const month = String(dt.getMonth() + 1).padStart(2, '0');
+              const day = String(dt.getDate()).padStart(2, '0');
+              const hours = String(dt.getHours()).padStart(2, '0');
+              const minutes = String(dt.getMinutes()).padStart(2, '0');
+              inputDatetime.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+            } else {
+              inputDatetime.value = '';
+            }
+          }
+
+          if (quill) {
+            quill.clipboard.dangerouslyPasteHTML(todo.detail || '');
+          }
+        }
+      }
+
+      updateDateFieldsVisibility();
+      modalTodo.classList.add('open');
+    };
+
+    // Close Modal
+    const closeModal = () => {
+      modalTodo.classList.remove('open');
+      currentEditingId = null;
+    };
+
+    // Validation & Save Logic
+    const saveTodo = () => {
+      clearErrors();
+
+      const title = inputTitle.value.trim();
+      const dateType = document.querySelector('input[name="date-type"]:checked').value;
+      const detailHtml = quill ? quill.getSemanticHTML() : '';
+      
+      // Calculate plain text length for validation
+      // quill.getText() returns trailing newline '\n', so trim it to get real character count
+      const detailText = quill ? quill.getText().trim() : '';
+
+      let hasError = false;
+
+      // 1. Title Validation
+      if (!title) {
+        errorTitle.textContent = 'タイトルを入力してください';
+        errorTitle.style.display = 'block';
+        hasError = true;
+      } else if (title.length > 100) {
+        errorTitle.textContent = 'タイトルは100文字以内で入力してください';
+        errorTitle.style.display = 'block';
+        hasError = true;
+      }
+
+      // 2. Date Validation
+      let deadline = null;
+      if (dateType === 'date') {
+        const dateVal = inputDate.value;
+        if (!dateVal) {
+          errorDate.textContent = '日時を入力してください';
+          errorDate.style.display = 'block';
+          hasError = true;
+        } else {
+          // Store date as ISO 8601 YYYY-MM-DDT00:00:00 (since spec says: "dateType === 'date' の場合、deadlineは指定日の 00:00:00 として扱う")
+          deadline = `${dateVal}T00:00:00`;
+        }
+      } else if (dateType === 'datetime') {
+        const datetimeVal = inputDatetime.value;
+        if (!datetimeVal) {
+          errorDate.textContent = '日時を入力してください';
+          errorDate.style.display = 'block';
+          hasError = true;
+        } else {
+          // datetime-local returns YYYY-MM-DDTHH:MM. Convert to standard ISO (adding :00 for seconds)
+          deadline = `${datetimeVal}:00`;
+        }
+      }
+
+      // 3. Detail character limit validation (Plain text limit: 2000 chars)
+      if (detailText.length > 2000) {
+        errorDetailMsg.textContent = '詳細は2000文字以内で入力してください';
+        errorDetailMsg.style.display = 'block';
+        hasError = true;
+      }
+
+      if (hasError) {
+        return;
+      }
+
+      if (currentEditingId === null) {
+        // Create new
+        const newTodo = {
+          id: generateUUID(),
+          title,
+          detail: detailHtml,
+          dateType,
+          deadline,
+          completed: false,
+          createdAt: new Date().toISOString()
+        };
+        todos.push(newTodo);
+      } else {
+        // Update existing
+        const todo = todos.find(t => t.id === currentEditingId);
+        if (todo) {
+          todo.title = title;
+          todo.detail = detailHtml;
+          todo.dateType = dateType;
+          todo.deadline = deadline;
+          // Note: completed and createdAt and id remain the same
+        }
+      }
+
+      saveTodos();
+      closeModal();
+      renderTodos();
+    };
+
+    // Event Listeners
+    btnNew.addEventListener('click', () => openModal(null));
+    btnCancel.addEventListener('click', closeModal);
+    btnSave.addEventListener('click', saveTodo);
+
+    tabAll.addEventListener('click', () => switchTab('all'));
+    tabPending.addEventListener('click', () => switchTab('pending'));
+    tabCompleted.addEventListener('click', () => switchTab('completed'));
+
+    btnDeleteCompleted.addEventListener('click', deleteCompleted);
+
+    // Event listeners for radio buttons to update visible date fields
+    radioDateNone.addEventListener('change', updateDateFieldsVisibility);
+    radioDateDay.addEventListener('change', updateDateFieldsVisibility);
+    radioDateTime.addEventListener('change', updateDateFieldsVisibility);
+
+    // ESC key closes the modal
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modalTodo.classList.contains('open')) {
+        closeModal();
+      }
+    });
+
+    // Page Load Setup
+    window.addEventListener('DOMContentLoaded', () => {
+      initQuill();
+      loadTodos();
+      renderTodos();
+    });
+  </script>
+</body>
+</html>
