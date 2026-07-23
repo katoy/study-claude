@@ -166,12 +166,12 @@ test.describe('3. 日時選択', () => {
     await page.click('#btn-new');
     await page.click('#radio-date-day');
     
-    // Click date input to trigger triggerDatePicker click listener
-    await page.click('#input-date');
+    // Click dummy date input to trigger triggerDatePicker click listener
+    await page.click('#dummy-date');
 
     await page.click('#radio-date-time');
-    // Click datetime input to trigger triggerDatePicker click listener
-    await page.click('#input-datetime');
+    // Click dummy datetime input to trigger triggerDatePicker click listener
+    await page.click('#dummy-datetime');
   });
 });
 

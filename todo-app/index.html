@@ -551,11 +551,13 @@
         </div>
 
         <div class="date-input-wrapper" id="wrapper-date-day" style="position: relative;">
-          <input type="date" id="input-date" class="input-text" style="padding-right: 46px;">
+          <input type="text" id="dummy-date" class="input-text" placeholder="YYYY-MM-DD" readonly style="padding-right: 46px; cursor: pointer;">
+          <input type="date" id="input-date" style="position: absolute; width: 0; height: 0; opacity: 0; pointer-events: none;">
           <span style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 1.2rem; opacity: 0.7;">📅</span>
         </div>
         <div class="date-input-wrapper" id="wrapper-date-time" style="position: relative;">
-          <input type="datetime-local" id="input-datetime" class="input-text" style="padding-right: 46px;">
+          <input type="text" id="dummy-datetime" class="input-text" placeholder="YYYY-MM-DD HH:MM" readonly style="padding-right: 46px; cursor: pointer;">
+          <input type="datetime-local" id="input-datetime" style="position: absolute; width: 0; height: 0; opacity: 0; pointer-events: none;">
           <span style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 1.2rem; opacity: 0.7;">📅</span>
         </div>
         <div class="error-msg" id="error-date">日時を入力してください</div>
@@ -610,6 +612,8 @@
     const wrapperDateTime = document.getElementById('wrapper-date-time');
     const inputDate = document.getElementById('input-date');
     const inputDatetime = document.getElementById('input-datetime');
+    const dummyDate = document.getElementById('dummy-date');
+    const dummyDatetime = document.getElementById('dummy-datetime');
     const btnCancel = document.getElementById('btn-cancel');
     const btnSave = document.getElementById('btn-save');
 
@@ -910,6 +914,8 @@
         radioDateNone.checked = true;
         inputDate.value = '';
         inputDatetime.value = '';
+        dummyDate.value = '';
+        dummyDatetime.value = '';
         if (quill) {
           quill.setContents([]);
         }
@@ -924,15 +930,20 @@
             radioDateNone.checked = true;
             inputDate.value = '';
             inputDatetime.value = '';
+            dummyDate.value = '';
+            dummyDatetime.value = '';
           } else if (todo.dateType === 'date') {
             radioDateDay.checked = true;
             // YYYY-MM-DD
-            inputDate.value = todo.deadline ? todo.deadline.split('T')[0] : '';
+            const dlVal = todo.deadline ? todo.deadline.split('T')[0] : '';
+            inputDate.value = dlVal;
+            dummyDate.value = dlVal;
             inputDatetime.value = '';
+            dummyDatetime.value = '';
           } else if (todo.dateType === 'datetime') {
             radioDateTime.checked = true;
-            // datetime-local input requires format YYYY-MM-DDTHH:MM
             inputDate.value = '';
+            dummyDate.value = '';
             if (todo.deadline) {
               const dt = new Date(todo.deadline);
               const year = dt.getFullYear();
@@ -941,8 +952,10 @@
               const hours = String(dt.getHours()).padStart(2, '0');
               const minutes = String(dt.getMinutes()).padStart(2, '0');
               inputDatetime.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+              dummyDatetime.value = `${year}-${month}-${day} ${hours}:${minutes}`;
             } else {
               inputDatetime.value = '';
+              dummyDatetime.value = '';
             }
           }
 
@@ -1091,7 +1104,7 @@
     radioDateDay.addEventListener('change', updateDateFieldsVisibility);
     radioDateTime.addEventListener('change', updateDateFieldsVisibility);
 
-    // Show browser date picker on click to make calendar interface easily accessible
+    // Show browser date picker on click dummy text to make calendar interface easily accessible
     const triggerDatePicker = (inputEl) => {
       try {
         if (typeof inputEl.showPicker === 'function') {
@@ -1102,8 +1115,24 @@
         inputEl.focus();
       }
     };
-    inputDate.addEventListener('click', () => triggerDatePicker(inputDate));
-    inputDatetime.addEventListener('click', () => triggerDatePicker(inputDatetime));
+    dummyDate.addEventListener('click', () => triggerDatePicker(inputDate));
+    dummyDatetime.addEventListener('click', () => triggerDatePicker(inputDatetime));
+
+    // Update dummy input on native date changes
+    inputDate.addEventListener('change', () => {
+      const val = inputDate.value; // YYYY-MM-DD
+      dummyDate.value = val ? val.replace(/\//g, '-') : '';
+    });
+    inputDatetime.addEventListener('change', () => {
+      const val = inputDatetime.value; // YYYY-MM-DDTHH:MM
+      if (val) {
+        const cleaned = val.replace(/\//g, '-').replace(' ', 'T');
+        const parts = cleaned.split('T');
+        dummyDatetime.value = parts.length > 1 ? `${parts[0]} ${parts[1]}` : parts[0];
+      } else {
+        dummyDatetime.value = '';
+      }
+    });
 
     // ESC key closes the modal
     window.addEventListener('keydown', (e) => {
