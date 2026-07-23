@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\DTO\ContactFilter;
 use App\Enums\ContactStatus;
 use Database\Factories\ContactFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
+use Illuminate\Http\Request;
 
 /**
  * お問い合わせを表すモデル。
@@ -33,20 +34,17 @@ class Contact extends Model
 
     /**
      * 絞り込み条件を適用するローカルスコープ。
-     * 呼び出し側で正規化済みの値が渡される前提。
-     *
-     * @param  array{status: array<string>|string, keyword: string, body_keyword?: string, date_from: ?Carbon, date_to: ?Carbon}  $filters
      */
-    public function scopeFilter(Builder $query, array $filters): Builder
+    public function scopeFilter(Builder $query, array|ContactFilter $filters): Builder
     {
-        $allStatuses = array_map(fn ($case) => $case->value, ContactStatus::cases());
-
-        $statusInput = $filters['status'] ?? [];
-        if (is_string($statusInput)) {
-            $statusInput = $statusInput !== '' ? explode(',', $statusInput) : [];
+        if (is_array($filters)) {
+            $request = new Request;
+            $request->query->replace($filters);
+            $filters = ContactFilter::fromRequest($request);
         }
 
-        $statuses = array_values(array_intersect((array) $statusInput, $allStatuses));
+        $allStatuses = array_map(fn ($case) => $case->value, ContactStatus::cases());
+        $statuses = $filters->status;
 
         // 1つもチェックしない (0件) または すべてチェック (全件) の場合はステータス絞り込みを行わない
         if (! empty($statuses) && count($statuses) < count($allStatuses)) {
@@ -57,8 +55,8 @@ class Contact extends Model
             }
         }
 
-        if ($filters['keyword'] !== '') {
-            $keyword = $filters['keyword'];
+        if ($filters->keyword !== '') {
+            $keyword = $filters->keyword;
             $query->where(function (Builder $q) use ($keyword) {
                 $q->where('name', 'like', "%{$keyword}%")
                     ->orWhere('email', 'like', "%{$keyword}%")
@@ -66,17 +64,17 @@ class Contact extends Model
             });
         }
 
-        if (! empty($filters['body_keyword'])) {
-            $bodyKeyword = $filters['body_keyword'];
+        if ($filters->bodyKeyword !== '') {
+            $bodyKeyword = $filters->bodyKeyword;
             $query->where('body', 'like', "%{$bodyKeyword}%");
         }
 
-        if ($filters['date_from'] !== null) {
-            $query->where('created_at', '>=', $filters['date_from']);
+        if ($filters->dateFrom !== null) {
+            $query->where('created_at', '>=', $filters->dateFrom);
         }
 
-        if ($filters['date_to'] !== null) {
-            $query->where('created_at', '<=', $filters['date_to']);
+        if ($filters->dateTo !== null) {
+            $query->where('created_at', '<=', $filters->dateTo);
         }
 
         return $query;
