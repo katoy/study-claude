@@ -2,13 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\ContactStatus;
 use App\Http\Requests\StoreContactRequest;
-use App\Models\Contact;
+use App\Services\ContactService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 
 /**
  * 公開お問い合わせフォームのコントローラー。
@@ -43,7 +40,7 @@ class ContactController extends Controller
     /**
      * 確認済みの内容をDBへ保存し、完了画面へリダイレクトする。
      */
-    public function store(): RedirectResponse
+    public function store(ContactService $contactService): RedirectResponse
     {
         // 多重送信防止のため、セッションからデータを引き出すと同時に削除する
         $input = session()->pull(self::SESSION_KEY);
@@ -53,17 +50,8 @@ class ContactController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($input) {
-                Contact::create([...$input, 'status' => ContactStatus::New]);
-            });
+            $contactService->createContact($input);
         } catch (\Exception $e) {
-            // エラーログの記録
-            Log::error('お問い合わせの保存に失敗しました。', [
-                'error' => $e->getMessage(),
-                // bodyは長文かつ個人情報を含む可能性があるためログ出力から除外
-                'input' => array_diff_key($input, ['body' => '']),
-            ]);
-
             // 保存失敗時はセッション値を復元して入力画面へ戻す
             session()->put(self::SESSION_KEY, $input);
 
