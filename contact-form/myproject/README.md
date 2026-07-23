@@ -417,19 +417,24 @@ vendor/bin/pint --test
 ```
 .
 ├── app/
+│   ├── DTO/
+│   │   └── ContactFilter.php        # 検索条件・ソート・ページング設定を保持するDTO
 │   ├── Enums/
 │   │   └── ContactStatus.php       # ステータス Enum（New, InProgress, Resolved）
 │   ├── Http/
 │   │   ├── Controllers/
 │   │   │   ├── Admin/
-│   │   │   │   └── ContactController.php # 管理画面コントローラー
-│   │   │   └── ContactController.php      # 公開フォームコントローラー
+│   │   │   │   └── ContactController.php # 管理画面コントローラー（ContactFilter DTOを注入）
+│   │   │   └── ContactController.php      # 公開フォームコントローラー（ContactServiceを注入）
 │   │   └── Requests/
 │   │       ├── StoreContactRequest.php     # 公開フォームバリデーション
 │   │       └── UpdateContactStatusRequest.php # ステータス更新バリデーション
-│   └── Models/
-│       ├── Contact.php              # お問い合わせモデル（スコープ・フォーマットアクセサ定義）
-│       └── User.php                 # ユーザーモデル（is_admin 判定）
+│   ├── Models/
+│   │   ├── Contact.php              # お問い合わせモデル（スコープ・フォーマットアクセサ定義）
+│   │   └── User.php                 # ユーザーモデル（is_admin 判定）
+│   └── Services/
+│       ├── ContactCsvExporter.php   # CSVエクスポート処理を担当するサービス
+│       └── ContactService.php       # お問い合わせ送信処理（トランザクション・ロギング）を担当するサービス
 ├── database/
 │   ├── factories/
 │   │   └── ContactFactory.php
