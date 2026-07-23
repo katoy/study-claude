@@ -20,6 +20,20 @@ const test = baseTest.extend({
   }
 });
 
+const getLocalDateString = (date) => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+};
+
+const getLocalDateTimeString = (date, timeStr = '12:00') => {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}T${timeStr}`;
+};
+
 // Setup and teardown
 test.beforeEach(async ({ page }) => {
   // Navigate to target and clear localstorage without reload
@@ -251,7 +265,7 @@ test.describe('5. 新規登録（正常系）', () => {
   });
 
   test('TC-5.2: 日付ありで保存', async ({ page }) => {
-    const todayStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const todayStr = getLocalDateString(new Date()); // YYYY-MM-DD (local timezone)
     
     await page.click('#btn-new');
     await page.fill('#input-title', 'レポート提出');
@@ -262,10 +276,7 @@ test.describe('5. 新規登録（正常系）', () => {
     await expect(page.locator('#section-today')).toBeVisible();
     await expect(page.locator('#list-today .todo-title')).toHaveText('レポート提出');
     
-    // Check formatted date display (e.g. "7月23日")
-    const dateObj = new Date();
-    const expectedDateStr = `${dateObj.getMonth() + 1}月${dateObj.getDate()}日`;
-    await expect(page.locator('#list-today .todo-date')).toHaveText(expectedDateStr);
+    await expect(page.locator('#list-today .todo-date')).toHaveText(todayStr);
   });
 
   test('TC-5.3: 日時ありで保存', async ({ page }) => {
@@ -286,7 +297,7 @@ test.describe('5. 新規登録（正常系）', () => {
     await expect(page.locator('#section-today')).toBeVisible();
     await expect(page.locator('#list-today .todo-title')).toHaveText('会議');
 
-    const expectedDateStr = `${now.getMonth() + 1}月${now.getDate()}日${now.getHours()}時${now.getMinutes()}分`;
+    const expectedDateStr = `${year}-${month}-${day} ${hour}:${minute}`;
     await expect(page.locator('#list-today .todo-date')).toHaveText(expectedDateStr);
   });
 
@@ -359,7 +370,7 @@ test.describe('6. 編集', () => {
     // Setting tomorrow's date
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+    const tomorrowStr = getLocalDateString(tomorrow);
 
     await page.click('.todo-title');
     await page.click('#radio-date-day');
@@ -369,8 +380,7 @@ test.describe('6. 編集', () => {
     await expect(page.locator('#section-tomorrow')).toBeVisible();
     await expect(page.locator('#list-tomorrow .todo-title')).toHaveText('買い物リスト');
 
-    const expectedDateStr = `${tomorrow.getMonth() + 1}月${tomorrow.getDate()}日`;
-    await expect(page.locator('#list-tomorrow .todo-date')).toHaveText(expectedDateStr);
+    await expect(page.locator('#list-tomorrow .todo-date')).toHaveText(tomorrowStr);
   });
 
   test('TC-6.4: 詳細を編集して保存', async ({ page }) => {
@@ -599,9 +609,9 @@ test.describe('10. セクション分け', () => {
     const dayAfterTomorrow = new Date();
     dayAfterTomorrow.setDate(today.getDate() + 2);
 
-    const todayStr = today.toISOString().split('T')[0] + 'T12:00:00';
-    const tomorrowStr = tomorrow.toISOString().split('T')[0] + 'T12:00:00';
-    const dayAfterStr = dayAfterTomorrow.toISOString().split('T')[0] + 'T12:00:00';
+    const todayStr = getLocalDateTimeString(today, '12:00:00');
+    const tomorrowStr = getLocalDateTimeString(tomorrow, '12:00:00');
+    const dayAfterStr = getLocalDateTimeString(dayAfterTomorrow, '12:00:00');
 
     await page.evaluate((dates) => {
       localStorage.setItem('todo-app-items', JSON.stringify([
@@ -643,7 +653,7 @@ test.describe('10. セクション分け', () => {
     tomorrow.setDate(today.getDate() + 1);
     
     // Tomorrow as date-only (00:00:00)
-    const tomorrowStr = tomorrow.toISOString().split('T')[0]; // YYYY-MM-DD
+    const tomorrowStr = getLocalDateString(tomorrow);
 
     await page.evaluate((deadlineVal) => {
       localStorage.setItem('todo-app-items', JSON.stringify([
@@ -671,11 +681,10 @@ test.describe('11. ソート順', () => {
     const today = new Date();
     const earlyDate = new Date(today);
     earlyDate.setDate(today.getDate() + 3);
-    const earlyStr = earlyDate.toISOString().split('T')[0] + 'T00:00:00';
-
+    const earlyStr = getLocalDateTimeString(earlyDate, '00:00:00');
     const lateDate = new Date(today);
     lateDate.setDate(today.getDate() + 5);
-    const lateStr = lateDate.toISOString().split('T')[0] + 'T00:00:00';
+    const lateStr = getLocalDateTimeString(lateDate, '00:00:00');
 
     await page.evaluate((dates) => {
       localStorage.setItem('todo-app-items', JSON.stringify([
@@ -730,13 +739,13 @@ test.describe('12. 日時の表示形式', () => {
     const t1Item = await page.locator('[data-id="t1"]');
     await expect(t1Item.locator('.todo-date')).toBeHidden();
 
-    // Task 2: "3月15日"
+    // Task 2: "2026-03-15"
     const t2Date = await page.locator('[data-id="t2"] .todo-date').textContent();
-    expect(t2Date).toBe('3月15日');
+    expect(t2Date).toBe('2026-03-15');
 
-    // Task 3: "3月15日14時30分"
+    // Task 3: "2026-03-15 14:30"
     const t3Date = await page.locator('[data-id="t3"] .todo-date').textContent();
-    expect(t3Date).toBe('3月15日14時30分');
+    expect(t3Date).toBe('2026-03-15 14:30');
   });
 });
 
@@ -833,10 +842,10 @@ test.describe('15. 複合シナリオ', () => {
     // 1. Initial Empty Check
     await expect(page.locator('.todo-item')).toHaveCount(0);
 
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getLocalDateString(new Date());
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+    const tomorrowStr = getLocalDateString(tomorrow);
 
     // 2. Add Task A (Today)
     await page.click('#btn-new');

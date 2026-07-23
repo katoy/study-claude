@@ -378,6 +378,13 @@
       color: var(--text-muted);
     }
 
+    /* Style the calendar picker indicator to be visible on dark background */
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      cursor: pointer;
+    }
+
     /* Radio Group */
     .radio-group {
       display: flex;
@@ -713,18 +720,16 @@
       if (dateType === 'none' || !deadline) return '';
       
       const date = new Date(deadline);
-      const m = date.getMonth() + 1;
-      const d = date.getDate();
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const d = String(date.getDate()).padStart(2, '0');
 
       if (dateType === 'date') {
-        return `${m}月${d}日`;
+        return `${y}-${m}-${d}`;
       } else if (dateType === 'datetime') {
-        const h = String(date.getHours()).padStart(2, '0');
-        const min = String(date.getMinutes()).padStart(2, '0');
-        // Spec says: "○月○日○時○分" (Note: Hour and Minute could be formatted as is or padded. Standard is as written, but spec says "○月○日○時○分". Let's do standard integers for hours/minutes but without leading zero if spec exact is required, or with padding. We'll use natural integers or pad. Let's use simple integers to match "○月○日○時○分" exactly or pad. Let's just output integers to be safe or pad. Spec: "3月15日14時30分". We will parse it exactly.
-        const hr = date.getHours();
-        const mn = date.getMinutes();
-        return `${m}月${d}日${hr}時${mn}分`;
+        const hr = String(date.getHours()).padStart(2, '0');
+        const mn = String(date.getMinutes()).padStart(2, '0');
+        return `${y}-${m}-${d} ${hr}:${mn}`;
       }
       return '';
     };
