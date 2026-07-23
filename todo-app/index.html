@@ -550,11 +550,13 @@
           </label>
         </div>
 
-        <div class="date-input-wrapper" id="wrapper-date-day">
-          <input type="date" id="input-date" class="input-text">
+        <div class="date-input-wrapper" id="wrapper-date-day" style="position: relative;">
+          <input type="date" id="input-date" class="input-text" style="padding-right: 46px;">
+          <span style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 1.2rem; opacity: 0.7;">📅</span>
         </div>
-        <div class="date-input-wrapper" id="wrapper-date-time">
-          <input type="datetime-local" id="input-datetime" class="input-text">
+        <div class="date-input-wrapper" id="wrapper-date-time" style="position: relative;">
+          <input type="datetime-local" id="input-datetime" class="input-text" style="padding-right: 46px;">
+          <span style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); pointer-events: none; font-size: 1.2rem; opacity: 0.7;">📅</span>
         </div>
         <div class="error-msg" id="error-date">日時を入力してください</div>
       </div>
@@ -994,8 +996,19 @@
           errorDate.style.display = 'block';
           hasError = true;
         } else {
-          // Store date as ISO 8601 YYYY-MM-DDT00:00:00 (since spec says: "dateType === 'date' の場合、deadlineは指定日の 00:00:00 として扱う")
-          deadline = `${dateVal}T00:00:00`;
+          // Normalize slash separators or browser-specific formatting
+          const cleaned = dateVal.replace(/\//g, '-').trim();
+          const dt = new Date(cleaned.includes('T') ? cleaned : `${cleaned}T00:00:00`);
+          if (isNaN(dt.getTime())) {
+            errorDate.textContent = '有効な日付を入力してください';
+            errorDate.style.display = 'block';
+            hasError = true;
+          } else {
+            const year = dt.getFullYear();
+            const month = String(dt.getMonth() + 1).padStart(2, '0');
+            const day = String(dt.getDate()).padStart(2, '0');
+            deadline = `${year}-${month}-${day}T00:00:00`;
+          }
         }
       } else if (dateType === 'datetime') {
         const datetimeVal = inputDatetime.value;
@@ -1004,8 +1017,21 @@
           errorDate.style.display = 'block';
           hasError = true;
         } else {
-          // datetime-local returns YYYY-MM-DDTHH:MM. Convert to standard ISO (adding :00 for seconds)
-          deadline = `${datetimeVal}:00`;
+          // Normalize slash separators and space characters from inputs
+          const cleaned = datetimeVal.replace(/\//g, '-').replace(' ', 'T').trim();
+          const dt = new Date(cleaned);
+          if (isNaN(dt.getTime())) {
+            errorDate.textContent = '有効な日時を入力してください';
+            errorDate.style.display = 'block';
+            hasError = true;
+          } else {
+            const year = dt.getFullYear();
+            const month = String(dt.getMonth() + 1).padStart(2, '0');
+            const day = String(dt.getDate()).padStart(2, '0');
+            const hours = String(dt.getHours()).padStart(2, '0');
+            const minutes = String(dt.getMinutes()).padStart(2, '0');
+            deadline = `${year}-${month}-${day}T${hours}:${minutes}:00`;
+          }
         }
       }
 
@@ -1064,6 +1090,20 @@
     radioDateNone.addEventListener('change', updateDateFieldsVisibility);
     radioDateDay.addEventListener('change', updateDateFieldsVisibility);
     radioDateTime.addEventListener('change', updateDateFieldsVisibility);
+
+    // Show browser date picker on click to make calendar interface easily accessible
+    const triggerDatePicker = (inputEl) => {
+      try {
+        if (typeof inputEl.showPicker === 'function') {
+          inputEl.showPicker();
+        }
+      } catch (e) {
+        // Fallback for older browsers
+        inputEl.focus();
+      }
+    };
+    inputDate.addEventListener('click', () => triggerDatePicker(inputDate));
+    inputDatetime.addEventListener('click', () => triggerDatePicker(inputDatetime));
 
     // ESC key closes the modal
     window.addEventListener('keydown', (e) => {

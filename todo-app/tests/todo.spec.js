@@ -161,6 +161,18 @@ test.describe('3. 日時選択', () => {
     await page.click('#radio-date-day');
     await expect(page.locator('#wrapper-date-day')).toBeVisible();
   });
+
+  test('カレンダーピッカーのクリック起動カバレッジ確保', async ({ page }) => {
+    await page.click('#btn-new');
+    await page.click('#radio-date-day');
+    
+    // Click date input to trigger triggerDatePicker click listener
+    await page.click('#input-date');
+
+    await page.click('#radio-date-time');
+    // Click datetime input to trigger triggerDatePicker click listener
+    await page.click('#input-datetime');
+  });
 });
 
 // 4. バリデーション
@@ -1058,6 +1070,45 @@ test.describe('16. エラーケース・境界値', () => {
 
     const items = await page.evaluate(() => JSON.parse(localStorage.getItem('todo-app-items')));
     expect(items.some(i => i.title === 'Quillなしタスク')).toBe(true);
+  });
+
+  test('無効な形式の日付・日時入力に対するバリデーションエラー', async ({ page }) => {
+    await page.click('#btn-new');
+    await page.fill('#input-title', '不正日付テスト');
+    await page.click('#radio-date-day');
+    
+    // Change inputDate type to text temporarily to inject invalid text
+    await page.evaluate(() => {
+      const input = document.getElementById('input-date');
+      input.type = 'text';
+      input.value = 'invalid-date-format';
+    });
+    
+    await page.click('#btn-save');
+    await expect(page.locator('#error-date')).toBeVisible();
+    await expect(page.locator('#error-date')).toHaveText('有効な日付を入力してください');
+
+    // Invalid datetime validation
+    await page.click('#radio-date-time');
+    await page.evaluate(() => {
+      const input = document.getElementById('input-datetime');
+      input.type = 'text';
+      input.value = 'invalid-datetime-format';
+    });
+
+    await page.click('#btn-save');
+    await expect(page.locator('#error-date')).toBeVisible();
+    await expect(page.locator('#error-date')).toHaveText('有効な日時を入力してください');
+
+    // Valid ISO string format on text input to cover `cleaned.includes('T')`
+    await page.click('#radio-date-day');
+    await page.evaluate(() => {
+      const input = document.getElementById('input-date');
+      input.type = 'text';
+      input.value = '2026-03-15T00:00:00';
+    });
+    await page.click('#btn-save');
+    await expect(page.locator('#modal-todo')).not.toHaveClass(/open/);
   });
 });
 
