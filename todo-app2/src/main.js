@@ -4,99 +4,150 @@ import { initMainView, renderMainView } from './ui/mainView.js';
 import { initDetailView, openDetailModal } from './ui/detailView.js';
 import { sortTodos } from './logic/sort.js';
 
-let todos = [];
-let activeTab = 'all';
+// グローバル状態
+let appState = {
+  todos: [],
+  activeTab: 'all',
+};
 
-function updateUI() {
-  const sorted = sortTodos(todos);
-  renderMainView(sorted, activeTab);
+const appElements = {
+  app: null,
+  detailDialog: null,
+  btnNew: null,
+  tabs: null,
+};
+
+/**
+ * 状態を保存し UI を更新
+ */
+function persistAndRender() {
+  saveTodos(appState.todos);
+  renderUI();
 }
 
-// アプリケーションの初期化
-function init() {
-  todos = loadTodos();
+/**
+ * UI を再レンダリング
+ */
+function renderUI() {
+  const sorted = sortTodos(appState.todos);
+  renderMainView(sorted, appState.activeTab);
+}
 
-  const appContainer = document.getElementById('app');
-  const detailDialog = document.getElementById('todo-detail-dialog');
+/**
+ * DOM 要素への参照を確保
+ */
+function cacheElements() {
+  appElements.app = document.getElementById('app');
+  appElements.detailDialog = document.getElementById('todo-detail-dialog');
+  appElements.btnNew = document.getElementById('btn-new');
+  appElements.tabs = document.getElementById('tabs');
+}
 
-  // メインビュー初期化
-  initMainView(appContainer, {
+/**
+ * 新規/編集フォームデータから ToDo を作成または更新
+ * @param {object} formData
+ * @returns {object}
+ */
+function createOrUpdateTodoFromFormData(formData, editingId = null) {
+  if (editingId) {
+    const todo = appState.todos.find((t) => t.id === editingId);
+    return todo ? updateTodo(todo, formData) : null;
+  }
+
+  const newTodo = createTodo(
+    formData.title,
+    formData.detail,
+    formData.dueType,
+    formData.dueAt
+  );
+  newTodo.detailHtml = formData.detailHtml;
+  return newTodo;
+}
+
+/**
+ * メインビュー初期化時のコールバックを生成
+ */
+function createMainViewCallbacks() {
+  return {
     onEditRequest: (id) => {
-      const todo = todos.find((t) => t.id === id);
+      const todo = appState.todos.find((t) => t.id === id);
       if (todo) {
-        detailDialog.setAttribute('data-editing-id', id);
+        appElements.detailDialog.setAttribute('data-editing-id', id);
         openDetailModal(todo);
       }
     },
     onToggleComplete: (id) => {
-      todos = todos.map((t) => {
-        if (t.id === id) {
-          return updateTodo(t, { completed: !t.completed });
-        }
-        return t;
-      });
-      saveTodos(todos);
-      updateUI();
+      appState.todos = appState.todos.map((t) =>
+        t.id === id ? updateTodo(t, { completed: !t.completed }) : t
+      );
+      persistAndRender();
     },
     onDeleteCompleted: () => {
-      todos = todos.filter((t) => !t.completed);
-      saveTodos(todos);
-      updateUI();
+      appState.todos = appState.todos.filter((t) => !t.completed);
+      persistAndRender();
     },
-  });
+  };
+}
 
-  // 詳細ビュー初期化
-  initDetailView(detailDialog, {
+/**
+ * 詳細ビュー初期化時のコールバックを生成
+ */
+function createDetailViewCallbacks() {
+  return {
     onSave: (formData) => {
-      const editingId = detailDialog.getAttribute('data-editing-id');
+      const editingId = appElements.detailDialog.getAttribute('data-editing-id');
+      const todo = createOrUpdateTodoFromFormData(formData, editingId);
 
-      if (editingId) {
-        // 編集
-        todos = todos.map((t) => {
-          if (t.id === editingId) {
-            return updateTodo(t, formData);
-          }
-          return t;
-        });
-      } else {
-        // 新規
-        const newTodo = createTodo(
-          formData.title,
-          formData.detail,
-          formData.dueType,
-          formData.dueAt
-        );
-        newTodo.detailHtml = formData.detailHtml; // リッチHTMLを保存
-        todos.push(newTodo);
+      if (todo) {
+        if (editingId) {
+          appState.todos = appState.todos.map((t) => (t.id === editingId ? todo : t));
+        } else {
+          appState.todos.push(todo);
+        }
+        persistAndRender();
       }
-
-      saveTodos(todos);
-      updateUI();
     },
-  });
+  };
+}
 
-  // 新規ボタンイベント
-  const btnNew = document.getElementById('btn-new');
-  if (btnNew) {
-    btnNew.addEventListener('click', () => {
-      detailDialog.removeAttribute('data-editing-id');
+/**
+ * イベントリスナーを設定
+ */
+function attachEventListeners() {
+  if (appElements.btnNew) {
+    appElements.btnNew.addEventListener('click', () => {
+      appElements.detailDialog.removeAttribute('data-editing-id');
       openDetailModal(null);
     });
   }
 
-  // タブ切り替えの同期（mainView内のイベントデリゲーションからタブが切り替わったときに activeTab を同期する）
-  const tabs = document.getElementById('tabs');
-  if (tabs) {
-    tabs.addEventListener('click', (e) => {
+  if (appElements.tabs) {
+    appElements.tabs.addEventListener('click', (e) => {
       const tabButton = e.target.closest('[data-tab]');
       if (tabButton) {
-        activeTab = tabButton.getAttribute('data-tab');
+        appState.activeTab = tabButton.getAttribute('data-tab');
       }
     });
   }
+}
 
-  // 初期表示
-  updateUI();
+/**
+ * アプリケーション初期化
+ */
+function init() {
+  cacheElements();
+
+  if (!appElements.app || !appElements.detailDialog) {
+    console.error('Required DOM elements not found');
+    return;
+  }
+
+  appState.todos = loadTodos();
+
+  initMainView(appElements.app, createMainViewCallbacks());
+  initDetailView(appElements.detailDialog, createDetailViewCallbacks());
+  attachEventListeners();
+  renderUI();
 }
 
 // ドキュメント読み込み完了時に初期化
