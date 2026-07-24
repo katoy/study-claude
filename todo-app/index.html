@@ -505,6 +505,12 @@
       <button class="btn btn-danger" id="btn-delete-completed">完済を削除</button>
     </div>
 
+    <!-- Section container: Overdue -->
+    <div id="section-overdue" style="display: none;">
+      <h2 class="section-title" style="color: var(--danger);">期限切れ</h2>
+      <div class="todo-list" id="list-overdue"></div>
+    </div>
+
     <!-- Section container: Today -->
     <div id="section-today" style="display: none;">
       <h2 class="section-title">本日中</h2>
@@ -594,9 +600,11 @@
     const tabCompleted = document.getElementById('tab-completed');
     const btnDeleteCompleted = document.getElementById('btn-delete-completed');
     
+    const sectionOverdue = document.getElementById('section-overdue');
     const sectionToday = document.getElementById('section-today');
     const sectionTomorrow = document.getElementById('section-tomorrow');
     const sectionOther = document.getElementById('section-other');
+    const listOverdue = document.getElementById('list-overdue');
     const listToday = document.getElementById('list-today');
     const listTomorrow = document.getElementById('list-tomorrow');
     const listOther = document.getElementById('list-other');
@@ -677,6 +685,8 @@
       if (dateType === 'none' || !deadline) return 'other';
 
       const now = new Date();
+      // 今日の始まり: 00:00:00.000
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
       // 今日の終わり: 23:59:59.999
       const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
       // 明日の終わり: 23:59:59.999
@@ -692,7 +702,9 @@
         dlDate = new Date(deadline);
       }
 
-      if (dlDate <= todayEnd) {
+      if (dlDate < todayStart) {
+        return 'overdue';
+      } else if (dlDate <= todayEnd) {
         return 'today';
       } else if (dlDate <= tomorrowEnd) {
         return 'tomorrow';
@@ -710,15 +722,16 @@
       if (!hasA && hasB) return 1;
 
       if (hasA && hasB) {
-        const timeA = new Date(a.deadline).getTime();
-        const timeB = new Date(b.deadline).getTime();
-        if (timeA !== timeB) {
-          return timeA - timeB;
+        // deadline formats are guaranteed to be YYYY-MM-DDTHH:MM:SS or YYYY-MM-DDT00:00:00
+        // simple string localeCompare is faster and correct
+        const comp = a.deadline.localeCompare(b.deadline);
+        if (comp !== 0) {
+          return comp;
         }
       }
 
-      // どちらも期限なしか、期限が同一の場合はcreatedAt昇順
-      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      // どちらも期限なしか、期限が同一の場合はcreatedAt昇順 (createdAt is ISO 8601 string)
+      return a.createdAt.localeCompare(b.createdAt);
     };
 
     // Date formatting for output display
@@ -783,6 +796,7 @@
     // Render list by sections
     const renderTodos = () => {
       // Clear containers
+      listOverdue.innerHTML = '';
       listToday.innerHTML = '';
       listTomorrow.innerHTML = '';
       listOther.innerHTML = '';
@@ -799,6 +813,7 @@
 
       // Classify into sections
       const sections = {
+        overdue: [],
         today: [],
         tomorrow: [],
         other: []
@@ -810,9 +825,20 @@
       });
 
       // Sort each section
+      sections.overdue.sort(sortItems);
       sections.today.sort(sortItems);
       sections.tomorrow.sort(sortItems);
       sections.other.sort(sortItems);
+
+      // Render overdue section
+      if (sections.overdue.length > 0) {
+        sectionOverdue.style.display = 'block';
+        sections.overdue.forEach(todo => {
+          listOverdue.appendChild(createTodoDOM(todo));
+        });
+      } else {
+        sectionOverdue.style.display = 'none';
+      }
 
       // Render today section
       if (sections.today.length > 0) {
@@ -1115,8 +1141,22 @@
         inputEl.focus();
       }
     };
-    dummyDate.addEventListener('click', () => triggerDatePicker(inputDate));
-    dummyDatetime.addEventListener('click', () => triggerDatePicker(inputDatetime));
+    // Setup date picker accessibility with keydown event listeners
+    const setupDateAccessibility = (dummyEl, inputEl) => {
+      dummyEl.addEventListener('click', () => triggerDatePicker(inputEl));
+      dummyEl.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          triggerDatePicker(inputEl);
+        }
+      });
+      dummyEl.setAttribute('role', 'combobox');
+      dummyEl.setAttribute('aria-expanded', 'false');
+      dummyEl.setAttribute('aria-haspopup', 'dialog');
+    };
+
+    setupDateAccessibility(dummyDate, inputDate);
+    setupDateAccessibility(dummyDatetime, inputDatetime);
 
     // Update dummy input on native date changes
     inputDate.addEventListener('change', () => {

@@ -59,6 +59,7 @@ test.describe('1. 初期表示', () => {
     await expect(page.locator('#btn-delete-completed')).toBeVisible();
     
     // Sections should be hidden as there are no items
+    await expect(page.locator('#section-overdue')).toBeHidden();
     await expect(page.locator('#section-today')).toBeHidden();
     await expect(page.locator('#section-tomorrow')).toBeHidden();
     await expect(page.locator('#section-other')).toBeHidden();
@@ -614,19 +615,23 @@ test.describe('9. [完済を削除]', () => {
 
 // 10. セクション分け
 test.describe('10. セクション分け', () => {
-  test('TC-10.1 - TC-10.5: セクションの分類と表示/非表示', async ({ page }) => {
+  test('TC-10.1 - TC-10.6: セクションの分類と表示/非表示', async ({ page }) => {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
     const today = new Date();
     const tomorrow = new Date();
     tomorrow.setDate(today.getDate() + 1);
     const dayAfterTomorrow = new Date();
     dayAfterTomorrow.setDate(today.getDate() + 2);
 
+    const yesterdayStr = getLocalDateTimeString(yesterday, '12:00:00');
     const todayStr = getLocalDateTimeString(today, '12:00:00');
     const tomorrowStr = getLocalDateTimeString(tomorrow, '12:00:00');
     const dayAfterStr = getLocalDateTimeString(dayAfterTomorrow, '12:00:00');
 
     await page.evaluate((dates) => {
       localStorage.setItem('todo-app-items', JSON.stringify([
+        { id: 't0', title: '期限切れタスク', detail: '', dateType: 'datetime', deadline: dates.yesterday, completed: false, createdAt: '2026-02-28T00:00:00Z' },
         { id: 't1', title: '今日タスク', detail: '', dateType: 'datetime', deadline: dates.today, completed: false, createdAt: '2026-03-01T00:00:00Z' },
         { id: 't2', title: '明日タスク', detail: '', dateType: 'datetime', deadline: dates.tomorrow, completed: false, createdAt: '2026-03-02T00:00:00Z' },
         { id: 't3', title: '明後日タスク', detail: '', dateType: 'datetime', deadline: dates.dayAfter, completed: false, createdAt: '2026-03-03T00:00:00Z' },
@@ -634,32 +639,36 @@ test.describe('10. セクション分け', () => {
       ]));
       loadTodos();
       renderTodos();
-    }, { today: todayStr, tomorrow: tomorrowStr, dayAfter: dayAfterStr });
+    }, { yesterday: yesterdayStr, today: todayStr, tomorrow: tomorrowStr, dayAfter: dayAfterStr });
 
-    // TC-10.1: Today section
+    // TC-10.1: Overdue section
+    await expect(page.locator('#section-overdue')).toBeVisible();
+    await expect(page.locator('#list-overdue .todo-title')).toHaveText('期限切れタスク');
+
+    // TC-10.2: Today section
     await expect(page.locator('#section-today')).toBeVisible();
     await expect(page.locator('#list-today .todo-title')).toHaveText('今日タスク');
 
-    // TC-10.2: Tomorrow section
+    // TC-10.3: Tomorrow section
     await expect(page.locator('#section-tomorrow')).toBeVisible();
     await expect(page.locator('#list-tomorrow .todo-title')).toHaveText('明日タスク');
 
-    // TC-10.3 & TC-10.4: Other section (contains Day after tomorrow and None)
+    // TC-10.4 & TC-10.5: Other section (contains Day after tomorrow and None)
     await expect(page.locator('#section-other')).toBeVisible();
     await expect(page.locator('#list-other .todo-item')).toHaveCount(2);
 
-    // TC-10.5: Empty section should be hidden (let's delete today task)
+    // TC-10.6: Empty section should be hidden (let's delete overdue task)
     await page.evaluate(() => {
       const items = JSON.parse(localStorage.getItem('todo-app-items'));
-      const filtered = items.filter(i => i.id !== 't1');
+      const filtered = items.filter(i => i.id !== 't0');
       localStorage.setItem('todo-app-items', JSON.stringify(filtered));
       loadTodos();
       renderTodos();
     });
-    await expect(page.locator('#section-today')).toBeHidden();
+    await expect(page.locator('#section-overdue')).toBeHidden();
   });
 
-  test('TC-10.6: dateType "date" の境界判定 (明日と今日)', async ({ page }) => {
+  test('TC-10.7: dateType "date" の境界判定 (明日と今日、昨日)', async ({ page }) => {
     const today = new Date();
     const tomorrow = new Date();
     tomorrow.setDate(today.getDate() + 1);
@@ -675,11 +684,60 @@ test.describe('10. セクション分け', () => {
       renderTodos();
     }, tomorrowStr);
     
-    // Current date is today. Deadline is tomorrow 00:00:00.
+    // 1. Current date is today. Deadline is tomorrow 00:00:00.
     // 00:00:00 of tomorrow is <= tomorrow 23:59:59.999 and > today 23:59:59.999.
     // So it must be in "明日まで" section.
     await expect(page.locator('#section-tomorrow')).toBeVisible();
     await expect(page.locator('#list-tomorrow .todo-title')).toHaveText('日付のみ明日');
+
+    // 2. Mock today being the deadline day itself.
+    // In this case, deadline is today 00:00:00.
+    // It should be in "本日中" section (todayStart <= deadline <= todayEnd).
+    await page.evaluate((deadlineVal) => {
+      const originalDate = Date;
+      // Force Date constructor to act as if it is the deadline day
+      const targetDate = new Date(deadlineVal + 'T12:00:00');
+      globalThis.Date = class extends originalDate {
+        constructor(...args) {
+          if (args.length === 0) {
+            return new originalDate(targetDate.getTime());
+          }
+          return new originalDate(...args);
+        }
+        static now() {
+          return targetDate.getTime();
+        }
+      };
+      renderTodos();
+    }, tomorrowStr);
+
+    await expect(page.locator('#section-today')).toBeVisible();
+    await expect(page.locator('#list-today .todo-title')).toHaveText('日付のみ明日');
+
+    // 3. Mock today being the day after the deadline (deadline is now yesterday).
+    // In this case, deadline is yesterday 00:00:00.
+    // It should be in "期限切れ" section (deadline < todayStart).
+    await page.evaluate((deadlineVal) => {
+      const originalDate = Date;
+      const targetDate = new Date(deadlineVal);
+      // Move system clock to 1 day after deadline
+      targetDate.setDate(targetDate.getDate() + 1); 
+      globalThis.Date = class extends originalDate {
+        constructor(...args) {
+          if (args.length === 0) {
+            return new originalDate(targetDate.getTime());
+          }
+          return new originalDate(...args);
+        }
+        static now() {
+          return targetDate.getTime();
+        }
+      };
+      renderTodos();
+    }, tomorrowStr);
+
+    await expect(page.locator('#section-overdue')).toBeVisible();
+    await expect(page.locator('#list-overdue .todo-title')).toHaveText('日付のみ明日');
   });
 });
 
@@ -880,6 +938,7 @@ test.describe('15. 複合シナリオ', () => {
     await page.click('#btn-save');
 
     // Verify sections and items count
+    await expect(page.locator('#section-overdue')).toBeHidden();
     await expect(page.locator('#section-today')).toBeVisible();
     await expect(page.locator('#section-tomorrow')).toBeVisible();
     await expect(page.locator('#section-other')).toBeVisible();
