@@ -1169,6 +1169,66 @@ test.describe('16. エラーケース・境界値', () => {
     await page.click('#btn-save');
     await expect(page.locator('#modal-todo')).not.toHaveClass(/open/);
   });
+
+  test('localStorage に配列以外のJSONが保存されている場合のカバレッジ確保', async ({ page }) => {
+    await page.evaluate(() => {
+      // Mock todos to be non-empty first
+      todos = [{ id: 'dummy-id', title: 'ダミー' }];
+      renderTodos();
+
+      // Set non-array JSON object
+      localStorage.setItem('todo-app-items', '{"key": "value"}');
+      loadTodos();
+      renderTodos();
+    });
+    await expect(page.locator('.todo-item')).toHaveCount(0);
+  });
+
+  test('dateType が date で deadline が空のタスクを編集する際のカバレッジ確保', async ({ page }) => {
+    // 1. dateTypeが 'date' だが deadline が null のアイテムを挿入
+    await page.evaluate(() => {
+      localStorage.setItem('todo-app-items', JSON.stringify([
+        {
+          id: 'null-deadline-date-id',
+          title: '日付設定あり期限なし',
+          detail: '',
+          dateType: 'date',
+          deadline: null,
+          completed: false,
+          createdAt: new Date().toISOString()
+        }
+      ]));
+      loadTodos();
+      renderTodos();
+    });
+
+    // 2. 編集モードで開く
+    await page.click('.todo-content');
+    await expect(page.locator('#modal-todo')).toHaveClass(/open/);
+    await expect(page.locator('#input-date')).toHaveValue('');
+  });
+
+  test('showPicker が例外を投げる場合のカバレッジ確保', async ({ page }) => {
+    await page.click('#btn-new');
+    await page.click('#radio-date-day');
+
+    // Mock inputEl.showPicker to throw an error
+    await page.evaluate(() => {
+      const input = document.getElementById('input-date');
+      input.showPicker = () => {
+        throw new Error('showPicker error for testing fallback');
+      };
+    });
+
+    // Click dummy element to trigger triggerDatePicker
+    await page.click('#dummy-date');
+
+    // Verify it fallback to focus (we can check if document.activeElement is input-date)
+    const isFocused = await page.evaluate(() => {
+      return document.activeElement.id === 'input-date';
+    });
+    expect(isFocused).toBe(true);
+  });
 });
 
 // JavaScript Coverage 100% Validation Test
