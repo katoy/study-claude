@@ -262,34 +262,51 @@
 
     /* Done Toggle Button */
     .btn-toggle-complete {
-      width: 32px;
-      height: 32px;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
-      border: 2px solid var(--glass-border-hover);
-      background: transparent;
+      border: 2.5px solid #6366f1;
+      background: rgba(99, 102, 241, 0.15);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.2s ease;
+      transition: all 0.3s ease;
       flex-shrink: 0;
+      position: relative;
+      font-size: 20px;
+    }
+
+    .btn-toggle-complete::before {
+      content: '○';
+      color: #6366f1;
+      font-weight: bold;
+      font-size: 22px;
+      transition: all 0.3s ease;
     }
 
     .btn-toggle-complete:hover {
-      border-color: #6366f1;
-      background: rgba(99, 102, 241, 0.1);
+      border-color: #818cf8;
+      background: rgba(99, 102, 241, 0.25);
+      box-shadow: 0 0 16px rgba(99, 102, 241, 0.4), inset 0 0 12px rgba(99, 102, 241, 0.2);
+      transform: scale(1.08);
+    }
+
+    .btn-toggle-complete:active {
+      transform: scale(0.95);
     }
 
     .todo-item.completed .btn-toggle-complete {
       border-color: var(--success);
-      background: var(--success);
+      background: rgba(34, 197, 94, 0.25);
+      box-shadow: 0 0 16px rgba(34, 197, 94, 0.35);
     }
 
-    .todo-item.completed .btn-toggle-complete::after {
+    .todo-item.completed .btn-toggle-complete::before {
       content: '✓';
-      color: white;
-      font-size: 14px;
-      font-weight: bold;
+      color: var(--success);
+      font-size: 24px;
+      transform: scale(1.1);
     }
 
     /* Modal dialog styling */
