@@ -486,6 +486,11 @@
     .date-input-wrapper.active {
       display: block;
     }
+    
+    .counter-overflow {
+      color: var(--danger) !important;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -537,7 +542,10 @@
       
       <!-- Form fields -->
       <div class="form-group">
-        <label class="form-label" for="input-title">タイトル *</label>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <label class="form-label" for="input-title">タイトル *</label>
+          <span id="title-counter" style="font-size: 0.8rem; color: var(--text-secondary);">0 / 100</span>
+        </div>
         <input type="text" id="input-title" class="input-text" placeholder="タイトルを入力" maxlength="120">
         <div class="error-msg" id="error-title">タイトルを入力してください</div>
       </div>
@@ -572,7 +580,10 @@
       <div class="form-group">
         <label class="form-label">詳細</label>
         <div id="editor-detail"></div>
-        <div class="error-msg" id="error-detail-msg">詳細は2000文字以内で入力してください</div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+          <div class="error-msg" id="error-detail-msg" style="margin-top: 0;">詳細は2000文字以内で入力してください</div>
+          <span id="detail-counter" style="font-size: 0.8rem; color: var(--text-secondary); margin-left: auto;">0 / 2000</span>
+        </div>
       </div>
 
       <div class="modal-footer">
@@ -630,6 +641,33 @@
     const errorDate = document.getElementById('error-date');
     const errorDetailMsg = document.getElementById('error-detail-msg');
 
+    // Counter elements
+    const titleCounter = document.getElementById('title-counter');
+    const detailCounter = document.getElementById('detail-counter');
+
+    // Update Character Counters
+    const updateTitleCounter = () => {
+      const len = inputTitle.value.length;
+      titleCounter.textContent = `${len} / 100`;
+      if (len > 100) {
+        titleCounter.classList.add('counter-overflow');
+      } else {
+        titleCounter.classList.remove('counter-overflow');
+      }
+    };
+
+    const updateDetailCounter = () => {
+      if (!quill) return;
+      const text = quill.getText().trim();
+      const len = text.length;
+      detailCounter.textContent = `${len} / 2000`;
+      if (len > 2000) {
+        detailCounter.classList.add('counter-overflow');
+      } else {
+        detailCounter.classList.remove('counter-overflow');
+      }
+    };
+
     // Initialize Quill
     const initQuill = () => {
       quill = new Quill('#editor-detail', {
@@ -642,6 +680,7 @@
           ]
         }
       });
+      quill.on('text-change', updateDetailCounter);
     };
 
     // UUID Generator (with fallback)
@@ -992,6 +1031,8 @@
       }
 
       updateDateFieldsVisibility();
+      updateTitleCounter();
+      updateDetailCounter();
       modalTodo.classList.add('open');
     };
 
@@ -1115,6 +1156,7 @@
     };
 
     // Event Listeners
+    inputTitle.addEventListener('input', updateTitleCounter);
     btnNew.addEventListener('click', () => openModal(null));
     btnCancel.addEventListener('click', closeModal);
     btnSave.addEventListener('click', saveTodo);

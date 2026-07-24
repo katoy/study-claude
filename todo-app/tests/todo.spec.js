@@ -1231,6 +1231,110 @@ test.describe('16. エラーケース・境界値', () => {
   });
 });
 
+// 17. 文字数カウンター
+test.describe('17. 文字数カウンター', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.evaluate(() => localStorage.clear());
+    await page.goto('/');
+  });
+
+  test('TC-17.1: タイトル文字数カウンターのリアルタイム更新', async ({ page }) => {
+    await page.click('#btn-new');
+    
+    const counter = page.locator('#title-counter');
+    await expect(counter).toHaveText('0 / 100');
+
+    await page.fill('#input-title', 'あ');
+    await expect(counter).toHaveText('1 / 100');
+
+    await page.fill('#input-title', 'あい');
+    await expect(counter).toHaveText('2 / 100');
+
+    await page.fill('#input-title', 'あ');
+    await expect(counter).toHaveText('1 / 100');
+  });
+
+  test('TC-17.2: タイトル文字数カウンターの制限超過時の警告表示', async ({ page }) => {
+    await page.click('#btn-new');
+    const counter = page.locator('#title-counter');
+
+    const longTitle = 'a'.repeat(101);
+    await page.fill('#input-title', longTitle);
+    await expect(counter).toHaveText('101 / 100');
+    await expect(counter).toHaveClass(/counter-overflow/);
+
+    const exactTitle = 'a'.repeat(100);
+    await page.fill('#input-title', exactTitle);
+    await expect(counter).toHaveText('100 / 100');
+    await expect(counter).not.toHaveClass(/counter-overflow/);
+  });
+
+  test('TC-17.3: 詳細（Quillエディタ）文字数カウンターのリアルタイム更新', async ({ page }) => {
+    await page.click('#btn-new');
+    const counter = page.locator('#detail-counter');
+    await expect(counter).toHaveText('0 / 2000');
+
+    await page.click('.ql-editor');
+    await page.keyboard.type('テスト');
+    await expect(counter).toHaveText('3 / 2000');
+
+    await page.press('.ql-editor', 'Meta+A');
+    await page.press('.ql-editor', 'Backspace');
+    await expect(counter).toHaveText('0 / 2000');
+  });
+
+  test('TC-17.4: 詳細（Quillエディタ）文字数カウンターの制限超過時の警告表示', async ({ page }) => {
+    await page.click('#btn-new');
+    const counter = page.locator('#detail-counter');
+
+    const longDetail = 'b'.repeat(2001);
+    await page.click('.ql-editor');
+    await page.evaluate((text) => {
+      quill.setText(text);
+    }, longDetail);
+
+    await expect(counter).toHaveText('2001 / 2000');
+    await expect(counter).toHaveClass(/counter-overflow/);
+
+    const exactDetail = 'b'.repeat(2000);
+    await page.evaluate((text) => {
+      quill.setText(text);
+    }, exactDetail);
+    
+    await expect(counter).toHaveText('2000 / 2000');
+    await expect(counter).not.toHaveClass(/counter-overflow/);
+  });
+
+  test('TC-17.5: 編集モードでの文字数カウンターの初期表示', async ({ page }) => {
+    await page.evaluate(() => {
+      localStorage.setItem('todo-app-items', JSON.stringify([
+        {
+          id: 'test-counter-id',
+          title: '0123456789',
+          detail: '<p>01234567890123456789012345678901234567890123456789</p>',
+          dateType: 'none',
+          deadline: null,
+          completed: false,
+          createdAt: new Date().toISOString()
+        }
+      ]));
+    });
+    
+    await page.reload();
+
+    await page.click('.todo-content');
+    await expect(page.locator('#modal-todo')).toHaveClass(/open/);
+
+    const titleCtr = page.locator('#title-counter');
+    const detailCtr = page.locator('#detail-counter');
+
+    await expect(titleCtr).toHaveText('10 / 100');
+    await expect(detailCtr).toHaveText('50 / 2000');
+    await expect(titleCtr).not.toHaveClass(/counter-overflow/);
+    await expect(detailCtr).not.toHaveClass(/counter-overflow/);
+  });
+});
+
 // JavaScript Coverage 100% Validation Test
 test.describe('カバレッジ検証', () => {
   test('JSコードカバレッジ 100% の検証', async () => {

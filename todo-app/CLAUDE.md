@@ -13,7 +13,10 @@
 `crypto.randomUUID()` を正常に動作させ、テスト環境との競合を防ぐため、デフォルトポート `8123` を使用してローカルサーバーを起動することを推奨します。
 
 ```bash
-# Node.jsを使う場合（playwright.config.js の設定に一致）
+# npmスクリプトを使う場合
+npm run serve
+
+# 直接起動する場合（playwright.config.js の設定に一致）
 npx http-server -p 8123
 ```
 
