@@ -57,28 +57,32 @@ export function formatDue(dueType, dueAt) {
 }
 
 /**
- * 2つの日付間の日数差を計算する (toDateStr - fromDateStr)
- * @param {string} fromDateStr UTC ISO文字列または日付文字列
- * @param {string} toDateStr UTC ISO文字列または日付文字列
+ * UTC ISO文字列を JST 日付文字列に変換
+ * @param {string} utcStr UTC ISO文字列
+ * @returns {string} YYYY-MM-DD
+ */
+function getJstDateString(utcStr) {
+  const d = new Date(utcStr);
+  const jstTime = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+  const yyyy = jstTime.getUTCFullYear();
+  const mm = String(jstTime.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(jstTime.getUTCDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+/**
+ * 2つの日付間の日数差を JST ベースで計算する (toDateStr - fromDateStr)
+ * 常に JST での日付で比較して、タイムゾーン差による誤分類を防ぐ
+ * @param {string} fromDateStr UTC ISO文字列
+ * @param {string} toDateStr UTC ISO文字列
  * @returns {number}
  */
 export function daysBetween(fromDateStr, toDateStr) {
-  const getUtcDateString = (dateStr) => {
-    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-      return dateStr;
-    }
-    const d = new Date(dateStr);
-    const yyyy = d.getUTCFullYear();
-    const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
-    const dd = String(d.getUTCDate()).padStart(2, '0');
-    return `${yyyy}-${mm}-${dd}`;
-  };
+  const fromJst = getJstDateString(fromDateStr);
+  const toJst = getJstDateString(toDateStr);
 
-  const fromUtc = getUtcDateString(fromDateStr);
-  const toUtc = getUtcDateString(toDateStr);
-
-  const fromNoon = new Date(`${fromUtc}T12:00:00.000Z`).getTime();
-  const toNoon = new Date(`${toUtc}T12:00:00.000Z`).getTime();
+  const fromNoon = new Date(`${fromJst}T12:00:00.000Z`).getTime();
+  const toNoon = new Date(`${toJst}T12:00:00.000Z`).getTime();
 
   const diffMs = toNoon - fromNoon;
   return Math.round(diffMs / (24 * 60 * 60 * 1000));
