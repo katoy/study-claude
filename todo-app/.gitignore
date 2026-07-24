@@ -1,6 +1,24 @@
+# Dependency directories
 node_modules/
+
+# Test results and reports
 test-results/
 playwright-report/
-.pytest_cache/
-__pycache__/
+blob-report/
+playwright/.local-browsers/
+
+# Screenshots temporary frames
+temp_frames/
+
+# System files
 .DS_Store
+Thumbs.db
+
+# IDEs and editors
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Simple Todo App with Playwright E2E Tests",
   "main": "index.html",
+  "license": "MIT",
   "scripts": {
     "test": "playwright test",
     "test:ui": "playwright test --ui",
