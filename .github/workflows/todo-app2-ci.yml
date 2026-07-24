@@ -1,0 +1,58 @@
+name: ToDo App 2 CI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'todo-app2/**'
+      - '.github/workflows/todo-app2-ci.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'todo-app2/**'
+
+jobs:
+  build-test-lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: todo-app2/package-lock.json
+
+      - name: Install dependencies
+        working-directory: todo-app2
+        run: npm ci
+
+      - name: Run Linter
+        working-directory: todo-app2
+        run: npm run lint
+
+      - name: Run Formatter Check
+        working-directory: todo-app2
+        run: npm run format
+
+      - name: Run Tests with 100% Coverage Check
+        working-directory: todo-app2
+        run: npm run test:coverage
+
+      - name: Build for Production
+        working-directory: todo-app2
+        run: npm run build
+        
+      - name: Verify Build Output
+        working-directory: todo-app2
+        run: |
+          if [ ! -f "dist/index.html" ]; then
+            echo "❌ Build failed: dist/index.html not found"
+            exit 1
+          fi
+          echo "✅ Build successful: dist/index.html created"
+          ls -lh dist/index.html
+

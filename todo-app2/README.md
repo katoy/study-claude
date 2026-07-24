@@ -2,9 +2,9 @@
 
 洗練されたダークテーマデザインとリッチテキストエディタ（Quill）を融合させ、TDD（テスト駆動開発）によって堅牢に実装されたモダンなシングルファイル型 ToDo アプリケーションです。
 
-🚀 **デプロイ先 (GitHub Pages):** [https://katoy.github.io/todo-app2/](https://katoy.github.io/todo-app2/)
+🚀 **デプロイ先 (GitHub Pages):** [https://katoy.github.io/study-claude/todo-app2/](https://katoy.github.io/study-claude/todo-app2/)
 
-[![CI/CD Pipeline](https://github.com/katoy/todo-app2/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/katoy/todo-app2/actions/workflows/ci-cd.yml)
+[![ToDo App 2 CI](https://github.com/katoy/study-claude/actions/workflows/todo-app2-ci.yml/badge.svg)](https://github.com/katoy/study-claude/actions/workflows/todo-app2-ci.yml)
 
 ---
 

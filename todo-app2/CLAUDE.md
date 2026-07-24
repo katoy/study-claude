@@ -312,16 +312,16 @@ npm run build
 npm run preview
 ```
 
-### GitHub Actions（`.github/workflows/ci-cd.yml`）
+### GitHub Actions（リポジトリルートの `.github/workflows/todo-app2-ci.yml` および `pages-deploy.yml`）
 
-**全 push / PR 時**：
+**`todo-app2` への push / PR 時（CI）**：
 1. `npm run lint` — ESLint（0件エラー必須）
-2. `npm run test:coverage` — Vitest（カバレッジ 100% 必須）
-3. `npm run build` — Vite ビルド成功必須
+2. `npm run format` — Prettier（フォーマット確認）
+3. `npm run test:coverage` — Vitest（カバレッジ 100% 必須）
 
-**`main` ブランチへのマージ時**：
-- 上記に加えて GitHub Pages へ自動デプロイ
-- Pages 上の公開 URL でアプリにアクセス可能
+**`main` ブランチへのマージ時（CD）**：
+- `pages-deploy.yml` が走り、`todo-app2` を自動ビルドした上で GitHub Pages へデプロイ
+- Pages 上の公開 URL (`https://katoy.github.io/study-claude/todo-app2/`) でアプリにアクセス可能
 
 ### ビルド成果物の管理
 
