@@ -686,6 +686,7 @@
     };
 
     // Initialize Quill
+    // Security: ツールバーは安全なタグ（b, i, u, li, ol）のみに制限
     const initQuill = () => {
       quill = new Quill('#editor-detail', {
         theme: 'snow',
@@ -713,11 +714,13 @@
     };
 
     // Load from Local Storage
+    // Security: JSON.parse を try-catch でラップし、パース失敗時は空配列にリセット
     const loadTodos = () => {
       try {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
           const parsed = JSON.parse(stored);
+          // Security: 復元後のオブジェクトが配列であることを確認
           if (Array.isArray(parsed)) {
             todos = parsed;
           } else {
@@ -727,6 +730,7 @@
           todos = [];
         }
       } catch (e) {
+        // Security: パース失敗時は空配列にリセット
         todos = [];
       }
     };
@@ -810,6 +814,7 @@
     };
 
     // Create Todo Element in the DOM
+    // Security: textContent を使用して HTML エスケープを強制し、XSS を防止
     const createTodoDOM = (todo) => {
       const item = document.createElement('div');
       item.className = `todo-item ${todo.completed ? 'completed' : ''}`;
@@ -825,6 +830,7 @@
 
       const titleEl = document.createElement('span');
       titleEl.className = 'todo-title';
+      // Security: textContent により HTML エスケープを強制
       titleEl.textContent = todo.title;
       content.appendChild(titleEl);
 
@@ -832,6 +838,7 @@
       if (dateStr) {
         const dateEl = document.createElement('span');
         dateEl.className = 'todo-date';
+        // Security: textContent を使用してテキスト挿入
         dateEl.textContent = dateStr;
         content.appendChild(dateEl);
       }
@@ -1060,6 +1067,7 @@
     };
 
     // Validation & Save Logic
+    // Security: 各入力フィールドをバリデーションし、不正なデータの保存を防止
     const saveTodo = () => {
       clearErrors();
 
@@ -1067,13 +1075,14 @@
       const dateType = document.querySelector('input[name="date-type"]:checked').value;
       const detailHtml = quill ? quill.getSemanticHTML() : '';
       
-      // Calculate plain text length for validation
+      // Security: プレーンテキスト文字数で検証（HTML タグをカウントしない）
       // quill.getText() returns trailing newline '\n', so trim it to get real character count
       const detailText = quill ? quill.getText().trim() : '';
 
       let hasError = false;
 
       // 1. Title Validation
+      // Security: 空文字・空白のみ・100文字超過をチェック
       if (!title) {
         errorTitle.textContent = 'タイトルを入力してください';
         errorTitle.style.display = 'block';
@@ -1085,6 +1094,7 @@
       }
 
       // 2. Date Validation
+      // Security: 日付形式を厳格に検証し、正規化して保存
       let deadline = null;
       if (dateType === 'date') {
         const dateVal = inputDate.value;
@@ -1093,7 +1103,8 @@
           errorDate.style.display = 'block';
           hasError = true;
         } else {
-          // Normalize slash separators or browser-specific formatting
+          // Security: ブラウザ間でのフォーマット差異を正規化
+          // normalize slash separators or browser-specific formatting
           const cleaned = dateVal.replace(/\//g, '-').trim();
           const dt = new Date(cleaned.includes('T') ? cleaned : `${cleaned}T00:00:00`);
           if (isNaN(dt.getTime())) {
@@ -1104,6 +1115,7 @@
             const year = dt.getFullYear();
             const month = String(dt.getMonth() + 1).padStart(2, '0');
             const day = String(dt.getDate()).padStart(2, '0');
+            // Security: 常に YYYY-MM-DDTHH:MM:SS 形式（ISO-8601）に正規化
             deadline = `${year}-${month}-${day}T00:00:00`;
           }
         }
@@ -1114,7 +1126,8 @@
           errorDate.style.display = 'block';
           hasError = true;
         } else {
-          // Normalize slash separators and space characters from inputs
+          // Security: ブラウザ間での正規化（スラッシュ、スペース区切り）
+          // normalize slash separators and space characters from inputs
           const cleaned = datetimeVal.replace(/\//g, '-').replace(' ', 'T').trim();
           const dt = new Date(cleaned);
           if (isNaN(dt.getTime())) {
@@ -1127,6 +1140,7 @@
             const day = String(dt.getDate()).padStart(2, '0');
             const hours = String(dt.getHours()).padStart(2, '0');
             const minutes = String(dt.getMinutes()).padStart(2, '0');
+            // Security: 常に YYYY-MM-DDTHH:MM:SS 形式（ISO-8601）に正規化
             deadline = `${year}-${month}-${day}T${hours}:${minutes}:00`;
           }
         }

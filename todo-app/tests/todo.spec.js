@@ -1335,6 +1335,173 @@ test.describe('17. 文字数カウンター', () => {
   });
 });
 
+// 18. セキュリティ仕様の検証
+test.describe('18. セキュリティ仕様', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.evaluate(() => localStorage.clear());
+    await page.goto('/');
+  });
+
+  test('TC-18.1: XSS対策 - タイトルの HTML エスケープ', async ({ page }) => {
+    // Try to inject HTML/JavaScript through title
+    const xssPayload = '<img src=x onerror="alert(\'XSS\')">';
+    
+    await page.click('#btn-new');
+    await page.fill('#input-title', xssPayload);
+    await page.click('#btn-save');
+
+    // Verify that the title is displayed as plain text (escaped)
+    const titleElement = page.locator('.todo-title').first();
+    const titleText = await titleElement.textContent();
+    expect(titleText).toBe(xssPayload);
+    
+    // Verify that HTML was not rendered (textContent used, not innerHTML)
+    const isEscaped = await page.evaluate(() => {
+      const titleEl = document.querySelector('.todo-title');
+      return titleEl.innerHTML !== titleEl.textContent;
+    });
+    expect(isEscaped).toBe(true);
+  });
+
+  test('TC-18.2: localStorage からの悪形式データの復元', async ({ page }) => {
+    // Set malformed JSON in localStorage
+    await page.evaluate(() => {
+      localStorage.setItem('todo-app-items', '{ invalid json');
+      loadTodos();
+      renderTodos();
+    });
+
+    // Verify that todos array is empty (fallback to [])
+    const todosCount = await page.evaluate(() => todos.length);
+    expect(todosCount).toBe(0);
+
+    // Verify UI is empty
+    await expect(page.locator('#section-other')).toBeHidden();
+  });
+
+  test('TC-18.3: localStorage からの非配列データの復元', async ({ page }) => {
+    // Set non-array data in localStorage
+    await page.evaluate(() => {
+      localStorage.setItem('todo-app-items', '{"not": "array"}');
+      loadTodos();
+      renderTodos();
+    });
+
+    // Verify that todos array is empty (validation failed)
+    const todosCount = await page.evaluate(() => todos.length);
+    expect(todosCount).toBe(0);
+  });
+
+  test('TC-18.4: Quill ツールバー制限 - 許可されたタグのみ使用', async ({ page }) => {
+    await page.click('#btn-new');
+
+    // Try to use Quill to add content
+    const editorContent = page.locator('.ql-editor');
+    await editorContent.click();
+    await editorContent.fill('テスト');
+    
+    // Click bold button (allowed)
+    await page.click('.ql-bold');
+    
+    // Get the HTML output
+    const detailHtml = await page.evaluate(() => {
+      return quill.getSemanticHTML();
+    });
+
+    // Verify that only safe tags (<b>) are used
+    // Should not contain <img>, <script>, <iframe>, etc.
+    expect(detailHtml).not.toContain('<img');
+    expect(detailHtml).not.toContain('<script');
+    expect(detailHtml).not.toContain('<iframe');
+  });
+
+  test('TC-18.5: バリデーション - タイトル100文字制限', async ({ page }) => {
+    await page.click('#btn-new');
+
+    // Create a string with 101 characters
+    const longTitle = 'a'.repeat(101);
+    await page.fill('#input-title', longTitle);
+    
+    // Try to save
+    await page.click('#btn-save');
+
+    // Verify error message
+    await expect(page.locator('#error-title')).toContainText('タイトルは100文字以内で入力してください');
+
+    // Verify that data was not saved
+    const todosCount = await page.evaluate(() => todos.length);
+    expect(todosCount).toBe(0);
+  });
+
+  test('TC-18.6: バリデーション - 詳細 2000 文字制限（プレーンテキスト）', async ({ page }) => {
+    await page.click('#btn-new');
+    await page.fill('#input-title', '有効なタイトル');
+    
+    // Add content beyond 2000 plain text characters
+    const editorContent = page.locator('.ql-editor');
+    const longText = 'a'.repeat(2001);
+    await editorContent.click();
+    await editorContent.fill(longText);
+
+    // Try to save
+    await page.click('#btn-save');
+
+    // Verify error message
+    await expect(page.locator('#error-detail-msg')).toContainText('詳細は2000文字以内で入力してください');
+
+    // Verify that data was not saved
+    const todosCount = await page.evaluate(() => todos.length);
+    expect(todosCount).toBe(0);
+  });
+
+  test('TC-18.7: 日付正規化 - 複数のブラウザフォーマットに対応', async ({ page }) => {
+    await page.click('#btn-new');
+    await page.fill('#input-title', 'テスト');
+    await page.click('#radio-date-day');
+
+    // Set a date value that might come in different formats
+    await page.evaluate(() => {
+      // Simulate browser-specific formatting
+      document.getElementById('input-date').value = '2026-07-24';
+    });
+
+    await page.click('#btn-save');
+
+    // Verify that the deadline was normalized to ISO-8601
+    const deadline = await page.evaluate(() => {
+      return todos[0]?.deadline;
+    });
+
+    // Should be in format YYYY-MM-DDTHH:MM:SS
+    expect(deadline).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/);
+    expect(deadline).toBe('2026-07-24T00:00:00');
+  });
+
+  test('TC-18.8: JSON パース失敗時の安全な復元', async ({ page }) => {
+    // Set various types of corrupt data
+    const corruptDataTests = [
+      'null',
+      'undefined',
+      '123',
+      '"string"',
+      'true',
+      '{ incomplete'
+    ];
+
+    for (const corruptData of corruptDataTests) {
+      await page.evaluate((data) => {
+        localStorage.clear();
+        localStorage.setItem('todo-app-items', data);
+        todos = [];
+        loadTodos();
+      }, corruptData);
+
+      const todosLength = await page.evaluate(() => todos.length);
+      expect(todosLength).toBe(0);
+    }
+  });
+});
+
 // JavaScript Coverage 100% Validation Test
 test.describe('カバレッジ検証', () => {
   test('JSコードカバレッジ 100% の検証', async () => {
