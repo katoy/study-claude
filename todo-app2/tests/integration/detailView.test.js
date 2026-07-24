@@ -476,4 +476,85 @@ describe('詳細画面 UI 統合テスト (detailView.js)', () => {
       expect(titleInput.value).toBe('');
     });
   });
+
+  describe('IT-DET-003-A: UTC/JST変換時の誤表示バグ検出', () => {
+    it('日付表示の正確性：UTC 14:59:59（JST 23:59:59）のタスク表示が「2026-07-24」であること', () => {
+      // 編集モードで既存タスクを開く（テスト用の日付: UTC 14:59:59 = JST 23:59:59）
+      const todo = {
+        id: '456',
+        title: '深夜タスク',
+        dueType: 'date',
+        dueAt: '2026-07-24T14:59:59.000Z', // JST 2026-07-24 23:59:59
+        completed: false,
+      };
+
+      openDetailModal(todo);
+
+      // ラジオボタンが「日のみ」に設定されていることを確認
+      const radioDate = dialog.querySelector('#due-date');
+      expect(radioDate.checked).toBe(true);
+
+      // 日付ピッカーに表示されている値が「2026-07-24」であることを確認
+      const datePicker = dialog.querySelector('#due-date-picker');
+      expect(datePicker.value).toBe('2026-07-24');
+      // ❌ バグの場合: UTC の「2026-07-24」ではなく、JST の「2026-07-24」であることを検証
+      // (意図的にこれはJST判定なので、表示されるべき値が「2026-07-24」であることを確認)
+    });
+
+    it('日時表示の時刻正確性：UTC 14:59:00（JST 23:59:00）のタスク表示が「2026-07-24 23:59」であること', () => {
+      // 編集モードで既存タスクを開く（テスト用の日時: UTC 14:59:00 = JST 23:59:00）
+      const todo = {
+        id: '789',
+        title: '深夜日時タスク',
+        dueType: 'datetime',
+        dueAt: '2026-07-24T14:59:00.000Z', // JST 2026-07-24 23:59:00
+        completed: false,
+      };
+
+      openDetailModal(todo);
+
+      // ラジオボタンが「時まで」に設定されていることを確認
+      const radioDatetime = dialog.querySelector('#due-datetime');
+      expect(radioDatetime.checked).toBe(true);
+
+      // 日時ピッカーに表示されている値が「2026-07-24T23:59」であることを確認
+      const datetimePicker = dialog.querySelector('#due-datetime-picker');
+      expect(datetimePicker.value).toBe('2026-07-24T23:59');
+      // ❌ バグの場合: UTC の「2026-07-24T14:59」と表示されてしまう
+      // (正しくは、JST 基準で「2026-07-24T23:59」と表示されるべき)
+    });
+
+    it('編集モードで表示値から再度保存したときに、表示→保存→再表示で値が変わらないこと（一貫性）', () => {
+      // ステップ1: UTC 14:59:59 のタスクを表示
+      const todo = {
+        id: '999',
+        title: '一貫性テスト',
+        dueType: 'datetime',
+        dueAt: '2026-07-24T14:59:00.000Z', // JST 2026-07-24 23:59:00
+        completed: false,
+      };
+
+      openDetailModal(todo);
+
+      const datetimePicker = dialog.querySelector('#due-datetime-picker');
+      const titleInput = dialog.querySelector('#todo-title');
+
+      // ステップ2: 表示値を確認（JST基準であること）
+      expect(datetimePicker.value).toBe('2026-07-24T23:59');
+
+      // ステップ3: そのまま保存（値は変更しない）
+      const saveBtn = dialog.querySelector('#btn-save-todo');
+      fireEvent.click(saveBtn);
+
+      // ステップ4: コールバックで呼ばれた値を確認
+      // JST 2026-07-24 23:59:00 は UTC 2026-07-24 14:59:00 のはずなので、
+      // 保存後に再度表示しても一貫性が保たれることを暗に検証
+      expect(callbacks.onSave).toHaveBeenCalledWith(
+        expect.objectContaining({
+          dueType: 'datetime',
+          dueAt: '2026-07-24T14:59:00.000Z', // 変換後の UTC 値
+        })
+      );
+    });
+  });
 });

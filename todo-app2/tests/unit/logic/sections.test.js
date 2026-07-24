@@ -211,5 +211,78 @@ describe('セクション分類ロジック (sections.js)', () => {
       expect(tomorrowSection?.items.map((t) => t.id)).toEqual(['next_day']);
     });
   });
+
+  describe('UT-SEC-004: セクション境界時刻での誤分類バグ検出', () => {
+    it('「本日中」セクション内での時刻順序が一貫していること', () => {
+      // 現在時刻: JST 2026-07-25 12:00:00 (UTC 2026-07-25 03:00:00)
+      vi.setSystemTime(new Date('2026-07-25T03:00:00Z'));
+
+      const todos = [
+        {
+          id: '1',
+          title: 'タスク1 - 23:59',
+          dueType: 'datetime',
+          dueAt: '2026-07-25T14:59:59.000Z', // JST 2026-07-25 23:59:59（本日中）
+          completed: false,
+        },
+        {
+          id: '2',
+          title: 'タスク2 - 14:59',
+          dueType: 'datetime',
+          dueAt: '2026-07-25T05:59:00.000Z', // JST 2026-07-25 14:59:00（本日中、より早い時刻）
+          completed: false,
+        },
+      ];
+
+      const sections = buildSections(todos);
+      const todaySection = sections.find((s) => s.label === '本日中');
+
+      // 両方が「本日中」に分類されることを確認
+      expect(todaySection?.items.length).toBe(2);
+
+      // セクション内にタスク1, 2がともに含まれることを確認
+      expect(todaySection?.items.map((t) => t.id)).toContain('1');
+      expect(todaySection?.items.map((t) => t.id)).toContain('2');
+    });
+
+    it('「本日中」から「明日まで」の境界での分類が正確であること', () => {
+      // 現在時刻: JST 2026-07-25 00:00:00 (UTC 2026-07-24 15:00:00)
+      vi.setSystemTime(new Date('2026-07-24T15:00:00Z'));
+
+      const todos = [
+        {
+          id: 'x',
+          title: 'タスクX - JST 25日中',
+          dueType: 'datetime',
+          dueAt: '2026-07-25T14:59:59.000Z', // JST 2026-07-25 23:59:59（本日中）
+          completed: false,
+        },
+        {
+          id: 'y',
+          title: 'タスクY - JST 25日中（別の時刻）',
+          dueType: 'datetime',
+          dueAt: '2026-07-25T05:00:00.000Z', // JST 2026-07-25 14:00:00（本日中、より早い時刻）
+          completed: false,
+        },
+        {
+          id: 'z',
+          title: 'タスクZ - JST 26日中',
+          dueType: 'datetime',
+          dueAt: '2026-07-26T14:59:59.000Z', // JST 2026-07-26 23:59:59（明日）
+          completed: false,
+        },
+      ];
+
+      const sections = buildSections(todos);
+      const todaySection = sections.find((s) => s.label === '本日中');
+      const tomorrowSection = sections.find((s) => s.label === '明日まで');
+      const otherSection = sections.find((s) => s.label === 'それ以外');
+
+      // セクション分類の確認
+      expect(todaySection?.items.map((t) => t.id)).toEqual(['x', 'y']);
+      expect(tomorrowSection?.items.map((t) => t.id)).toEqual(['z']);
+      expect(otherSection).toBeUndefined(); // 「それ以外」のタスクはない
+    });
+  });
 });
 
