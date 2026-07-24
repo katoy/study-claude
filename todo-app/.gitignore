@@ -1,11 +1,13 @@
 # Dependency directories
 node_modules/
+package-lock.json
 
 # Test results and reports
 test-results/
 playwright-report/
 blob-report/
 playwright/.local-browsers/
+coverage/
 
 # Screenshots temporary frames
 temp_frames/
@@ -22,3 +24,17 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+*.swp
+*.swo
+*~
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# macOS specific
+.DS_Store
+.AppleDouble
+.LSOverride
+*.icloud

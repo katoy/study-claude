@@ -2,6 +2,8 @@
 
 HTML/CSS/JavaScriptがすべて単一の `index.html` に統合された、プレミアムなダーク／ネオンテーマ仕様 of タスク管理（ToDo）アプリケーション。
 
+📱 **ライブデモ**: [https://katoy.github.io/study-claude/todo-app/](https://katoy.github.io/study-claude/todo-app/)
+
 - **単一HTMLファイル**: アセットを含むすべてのコードが `index.html` 内にインラインで完結
 - **リッチな詳細記述**: Quill リッチテキストエディタを CDN から動的にロードし、太字やリスト形式のタスク詳細入力をサポート
 - **セクション自動分類**: 締め切り日時に応じて、「期限切れ」「本日中」「明日まで」「それ以外」の4セクションにリアルタイム自動分類
