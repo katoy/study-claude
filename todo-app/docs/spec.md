@@ -7,9 +7,10 @@
 | アプリ名 | TODOリスト |
 | 目的 | ブラウザ上で動作するシンプルなタスク管理アプリ |
 | 技術スタック | HTML + CSS + JavaScript（単一ファイル） |
-| 外部ライブラリ | Quill（リッチテキストエディタ、CDN読み込み） |
+| 外部ライブラリ | Quill（リッチテキストエディタ、CDN読み込み）、Google Fonts（CDN読み込み） |
 | データ永続化 | localStorage |
 | サーバー | 不要（静的ファイルのみ） |
+| デザイン | Corporate Intelligent Dark Aesthetic（Glassmorphism、グラデーション） |
 
 ## 2. 技術要件
 
@@ -18,6 +19,12 @@
 - **データ永続化**: `localStorage` を使用し、ブラウザを閉じてもデータが保持される
 - **リッチエディタ**: Quill を CDN から読み込み、詳細欄に使用する
 - **レスポンシブ対応**: 不要（デスクトップブラウザを想定）
+- **フォント**: Google Fonts (Plus Jakarta Sans, Noto Sans JP) を CDN から読み込み
+- **UI デザイン**: Corporate Intelligent Dark Aesthetic
+  - Glassmorphism（ガラス質の透明効果）
+  - グラデーション背景とテキスト
+  - CSS Variables によるテーマ管理
+  - ニューモルフィズム的なボタン・フォーム要素
 
 ## 3. データ構造
 
@@ -276,3 +283,141 @@ ToDoアイテムを以下の4セクションに分類して表示する:
 - エラーメッセージは該当フィールドの近くに赤字で表示
 - **保存時の日付データ正規化**:
   - 各ブラウザの入力コントロールから取得される値（スラッシュ `/` 区切りやスペース区切りなど）のフォーマットのブレを排除するため、保存実行時に正規表現を用いて置換処理を行い、必ず `YYYY-MM-DDTHH:MM:00` または `YYYY-MM-DDT00:00:00` の厳格な ISO-8601 形式に正規化して `localStorage` に保存する。
+
+## 7. デザイン・UI実装仕様
+
+### 7.1 CSS Variables（テーマ管理）
+
+```css
+--bg-gradient: linear-gradient(135deg, #0b0f19 0%, #111827 100%)  /* 背景グラデーション */
+--glass-bg: rgba(17, 24, 39, 0.7)  /* Glassmorphism 背景 */
+--glass-border: rgba(255, 255, 255, 0.05)  /* Glassmorphism 枠線 */
+--glass-border-hover: rgba(37, 99, 235, 0.3)  /* ホバー時枠線 */
+--accent-gradient: linear-gradient(135deg, #2563eb 0%, #0d9488 100%)  /* アクセント色 */
+--accent-hover-gradient: linear-gradient(135deg, #1d4ed8 0%, #0f766e 100%)  /* ホバー時 */
+--text-primary: #f8fafc  /* テキスト主色 */
+--text-secondary: #94a3b8  /* テキスト副色 */
+--text-muted: #4b5563  /* テキスト薄色 */
+--danger: #ef4444  /* エラー/削除系 */
+--danger-hover: #dc2626  /* エラーホバー */
+--success: #10b981  /* 成功系 */
+--card-bg: rgba(31, 41, 55, 0.5)  /* カード背景 */
+--input-bg: rgba(17, 24, 39, 0.8)  /* 入力欄背景 */
+--shadow-lg: 0 10px 30px -10px rgba(0, 0, 0, 0.5)  /* 大きい影 */
+--shadow-neon: 0 0 12px rgba(37, 99, 235, 0.3)  /* ネオン効果 */
+```
+
+### 7.2 CDN 読み込み
+
+#### Quill リッチテキストエディタ
+
+```html
+<link href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
+```
+
+#### Google Fonts
+
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+```
+
+### 7.3 主要な UI 要素のスタイリング
+
+- **メインコンテナ**: Glassmorphism（backdrop-filter: blur）、半透明背景、ボーダー
+- **ヘッダー**: グラデーション背景のテキスト（-webkit-background-clip）
+- **ボタン**: 円滑なトランジション、ホバー時の色変化、インラインフレックス配置
+- **フォーム入力**: ダークテーマ対応、ボーダーとパディング
+- **モーダル**: オーバーレイ背景、センタリング、Glassmorphism の背景
+- **ラジオボタン**: カスタムデザイン（appearance: none）、チェック時のアニメーション
+- **Quill エディタ**: テーマカラー適用、ダークテーマ対応のツールバーとコンテナ
+
+## 8. セキュリティ仕様
+
+### 8.1 入力とリッチテキストの安全性
+
+**タイトル入力** (`title` フィールド):
+- 最大100文字に制限
+- ブラウザにより常に `textContent` で DOM に挿入（HTML エスケープ）
+- `innerHTML` は使用しない
+
+**詳細入力** (`detail` フィールド):
+- Quill リッチテキストエディタで入力
+- ツールバー機能: 太字、イタリック、下線、箇条書きリスト、番号付きリスト のみ
+- 許可されるタグ: `<b>`, `<i>`, `<u>`, `<li>`, `<ol>` のみ
+- Quill 内部で HTML をフィルタリング
+- localStorage との往復時も Quill が処理を行い、不正な HTML は取り除かれる
+
+### 8.2 localStorage のデータセキュリティ
+
+- **データ格納場所**: ブラウザの localStorage（ローカルストレージ）
+- **アクセス制限**: 同一オリジン内でのみアクセス可能（CORS 対象外）
+- **データ改ざん検出**: アプリケーションレベルでの完全性チェックなし
+  - localStorage の改ざんが疑われる場合、JSON パース失敗時は空配列にリセット
+- **シークレット/プライベートモード**: ブラウザセッション終了時に localStorage はクリアされる可能性あり
+- **サイズ上限**: 通常 5-10MB。このアプリの想定使用では問題なし
+
+### 8.3 JSON パースと検証
+
+```javascript
+const loadTodos = () => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) {
+        todos = parsed;
+      } else {
+        todos = [];
+      }
+    } else {
+      todos = [];
+    }
+  } catch (e) {
+    todos = [];
+  }
+};
+```
+
+- `JSON.parse()` を try-catch でラップ
+- パース失敗時は空配列にリセット
+- 復元後のオブジェクトが配列であることを確認
+- 個別 todo オブジェクトのスキーマ検証は行わない（パフォーマンス優先）
+
+### 8.4 バリデーションと正規化
+
+**保存時のバリデーション**:
+
+| 項目 | チェック | 失敗時の処理 |
+|------|---------|-----------|
+| タイトル | 空文字・空白のみ | エラー表示、保存キャンセル |
+| タイトル文字数 | 101文字以上 | エラー表示、保存キャンセル |
+| 詳細文字数 | プレーンテキスト 2001 文字以上 | エラー表示、保存キャンセル |
+| 日付 | `dateType` が `date`/`datetime` で未入力 | エラー表示、保存キャンセル |
+
+**日付の正規化**:
+- ブラウザネイティブの date/datetime-local 入力から得られる値は形式にばらつきがある
+- 保存時に正規表現で置換処理を行い、常に `YYYY-MM-DDTHH:MM:SS` 形式（ISO-8601）に統一
+- Quill からの HTML 出力も保存前にプレーンテキスト文字数をカウント
+
+### 8.5 CDN と外部依存
+
+**Quill エディタ**:
+- CDN: `https://cdn.jsdelivr.net/npm/quill@2/...`
+- バージョン: `@2`（最新マイナー・パッチを動的に取得）
+- リスク: 新しいバージョンでセキュリティ脆弱性が見つかった場合、自動的に取り込まれる
+- 推奨: 定期的にセキュリティアドバイザリを確認し、必要に応じてバージョンを固定
+
+**Google Fonts**:
+- CDN: `https://fonts.googleapis.com`, `https://fonts.gstatic.com`
+- HTTPS でのみ読み込み
+- フォール バック: CDN 障害時はシステムフォントにフォールバック
+- プライバシー: Google Fonts の読み込みにより IP アドレスがログに記録される可能性
+
+### 8.6 既知の前提と限界
+
+- **ローカル実行の前提**: このアプリはローカルストレージ機能とローカル実行を前提としており、サーバーバックエンドやシステム間での認証・暗号化は存在しない
+- **ブラウザセキュリティの信頼**: ブラウザの SOP（Same-Origin Policy）、CSP（Content Security Policy）などのセキュリティメカニズムに依存
+- **XSS 対策**: 主として Quill 的な制限されたツールバーと `textContent` の使用に依存。追加のサニタイズライブラリは使用していない

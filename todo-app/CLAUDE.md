@@ -3,8 +3,11 @@
 ## 技術スタック・制約
 
 - **単一HTMLファイル** (`index.html`): CSS・JavaScript をすべてインラインで記述
-- **外部ライブラリ**: Quill (リッチテキストエディタ) を CDN から読み込み
+- **外部ライブラリ**: 
+  - Quill (リッチテキストエディタ) を CDN から読み込み
+  - Google Fonts (Plus Jakarta Sans, Noto Sans JP) を CDN から読み込み
 - **データ永続化**: localStorage（キー: `todo-app-items`）
+- **デザイン**: Corporate Intelligent Dark Aesthetic (Glassmorphism、グラデーション、CSS Variables)
 - **サーバー不要**: ブラウザで直接開いて動作（ローカルサーバー経由の動作を推奨）
 
 ## コマンド
@@ -33,14 +36,21 @@ npx playwright test --ui
 
 ## FILE構成
 
+```
 todo-app/
-├── index.html          # アプリ本体（HTML + CSS + JS 全て含む）
+├── index.html              # アプリ本体（HTML + CSS + JS 全て含む）
 ├── docs/
-│   ├── spec.md         # 仕様書
-│   ├── main.jpg        # メイン画面ワイヤーフレーム (スケッチ)
-│   ├── detail.jpg      # 詳細画面ワイヤーフレーム (スケッチ)
-│   └── test-case.md    # テストケース定義
-└── CLAUDE.md           # このファイル
+│   ├── spec.md             # 仕様書
+│   ├── main.jpg            # メイン画面ワイヤーフレーム (スケッチ)
+│   ├── detail.jpg          # 詳細画面ワイヤーフレーム (スケッチ)
+│   └── test-case.md        # テストケース定義（参考）
+├── tests/
+│   └── todo.spec.js        # E2E テスト（Playwright）
+├── package.json            # NPM設定
+├── playwright.config.js    # Playwright設定
+├── CLAUDE.md               # このファイル
+└── README.md               # プロジェクト説明
+```
 
 ## コーディング規約
 
@@ -65,17 +75,52 @@ const generateUUID = () => {
 };
 ```
 
+## セキュリティ & 安全性規約
+
+### XSS（クロスサイトスクリプティング）対策
+
+- **タイトル入力**: 常に `textContent` で DOM に挿入し、HTML エスケープを強制する。`innerHTML` は使用しない
+- **Quill エディタ（詳細欄）**: 
+  - ツールバーは太字・イタリック・下線・リスト機能のみに制限
+  - `dangerouslyPasteHTML()` の入力は Quill が内部的にフィルタリング
+  - localStorage からの復元時も同様にフィルタリングが適用される
+- **localStorage からのデータ復元**: `JSON.parse()` を try-catch でラップし、パース失敗時は空配列にリセット
+- **オブジェクト構造検証**: localStorage から復元したデータが配列であることを確認
+
+### localStorage の制限と注意事項
+
+- **ローカル専用**: localStorage はブラウザのオリジン内でのみアクセス可能
+- **サイズ制限**: 通常 5-10MB の制限がある。この TODO アプリでは通常使用範囲内
+- **データ完全性の前提**: localStorage のデータが外部から改ざんされないことを前提としている
+- **シークレットモード**: シークレット・プライベートブラウジングモードでは localStorage がセッション終了時にクリアされる可能性がある
+
+### CDN と外部ライブラリ
+
+- **Quill 2.x**: ツールバー設定で安全なタグ（b, i, u, li, ol）のみを許可
+- **Google Fonts**: HTTPS でのみ読み込み。CDN 障害時はシステムフォントにフォールバック
+- **バージョンピン**: Quill は `@2` ワイルドカード指定。セキュリティアップデートは定期的に確認すること
+
+### 入力値バリデーション
+
+- **タイトル**: 空文字・空白のみ・100文字超過をバリデーション（エラー表示）
+- **詳細**: プレーンテキスト換算で 2000 文字超過をバリデーション
+- **日付**: ブラウザネイティブのカレンダーポップアップで形式を制限
+- **バリデーション失敗時**: 保存操作は実行されず、エラーメッセージを表示
+
 ## 自動テスト規約 (Playwright)
 
-- **テスト配置**: `tests/` ディレクトリ配下に `*.spec.js` として格納する。
-- **対象**: `index.html` にローカルサーバー経由（デフォルト `http://localhost:8123`）でアクセスしてテストを行う。
-- **データ分離**: 各テストの実行前に `localStorage.clear()` を行い、テスト間の依存を排除する。
-- **操作検証**: 登録・更新・削除・タブ切り替え等のインタラクションおよびバリデーション表示が仕様書通りに機能することを確認する。
-- **カバレッジ**: 実装したすべてのJavaScriptコードに対してテストカバレッジ 99.5%以上（ステートメント、ブランチ、関数、行。V8の軽微な計測制限を除く実質100%）を達成し、維持すること。
-- **日付処理**: 時間境界値テストの失敗（JST/UTCのズレ）を防ぐため、テスト内の日付生成には `toISOString()` でなくローカルタイムゾーンを考慮したヘルパー関数を使用する。
+- **テスト配置**: `tests/` ディレクトリ配下に `*.spec.js` として格納する
+  - 現在: `tests/todo.spec.js`
+- **対象**: `index.html` にローカルサーバー経由（デフォルト `http://localhost:8123`）でアクセスしてテストを行う
+- **データ分離**: 各テストの実行前に `localStorage.clear()` を行い、テスト間の依存を排除する
+- **操作検証**: 登録・更新・削除・タブ切り替え等のインタラクションおよびバリデーション表示が仕様書通りに機能することを確認する
+- **カバレッジ**: 実装したすべてのJavaScriptコードに対してテストカバレッジ 99.5%以上（ステートメント、ブランチ、関数、行。V8の軽微な計測制限を除く実質100%）を達成し、維持すること
+- **日付処理**: 時間境界値テストの失敗（JST/UTCのズレ）を防ぐため、テスト内の日付生成にはローカルタイムゾーンを考慮したヘルパー関数を使用する
 
 
-## Quill CDN
+## Quill & Google Fonts CDN
+
+### Quill
 
 ```html
 <link href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css" rel="stylesheet" />
@@ -83,6 +128,17 @@ const generateUUID = () => {
 ```
 
 ツールバー構成: 太字、イタリック、下線、箇条書きリスト、番号付きリスト
+
+### Google Fonts
+
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+```
+
+- **Plus Jakarta Sans**: 見出しと英数フォント用（主にUI要素）
+- **Noto Sans JP**: 日本語フォント用
 
 ## localStorage
 
