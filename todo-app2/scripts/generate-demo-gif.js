@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Demo GIF Generator for todo-app2
- * Playwright を使用してスクリーンショットを取得し、マウスカーソルとクリック位置を描画してGIF化
+ * Playwright でスクリーンショットを取得 → sharp で処理 → FFmpeg で GIF化
  */
 
 import fs from 'fs';
@@ -9,11 +9,13 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { chromium } from 'playwright';
 import sharp from 'sharp';
-import GifEncoder from 'gif-encoder';
+import { execSync } from 'child_process';
+import os from 'os';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const screenshotsDir = path.join(__dirname, '..', 'screenshots');
+const tempDir = path.join(os.tmpdir(), 'demo-gif-' + Date.now());
 
 // グローバル設定を読み込み
 const configPath = path.join(process.env.HOME, '.copilot', 'global-config', 'demo-recording.json');
@@ -76,6 +78,11 @@ async function generateDemoGif() {
     fs.mkdirSync(screenshotsDir, { recursive: true });
   }
 
+  // 一時ディレクトリ作成
+  if (!fs.existsSync(tempDir)) {
+    fs.mkdirSync(tempDir, { recursive: true });
+  }
+
   console.log('🚀 Launching browser and capturing demo sequence...\n');
 
   let browser;
@@ -95,73 +102,84 @@ async function generateDemoGif() {
     const frames = [];
     let frameCount = 0;
 
-    // フレーム1: 初期状態 + マウス移動
-    console.log('📸 Capturing frame 1: Initial state with cursor...');
+    // フレーム1: 初期状態
+    console.log('📸 Capturing frame 1: Initial state...');
     let screenshot = await page.screenshot({ fullPage: false });
     let processed = await addCursorAndClick(screenshot, 320, 100, false);
-    frames.push(processed);
+    const frame1 = path.join(tempDir, `frame-${String(frameCount).padStart(3, '0')}.png`);
+    await fs.promises.writeFile(frame1, processed);
+    frames.push(frame1);
     frameCount++;
 
-    // フレーム2: 「新規タスク作成」ボタン方向へマウス移動
+    // フレーム2: ボタン方向へマウス移動
     console.log('📸 Capturing frame 2: Moving to button...');
     processed = await addCursorAndClick(screenshot, 600, 120, false);
-    frames.push(processed);
+    const frame2 = path.join(tempDir, `frame-${String(frameCount).padStart(3, '0')}.png`);
+    await fs.promises.writeFile(frame2, processed);
+    frames.push(frame2);
     frameCount++;
 
-    // 「新規タスク作成」ボタンを探してクリック
+    // 「新規タスク作成」ボタンをクリック
     const addButton = page.locator('button:has-text("新規タスク作成")');
     if (await addButton.isVisible()) {
       const box = await addButton.boundingBox();
       if (box) {
-        // フレーム3: ボタンホバー + クリック効果
-        console.log('📸 Capturing frame 3: Button hover with click indicator...');
+        // フレーム3: ボタンホバー + クリック
+        console.log('📸 Capturing frame 3: Button hover with click...');
         screenshot = await page.screenshot({ fullPage: false });
         const btnX = Math.round(box.x + box.width / 2);
         const btnY = Math.round(box.y + box.height / 2);
         processed = await addCursorAndClick(screenshot, btnX, btnY, true);
-        frames.push(processed);
+        const frame3 = path.join(tempDir, `frame-${String(frameCount).padStart(3, '0')}.png`);
+        await fs.promises.writeFile(frame3, processed);
+        frames.push(frame3);
         frameCount++;
 
-        // クリック実行
         await addButton.click();
         await page.waitForTimeout(600);
       }
     }
 
-    // フレーム4: タスク入力フィールド表示後
-    console.log('📸 Capturing frame 4: Task input field visible...');
+    // フレーム4: フォーム表示
+    console.log('📸 Capturing frame 4: Form visible...');
     screenshot = await page.screenshot({ fullPage: false });
     processed = await addCursorAndClick(screenshot, 640, 300, false);
-    frames.push(processed);
+    const frame4 = path.join(tempDir, `frame-${String(frameCount).padStart(3, '0')}.png`);
+    await fs.promises.writeFile(frame4, processed);
+    frames.push(frame4);
     frameCount++;
 
-    // タスクタイトルを入力
+    // テキスト入力
     const titleInput = page.locator('input[placeholder*="タスク"]').first();
     if (await titleInput.isVisible()) {
       await titleInput.click();
       await titleInput.fill('デモ: 新しいタスク');
       await page.waitForTimeout(500);
 
-      // フレーム5: 入力後
-      console.log('📸 Capturing frame 5: Task title entered...');
+      // フレーム5: テキスト入力後
+      console.log('📸 Capturing frame 5: Text entered...');
       screenshot = await page.screenshot({ fullPage: false });
       processed = await addCursorAndClick(screenshot, 640, 300, false);
-      frames.push(processed);
+      const frame5 = path.join(tempDir, `frame-${String(frameCount).padStart(3, '0')}.png`);
+      await fs.promises.writeFile(frame5, processed);
+      frames.push(frame5);
       frameCount++;
     }
 
-    // 保存ボタンをクリック
+    // 保存ボタンクリック
     const saveButton = page.locator('button:has-text("保存")').first();
     if (await saveButton.isVisible()) {
       const saveBox = await saveButton.boundingBox();
       if (saveBox) {
         // フレーム6: 保存ボタンホバー
-        console.log('📸 Capturing frame 6: Save button with click indicator...');
+        console.log('📸 Capturing frame 6: Save button with click...');
         screenshot = await page.screenshot({ fullPage: false });
         const saveBtnX = Math.round(saveBox.x + saveBox.width / 2);
         const saveBtnY = Math.round(saveBox.y + saveBox.height / 2);
         processed = await addCursorAndClick(screenshot, saveBtnX, saveBtnY, true);
-        frames.push(processed);
+        const frame6 = path.join(tempDir, `frame-${String(frameCount).padStart(3, '0')}.png`);
+        await fs.promises.writeFile(frame6, processed);
+        frames.push(frame6);
         frameCount++;
 
         await saveButton.click();
@@ -169,38 +187,28 @@ async function generateDemoGif() {
       }
     }
 
-    // フレーム7: 最終状態
-    console.log('📸 Capturing frame 7: Final state after save...');
+    // フレーム7: 完了状態
+    console.log('📸 Capturing frame 7: Final state...');
     screenshot = await page.screenshot({ fullPage: false });
     processed = await addCursorAndClick(screenshot, 640, 400, false);
-    frames.push(processed);
+    const frame7 = path.join(tempDir, `frame-${String(frameCount).padStart(3, '0')}.png`);
+    await fs.promises.writeFile(frame7, processed);
+    frames.push(frame7);
     frameCount++;
 
     console.log(`\n✨ Captured ${frameCount} frames\n`);
 
-    // GIF生成
-    console.log('🎞️  Encoding GIF...');
-    const gif = new GifEncoder(1280, 720);
-    gif.setFrameRate(recordingConfig.frameRate || 20);
-
-    const writeStream = fs.createWriteStream(outputGif);
-    gif.pipe(writeStream);
-
-    for (const frameBuffer of frames) {
-      // PNG を読み込んで GIF フレームに追加
-      const { data } = await sharp(frameBuffer)
-        .raw()
-        .toBuffer({ resolveWithObject: true });
-      
-      gif.addFrame(data);
+    // FFmpeg で GIF に変換
+    console.log('🎞️  Converting to GIF using FFmpeg...');
+    const framePattern = path.join(tempDir, 'frame-%03d.png');
+    const ffmpegCmd = `ffmpeg -framerate ${recordingConfig.frameRate} -i "${framePattern}" -vf "scale=1280:-1" -loop 0 "${outputGif}" 2>&1`;
+    
+    try {
+      execSync(ffmpegCmd, { stdio: 'pipe' });
+    } catch (e) {
+      console.error('FFmpeg error:', e.message);
+      throw e;
     }
-
-    gif.finish();
-
-    await new Promise((resolve, reject) => {
-      writeStream.on('finish', resolve);
-      writeStream.on('error', reject);
-    });
 
     const fileSize = fs.statSync(outputGif).size;
     console.log(`\n✅ Demo GIF created successfully!`);
@@ -212,10 +220,13 @@ async function generateDemoGif() {
 
     await browser.close();
 
+    // 一時ファイル削除
+    fs.rmSync(tempDir, { recursive: true, force: true });
+
   } catch (error) {
     console.error('❌ Error generating demo GIF:', error.message);
-    console.error(error.stack);
     if (browser) await browser.close();
+    fs.rmSync(tempDir, { recursive: true, force: true });
     process.exit(1);
   }
 }
