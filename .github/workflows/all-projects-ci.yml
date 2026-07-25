@@ -308,8 +308,11 @@ jobs:
   deploy:
     needs: [detect-changes, contact-form-ci, example-001-ci, todo-app-ci, todo-app2-ci, pdflabel-ci]
     if: |
+      always() &&
       github.ref == 'refs/heads/main' && 
       (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+      !contains(needs.*.result, 'failure') &&
+      !contains(needs.*.result, 'cancelled') &&
       (needs.detect-changes.outputs.todo-app2 == 'true' || 
        needs.detect-changes.outputs.pdflabel == 'true' || 
        needs.detect-changes.outputs.todo-app == 'true' || 
