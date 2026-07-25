@@ -10,8 +10,21 @@
 
 ## 🎨 主要画面とデモ動作
 
-### 🎬 デモ動作 (GIF アニメーション)
+### 🎬 デモ動作 (GIF アニメーション - マウス位置・クリック表示)
 ![デモ動作](screenshots/demo.gif)
+
+**📌 デモGIFについて:**
+このデモGIFにはマウスカーソルの位置とクリック位置が可視化されています。グローバル設定ファイルにより、複数プロジェクト間で統一されたマウス・クリック表示設定が適用されています。
+
+**🔧 グローバル設定の場所:**
+`~/.copilot/global-config/demo-recording.json` に統一されたマウス・クリック可視化設定が保存されています。
+
+**設定内容:**
+- ✅ マウスカーソル表示：有効（赤色, 12px）
+- ✅ クリック位置表示：有効（赤色リップル, 30px半径）
+- ✅ クリック表示時間：200ms
+- ✅ フレームレート：30fps
+- ✅ 出力形式：GIF
 
 ### 🖥️ メイン画面 (主要画面)
 ![メイン画面](screenshots/main_view.png)
@@ -91,6 +104,62 @@ npm run lint      # Linterを実行
 npm run lint:fix  # Linterによる自動修正
 npm run format    # Prettierによるフォーマットチェック
 npm run format:fix# Prettierによる自動整形
+```
+
+### デモレコーディング設定の確認
+```bash
+# グローバル設定を読み込んで、プロジェクト設定を統合・表示
+node scripts/setup-demo-recording.js
+```
+
+---
+
+## 🎥 グローバルデモレコーディング設定
+
+複数プロジェクト間で統一されたスクリーンレコーディング設定をグローバルに管理しています。
+
+### 📍 設定ファイルの場所
+- **グローバル設定**: `~/.copilot/global-config/demo-recording.json`
+- **ツール**: `~/.copilot/global-config/demo-recording-tool.js`
+- **プロジェクト統合**: `scripts/setup-demo-recording.js`
+
+### 🔧 グローバル設定の内容
+
+```json
+{
+  "screenRecording": {
+    "showMouseCursor": true,        // マウスカーソルを可視化
+    "showClickIndicator": true,      // クリック位置を可視化
+    "clickRadius": 20,               // クリック検出半径
+    "clickDuration": 200,            // クリック表示時間（ms）
+    "cursorColor": "#FF0000",        // カーソル色（赤）
+    "cursorSize": 12,                // カーソルサイズ（px）
+    "clickIndicatorColor": "#FF4444",// クリック表示色
+    "clickRippleRadius": 30,         // クリックリップル半径（px）
+    "frameRate": 30,                 // フレームレート（fps）
+    "quality": "high",               // 品質
+    "format": "gif"                  // 出力形式
+  }
+}
+```
+
+### ✨ マウス・クリック可視化の特徴
+
+| 機能 | 説明 |
+|------|------|
+| **マウスカーソル表示** | 赤色の12px円形カーソルがマウスに追従 |
+| **クリック位置表示** | クリック時に赤色のリップルエフェクト（30px半径）が200ms表示 |
+| **複数プロジェクト対応** | 他のプロジェクト（`contact-form` など）でも同じ設定が適用 |
+| **永続化** | `~/.copilot/global-config/` に保存され、セッション間で維持 |
+
+### 🎬 デモ用スクリーンレコーディングの生成例
+
+```bash
+# グローバル設定を確認
+node ~/.copilot/global-config/demo-recording-tool.js
+
+# プロジェクト固有の統合設定を確認
+npm run setup:demo
 ```
 
 ---

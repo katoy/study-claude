@@ -12,7 +12,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --check \"src/**/*.js\" \"tests/**/*.js\"",
-    "format:fix": "prettier --write \"src/**/*.js\" \"tests/**/*.js\""
+    "format:fix": "prettier --write \"src/**/*.js\" \"tests/**/*.js\"",
+    "setup:demo": "node scripts/setup-demo-recording.js"
   },
   "dependencies": {
     "dompurify": "^3.0.9",
