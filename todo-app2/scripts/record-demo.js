@@ -181,7 +181,7 @@ async function main() {
   try {
     console.log('🌐 Launching browser in headful mode (headless: false)...');
     browser = await chromium.launch({ headless: false });
-  } catch (e) {
+  } catch {
     console.log('⚠️ Failed to launch in headful mode, falling back to headless: true');
     browser = await chromium.launch({ headless: true });
   }

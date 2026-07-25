@@ -56,7 +56,7 @@ class Contact extends Model
         }
 
         if ($filters->keyword !== '') {
-            $keyword = $filters->keyword;
+            $keyword = addcslashes($filters->keyword, '%_\\');
             $query->where(function (Builder $q) use ($keyword) {
                 $q->where('name', 'like', "%{$keyword}%")
                     ->orWhere('email', 'like', "%{$keyword}%")
@@ -65,7 +65,7 @@ class Contact extends Model
         }
 
         if ($filters->bodyKeyword !== '') {
-            $bodyKeyword = $filters->bodyKeyword;
+            $bodyKeyword = addcslashes($filters->bodyKeyword, '%_\\');
             $query->where('body', 'like', "%{$bodyKeyword}%");
         }
 

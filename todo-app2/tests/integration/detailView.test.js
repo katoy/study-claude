@@ -537,7 +537,6 @@ describe('詳細画面 UI 統合テスト (detailView.js)', () => {
       openDetailModal(todo);
 
       const datetimePicker = dialog.querySelector('#due-datetime-picker');
-      const titleInput = dialog.querySelector('#todo-title');
 
       // ステップ2: 表示値を確認（JST基準であること）
       expect(datetimePicker.value).toBe('2026-07-24T23:59');

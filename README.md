@@ -8,21 +8,21 @@
 
 本リポジトリには、技術スタックや用途が異なる以下の5つのプロジェクトが含まれています。
 
-### 1. [お問い合わせフォーム (contact-form)](file:///Users/katoy/github/study-claude/contact-form/myproject/README.md)
+### 1. [お問い合わせフォーム (contact-form)](./contact-form/myproject/README.md)
 * **概要**: Laravel 13.x で構築した本格的なお問い合わせフォームアプリケーション。
 * **主な機能**: 
   * 一般ユーザー向けの3ステップ入力・確認・送信フロー
   * 管理者向けの問い合わせ一覧・詳細・ステータス管理機能（Laravel Breeze認証）
 * **技術スタック**: PHP 8.3 (Laravel 13.x), Tailwind CSS, SQLite
 
-### 2. [落ちモノパズルゲーム (example-001)](file:///Users/katoy/github/study-claude/example-001/README.md)
+### 2. [落ちモノパズルゲーム (example-001)](./example-001/README.md)
 * **概要**: バニラ HTML/CSS/JavaScript で記述されたレトロスタイルの落ちモノパズルゲーム（テトリス風）。
 * **主な機能**:
   * グラスモルフィズムを用いたモダンなUIデザイン
   * PC（キーボード）およびモバイル（タッチ操作）のマルチデバイス対応
 * **技術スタック**: Vanilla HTML/CSS/JavaScript, Playwright (E2Eテスト)
 
-### 3. [ToDoリスト アプリ (todo-app)](file:///Users/katoy/github/study-claude/todo-app/README.md)
+### 3. [ToDoリスト アプリ (todo-app)](./todo-app/README.md)
 * **概要**: インラインで完結した、プレミアムなダーク／ネオンテーマ仕様のタスク管理アプリ。
 * **主な機能**:
   * 締め切り日時に応じたリアルタイム自動セクション分類
@@ -30,14 +30,14 @@
   * `localStorage` を使用したデータの永続化
 * **技術スタック**: Vanilla HTML/CSS/JS (単一 index.html 構成), Quill, Playwright (E2Eテスト)
 
-### 4. [Premium ToDo App (todo-app2)](file:///Users/katoy/github/study-claude/todo-app2/README.md)
+### 4. [Premium ToDo App (todo-app2)](./todo-app2/README.md)
 * **概要**: TDD（テスト駆動開発）によって堅牢に実装された、モダンでプレミアムな ToDo アプリケーション。
 * **主な機能**:
   * Quill エディタを統合したタスク作成モーダル
   * 100%のカバレッジ要件チェックを備えた高品質なコードベース
 * **技術スタック**: React / Vite / TypeScript, Jest / Vitest, Prettier, ESLint
 
-### 5. [PDF Label Studio (pdflabel)](file:///Users/katoy/github/study-claude/pdflabel/README.md)
+### 5. [PDF Label Studio (pdflabel)](./pdflabel/README.md)
 * **概要**: 市販のA4ラベル用紙などの寸法に合わせて、任意の印刷用PDFをブラウザ内で完全ローカル生成するツール。
 * **主な機能**:
   * アカウント登録やサーバー送信不要で動作する完全クライアントサイド設計
@@ -50,7 +50,7 @@
 
 リポジトリ全体の品質維持とデプロイ自動化のために、以下の統合ワークフローが定義されています。
 
-* [all-projects-ci.yml](file:///Users/katoy/github/study-claude/.github/workflows/all-projects-ci.yml)
+* [all-projects-ci.yml](./.github/workflows/all-projects-ci.yml)
 
 ### 特徴とワークフローの仕組み
 
@@ -72,19 +72,27 @@
 
 本リポジトリには、開発やデモンストレーションに活用できる共通のツールおよびガイドラインが同梱されています。
 
-### [ブラウザテスト & デモGIF生成スキル (skills/browser-tests)](file:///Users/katoy/github/study-claude/skills/browser-tests/SKILL.md)
+### [ブラウザテスト & デモGIF生成スキル (skills/browser-tests)](./skills/browser-tests/SKILL.md)
 * **概要**: Playwright (Node.js) と FFmpeg を使用して、Web アプリのブラウザ操作デモ動画を撮影し、高品質・軽量な GIF アニメーションを生成するためのガイドラインおよびテンプレート。
 * **特徴**:
   * **仮想マウスカーソル・クリック波紋の挿入**: Playwright での録画では記録されないマウス操作を、独自のスクリプトインジェクションによって視覚的に再現。
   * **スムーズなマウス移動**: デモ映像として違和感がないよう、カーソルを滑らかに対象要素まで移動させてからクリック・入力する API を完備。
   * **FFmpeg による高画質GIF化**: 動画特有の最適化カラーパレットを作成し、ノイズの少ない綺麗なGIFを出力。
 
-### [README.md 作成・構成スタイルガイド (skills/readme-style)](file:///Users/katoy/github/study-claude/skills/readme-style/SKILL.md)
+### [README.md 作成・構成スタイルガイド (skills/readme-style)](./skills/readme-style/SKILL.md)
 * **概要**: リポジトリ全体のプロジェクトで統一された、高品質で視覚的な `README.md` を作成・保守するための構成・書式・記述テンプレートに関するガイドライン。
 * **特徴**:
   * **標準セクション構造**: デモ、画面遷移図、機能詳細、要件、主要コマンド等の最適な目次構成を提示。
   * **視覚的な Mermaid フローチャートと配色**: パブリック/プライベート画面に応じた色分け済みの Mermaid テンプレート。
   * **マークダウン表現のベストプラクティス**: Callouts (Tip, Warning 等) の活用や、ファイルリンクの記法ルール。
+
+### [セキュリティレビュアー サブエージェント (.agents/agents/security_reviewer/agent.md)](./.agents/agents/security_reviewer/agent.md)
+* **概要**: コードベースのセキュリティ脆弱性やシークレットの漏洩を自動検証・レビューするためのカスタムサブエージェント設定。
+* **特徴**:
+  * **自動ロード**: Antigravity CLI や IDE がプロジェクトを読み込むと自動的にロードされ、`/agents` や `invoke_subagent` を通じて即座に呼び出し可能になります。
+  * **セキュリティチェック**: OWASP Top 10脆弱性（SQLインジェクション、XSS等）、ソースコードや設定ファイルへの認証情報のハードコード、不適切な権限設定などを検出。
+  * **具体的な修正案**: 検出した脆弱性に対して、単に指摘するだけでなく、セキュアなコード例を含んだ具体的な修正手順を提供します。
+  * **実行実績**: 本サブエージェントを用いてコードベースをスキャンし、検出された脆弱性（暗号鍵の漏洩やSQLiリスク等）に対処しています。詳細は [セキュリティレビュー報告書](./docs/security_review_report.md) を参照してください。
 
 ---
 

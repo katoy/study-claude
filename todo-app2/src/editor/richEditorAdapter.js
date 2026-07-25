@@ -1,4 +1,5 @@
 import Quill from 'quill';
+import { sanitizeHtml } from '../sanitize/sanitizeHtml.js';
 
 let quillInstance = null;
 
@@ -34,7 +35,7 @@ export function getEditorHTML() {
 export function setEditorHTML(html) {
   if (quillInstance) {
     // eslint-disable-next-line no-unsanitized/property
-    quillInstance.root.innerHTML = html;
+    quillInstance.root.innerHTML = sanitizeHtml(html);
   }
 }
 

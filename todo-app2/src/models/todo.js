@@ -49,12 +49,25 @@ export function isValidTodo(todo) {
   }
 
   // 必須キーの型チェック
-  if (typeof todo.id !== 'string' || todo.id === '') {
+  // UUID (v4) 形式の検証
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (typeof todo.id !== 'string' || !uuidRegex.test(todo.id)) {
     return false;
   }
-  if (typeof todo.title !== 'string' || todo.title.trim() === '') {
+
+  // タイトル文字数（1〜100文字）
+  if (typeof todo.title !== 'string' || todo.title.trim() === '' || todo.title.length > 100) {
     return false;
   }
+
+  // 詳細（最大2000文字）
+  if (todo.detail !== undefined && (typeof todo.detail !== 'string' || todo.detail.length > 2000)) {
+    return false;
+  }
+  if (todo.detailHtml !== undefined && typeof todo.detailHtml !== 'string') {
+    return false;
+  }
+
   if (typeof todo.completed !== 'boolean') {
     return false;
   }
