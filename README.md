@@ -2,6 +2,23 @@
 
 このリポジトリは、AI アシスタント Claude を活用しながら開発・検証した、複数の Web アプリケーションと自動テスト環境（CI/CD）をまとめた統合学習リポジトリです。
 
+## 📌 目次
+
+- [🚀 プロジェクト一覧](#-プロジェクト一覧)
+  - [1. お問い合わせフォーム (contact-form)](#1-お問い合わせフォーム-contact-form)
+  - [2. 落ちモノパズルゲーム (example-001)](#2-落ちモノパズルゲーム-example-001)
+  - [3. ToDoリスト アプリ (todo-app)](#3-todoリスト-アプリ-todo-app)
+  - [4. Premium ToDo App (todo-app2)](#4-premium-todo-app-todo-app2)
+  - [5. PDF Label Studio (pdflabel)](#5-pdf-label-studio-pdflabel)
+- [🛠️ GitHub Actions (CI/CD) の構成](#️-github-actions-cicd-の構成)
+  - [特徴とワークフローの仕組み](#特徴とワークフローの仕組み)
+- [💡 共通ツール・スキル](#-共通ツールスキル)
+  - [ブラウザテスト & デモGIF生成スキル (skills/browser-tests)](#ブラウザテスト--デモgif生成スキル-skillsbrowser-tests)
+  - [README.md 作成・構成スタイルガイド (skills/readme-style)](#readmemd-作成構成スタイルガイド-skillsreadme-style)
+  - [セキュリティレビュアー サブエージェント (.agents/agents/security_reviewer/agent.md)](#セキュリティレビュアー-サブエージェント-agentsagentssecurity_revieweragentmd)
+- [💻 開発環境のセットアップ](#-開発環境のセットアップ)
+  - [例：Premium ToDo App (todo-app2) の場合](#例premium-todo-app-todo-app2-の場合)
+
 ---
 
 ## 🚀 プロジェクト一覧
@@ -111,3 +128,10 @@ npm run test    # テストの実行
 ```
 
 各プロジェクトの具体的なコマンドや設定、要件についての詳細は、各プロジェクトディレクトリ内の `README.md` をご参照ください。
+
+---
+
+## 📄 ライセンス
+
+本リポジトリ内のコードおよびドキュメントは、MITライセンスの下で提供されています。
+
