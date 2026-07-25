@@ -2,6 +2,9 @@ const { test: baseTest, expect } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
 
+const isMac = process.platform === 'darwin';
+const selectAllKey = isMac ? 'Meta+A' : 'Control+A';
+
 // Keep track of all coverage data across all test runs
 let allCoverages = [];
 
@@ -323,7 +326,7 @@ test.describe('5. 新規登録（正常系）', () => {
     await page.keyboard.type('これは詳細内容です。');
     
     // Apply Bold styling
-    await page.press('.ql-editor', 'Meta+A'); // Select all
+    await page.press('.ql-editor', selectAllKey); // Select all
     await page.click('.ql-bold'); // Bold it
     
     await page.click('#btn-save');
@@ -837,7 +840,7 @@ test.describe('13. Quillエディタ', () => {
     await page.keyboard.type('項目1\n項目2');
     
     // Highlight all and format as Bullet List
-    await page.press('.ql-editor', 'Meta+A');
+    await page.press('.ql-editor', selectAllKey);
     await page.click('.ql-list[value="bullet"]');
     
     await page.click('#btn-save');
@@ -1278,7 +1281,7 @@ test.describe('17. 文字数カウンター', () => {
     await page.keyboard.type('テスト');
     await expect(counter).toHaveText('3 / 2000');
 
-    await page.press('.ql-editor', 'Meta+A');
+    await page.press('.ql-editor', selectAllKey);
     await page.press('.ql-editor', 'Backspace');
     await expect(counter).toHaveText('0 / 2000');
   });
