@@ -25,7 +25,7 @@ export function initEditor(element) {
  * @returns {string}
  */
 export function getEditorHTML() {
-  return quillInstance ? quillInstance.root.innerHTML : '';
+  return quillInstance ? sanitizeHtml(quillInstance.root.innerHTML) : '';
 }
 
 /**
