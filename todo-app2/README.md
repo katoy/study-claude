@@ -34,6 +34,9 @@ npm run record:demo
 - `ffmpeg` による高画質なカラーパレット付き GIF への一発変換
 - 出力: `screenshots/demo_animation.gif`
 
+> [!TIP]
+> このマウスカーソル・クリックの可視化および高品質GIF変換の技術は、汎用的な開発スキルとして [docs/skills/browser-tests/SKILL.md](file:///Users/katoy/github/study-claude/todo-app2/docs/skills/browser-tests/SKILL.md) に定義・保存されています。別のプロジェクトでも同様の手法をすぐに再利用可能です。
+
 ### 🖥️ メイン画面 (主要画面)
 ![メイン画面](screenshots/main_view.png)
 
@@ -127,6 +130,8 @@ npm run record:demo
 3. デモシーケンスを滑らかなマウス軌跡で自動操作し、動画 (.webm) として録画
 4. `ffmpeg` を呼び出し、録画した動画を高品質な GIF に変換
 5. 完成した GIF を `screenshots/demo_animation.gif` に保存
+
+※ この自動可視化デモGIF生成技術の背景と、他プロジェクトで利用できる実装テンプレートについては、[browser-tests スキル定義書](file:///Users/katoy/github/study-claude/todo-app2/docs/skills/browser-tests/SKILL.md) を参照してください。
 
 ---
 
