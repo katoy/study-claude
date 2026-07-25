@@ -1413,6 +1413,19 @@ test.describe('18. セキュリティ仕様', () => {
     expect(detailHtml).not.toContain('<img');
     expect(detailHtml).not.toContain('<script');
     expect(detailHtml).not.toContain('<iframe');
+
+    // Verify paste sanitization (formats restriction)
+    await page.evaluate(() => {
+      quill.clipboard.dangerouslyPasteHTML('<p><strong>太字</strong>と<a href="javascript:alert(1)">リンク</a>と<img src="x" onerror="alert(1)"></p>');
+    });
+
+    const parsedHtml = await page.evaluate(() => {
+      return quill.getSemanticHTML();
+    });
+    // strong is mapped to bold, p is block, but dynamic formats restriction should drop <a> and <img>
+    expect(parsedHtml).toContain('<strong>');
+    expect(parsedHtml).not.toContain('<a');
+    expect(parsedHtml).not.toContain('<img');
   });
 
   test('TC-18.5: バリデーション - タイトル100文字制限', async ({ page }) => {
