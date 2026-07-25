@@ -50,7 +50,7 @@ describe('PDF Label Studio Tests', () => {
         rowSpacing: 2
       },
       {
-        name: "エーワン テスト 2",
+        name: "エーワン <&> テスト '\" 2",
         paperSize: "A4",
         topMargin: 10,
         bottomMargin: 10,

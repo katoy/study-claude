@@ -14,8 +14,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
   
-  <!-- jsPDF ライブラリ (CDNから読み込み) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- jsPDF ライブラリ (CDNから読み込み、SRI付き) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" 
+          integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA==" 
+          crossorigin="anonymous" 
+          referrerpolicy="no-referrer"></script>
   
   <!-- 自前で外部化したラベル用紙プリセットデータ (labellist.js) -->
   <script src="labellist.js"></script>
@@ -1282,6 +1285,23 @@
       }
     }
 
+    /**
+     * HTML特殊文字をエスケープする
+     * @param {string} str 対象文字列
+     * @returns {string} エスケープ後の文字列
+     */
+    function escapeHtml(str) {
+      return str.replace(/[&<>'"]/g, (tag) => {
+        return {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          "'": '&#39;',
+          '"': '&quot;'
+        }[tag];
+      });
+    }
+
     // ==========================================
     // 関数定義 (キャメルケース採用、日本語コメント)
     // ==========================================
@@ -1294,16 +1314,17 @@
       const paperW = 210; // A4幅 (mm)
       const paperH = 297; // A4高さ (mm)
 
-      const tMargin = parseFloat(topMarginInput.value) || 0;
-      const bMargin = parseFloat(bottomMarginInput.value) || 0;
-      const lMargin = parseFloat(leftMarginInput.value) || 0;
-      const rMargin = parseFloat(rightMarginInput.value) || 0;
+      const tMargin = Math.max(0, parseFloat(topMarginInput.value) || 0);
+      const bMargin = Math.max(0, parseFloat(bottomMarginInput.value) || 0);
+      const lMargin = Math.max(0, parseFloat(leftMarginInput.value) || 0);
+      const rMargin = Math.max(0, parseFloat(rightMarginInput.value) || 0);
 
-      const lblW = parseFloat(labelWidthInput.value) || 1;
-      const lblH = parseFloat(labelHeightInput.value) || 1;
+      // ゼロ除算・無限ループを防ぐため、ラベルサイズは 0.1mm 以上の最小値を確保
+      const lblW = Math.max(0.1, parseFloat(labelWidthInput.value) || 1);
+      const lblH = Math.max(0.1, parseFloat(labelHeightInput.value) || 1);
 
-      const colSp = parseFloat(colSpacingInput.value) || 0;
-      const rowSp = parseFloat(rowSpacingInput.value) || 0;
+      const colSp = Math.max(0, parseFloat(colSpacingInput.value) || 0);
+      const rowSp = Math.max(0, parseFloat(rowSpacingInput.value) || 0);
       const hasInvalidInput = layoutInputElements.some(input => input.value === '' || !input.checkValidity());
 
       // 配置可能な有効幅/高さを計算
@@ -1552,6 +1573,8 @@
           URL.revokeObjectURL(pdfUrl);
           throw new Error('PDFを開けませんでした。ブラウザのポップアップを許可してください。');
         }
+        // Tabnabbing防止のため、親ウィンドウへの参照を切断
+        pdfWindow.opener = null;
         pdfWindow.addEventListener('load', () => {
           URL.revokeObjectURL(pdfUrl);
         }, { once: true });
@@ -1985,8 +2008,8 @@
             ${svgMarkup}
           </div>
           <div class="preset-card-info">
-            <span class="preset-card-manufacturer">${manufacturer}</span>
-            <span class="preset-card-name" title="${preset.name}">${displayName}</span>
+            <span class="preset-card-manufacturer">${escapeHtml(manufacturer)}</span>
+            <span class="preset-card-name" title="${escapeHtml(preset.name)}">${escapeHtml(displayName)}</span>
             <span class="preset-card-desc">${preset.labelWidth} × ${preset.labelHeight} mm</span>
             <div class="preset-card-specs">
               <span class="preset-badge">${total}面</span>
