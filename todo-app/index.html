@@ -691,6 +691,7 @@
       quill = new Quill('#editor-detail', {
         theme: 'snow',
         placeholder: '詳細を入力してください...',
+        // Security: Limit formats to prevent XSS via paste
         formats: ['bold', 'italic', 'underline', 'list'],
         modules: {
           toolbar: [
