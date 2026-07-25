@@ -2,7 +2,7 @@
   "name": "落ちモノパズル - Tetris Game",
   "short_name": "落ちパズ",
   "description": "Vanilla HTML/CSS/JavaScript で実装された、モダンで美しい落ちモノパズルゲーム。",
-  "start_url": "index.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0d0d1e",

@@ -40,6 +40,11 @@ self.addEventListener('activate', (event) => {
 
 // リクエストフェッチのハンドリング
 self.addEventListener('fetch', (event) => {
+  // GETリクエストのみを処理対象とする
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
   // http / https プロトコルのみを処理対象とする（chrome-extension や file スキームを除外）
   if (!event.request.url.startsWith('http')) {
     return;
@@ -52,8 +57,8 @@ self.addEventListener('fetch', (event) => {
       }
 
       return fetch(event.request).then((response) => {
-        // レスポンスが正常かつGETリクエストの場合のみキャッシュに追加
-        if (!response || response.status !== 200 || response.type !== 'basic' && !event.request.url.includes('fonts.gstatic.com') && !event.request.url.includes('fonts.googleapis.com')) {
+        // レスポンスが正常かつ基本型の場合のみキャッシュに追加（不透明なレスポンス等は除外）
+        if (!response || response.status !== 200 || response.type !== 'basic') {
           return response;
         }
 

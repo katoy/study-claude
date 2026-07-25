@@ -136,5 +136,12 @@ npx http-server -p 8000
 
 ## ファイル構成
 
-- `index.html` : HTML、CSS、JavaScript をすべて含む本体
+本ゲームは `game/` ディレクトリ配下に配置された以下の静的ファイル群で構成されています。
+
+- `index.html` : ゲーム画面と JavaScript (IIFE カプセル化、CSP 設定済) を含むメインファイル
+- `style.css` : グラスモルフィズム等の装飾を定義するスタイルシート
+- `manifest.json` : インストール可能にするための PWA Web アプリマニフェスト
+- `sw.js` : オフライン動作に対応させるための Service Worker。セキュリティ対策として、GET リクエストかつ同一オリジンアセット (`basic` レスポンス) のみをキャッシュ対象としています
+- `icon-192.png` / `icon-512.png` : アプリ起動アイコン画像
+- `screenshot.png` : ゲーム画面のスクリーンショット
 

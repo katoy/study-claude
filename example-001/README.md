@@ -114,7 +114,8 @@ npm run coverage
 プロジェクトの簡潔さを保つため、以下の規約を定義しています。詳細は [CLAUDE.md](file:///Users/katoy/github/study-claude/example-001/CLAUDE.md) をご覧ください。
 
 - **単一 HTML の維持**: ゲームロジックは [game/index.html](file:///Users/katoy/github/study-claude/example-001/game/index.html) に記述し、新たなビルドツール（Vite, Webpack 等）の導入やモジュール分割は行わない。
-- **Classic Script スタイル**: `<script type="module">` ではなく通常のスクリプトタグを使用し、`window` オブジェクトへの露出を前提とする。
+- **Classic Script スタイルとカプセル化**: スクリプトタグ内の変数・関数は即時実行関数 (IIFE) 内にカプセル化し、グローバル名前空間を汚染しないようにしています。ただし、E2E/ユニットテストとの互換性のため、必要な一部の変数・関数は `Object.defineProperty` (ゲッター/セッター) を介して `window` に露出しています。
+- **セキュリティの適用**: `index.html` に Content Security Policy (CSP) を定義し、スクリプト実行や接続先を厳格化しています。また `sw.js` においては、GET以外のリクエストのバイパスや、不透明なレスポンスのキャッシュ防止（basic のみ）によってブラウザストレージの肥大化を防いでいます。
 - **日本語コメント**: ソースコード内のコメントや docstring は日本語で統一し、英数字と日本語の間には半角スペースを挿入する。
 
 ## 関連資料

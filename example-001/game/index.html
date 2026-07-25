@@ -2,6 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; font-src 'self' https://fonts.gstatic.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline';">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>落ちモノパズル - Tetris Game</title>
     <!-- Google Fonts インポート -->
@@ -67,6 +68,7 @@
     </div>
 
     <script>
+    (() => {
         // ゲーム設定
         const BOARD_WIDTH = 10;
         const BOARD_HEIGHT = 20;
@@ -654,6 +656,65 @@
                     .catch((err) => console.error('[PWA] Service Worker registration failed:', err));
             });
         }
+
+        // Expose variables to window via getters/setters to support playwright tests
+        const exposeWritable = (name, getVal, setVal) => {
+            Object.defineProperty(window, name, {
+                get: getVal,
+                set: setVal,
+                configurable: true
+            });
+        };
+
+        window.BOARD_WIDTH = BOARD_WIDTH;
+        window.BOARD_HEIGHT = BOARD_HEIGHT;
+        window.BLOCK_SIZE = BLOCK_SIZE;
+        window.INITIAL_DROP_INTERVAL = INITIAL_DROP_INTERVAL;
+        window.DROP_INTERVAL_DECREASE = DROP_INTERVAL_DECREASE;
+        window.MOVE_DELAY = MOVE_DELAY;
+        window.SOFT_DROP_DELAY = SOFT_DROP_DELAY;
+        window.TETROMINOS = TETROMINOS;
+        window.TETROMINO_KEYS = TETROMINO_KEYS;
+
+        exposeWritable('board', () => board, (val) => { board = val; });
+        exposeWritable('currentBlock', () => currentBlock, (val) => { currentBlock = val; });
+        exposeWritable('nextBlock', () => nextBlock, (val) => { nextBlock = val; });
+        exposeWritable('score', () => score, (val) => { score = val; });
+        exposeWritable('level', () => level, (val) => { level = val; });
+        exposeWritable('linesCleared', () => linesCleared, (val) => { linesCleared = val; });
+        exposeWritable('gameOver', () => gameOver, (val) => { gameOver = val; });
+        exposeWritable('isPaused', () => isPaused, (val) => { isPaused = val; });
+        exposeWritable('lastDropTime', () => lastDropTime, (val) => { lastDropTime = val; });
+        exposeWritable('elapsedTime', () => elapsedTime, (val) => { elapsedTime = val; });
+        exposeWritable('bag', () => bag, (val) => { bag = val; });
+        window.keys = keys;
+        exposeWritable('lastLeftMoveTime', () => lastLeftMoveTime, (val) => { lastLeftMoveTime = val; });
+        exposeWritable('lastRightMoveTime', () => lastRightMoveTime, (val) => { lastRightMoveTime = val; });
+        exposeWritable('lastSoftDropTime', () => lastSoftDropTime, (val) => { lastSoftDropTime = val; });
+
+        window.init = init;
+        window.getRandomBlock = getRandomBlock;
+        window.canMove = canMove;
+        window.fixBlock = fixBlock;
+        window.clearLines = clearLines;
+        window.rotate = rotate;
+        window.checkGameOver = checkGameOver;
+        window.update = update;
+        window.draw = draw;
+        window.drawBlock = drawBlock;
+        window.drawNextBlock = drawNextBlock;
+        window.updateUI = updateUI;
+        window.adjustColorBrightness = adjustColorBrightness;
+        window.handleLeft = handleLeft;
+        window.handleRight = handleRight;
+        window.handleRotate = handleRotate;
+        window.handleSoftDrop = handleSoftDrop;
+        window.handleHardDrop = handleHardDrop;
+        window.handlePause = handlePause;
+        window.handleInput = handleInput;
+        window.setupTouchEvent = setupTouchEvent;
+        window.gameLoop = gameLoop;
+    })();
     </script>
 </body>
 </html>
