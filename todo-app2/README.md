@@ -10,21 +10,29 @@
 
 ## 🎨 主要画面とデモ動作
 
-### 🎬 デモ動作 (GIF アニメーション - マウス位置・クリック表示)
-![デモ動作](screenshots/demo.gif)
+### 🎬 デモ動作 (GIF アニメーション)
+![デモ動作](screenshots/demo_animation.gif)
 
-**📌 デモGIFについて:**
-このデモGIFにはマウスカーソルの位置とクリック位置が可視化されています。グローバル設定ファイルにより、複数プロジェクト間で統一されたマウス・クリック表示設定が適用されています。
+**このデモは以下の操作シーケンスを自動記録した GIF です:**
+1. **初期表示** - アプリの起動状態
+2. **新規ボタン クリック** - タスク登録モーダルを開く
+3. **タイトル入力** - 「技術仕様書のレビュー」を入力
+4. **日時設定** - 「日のみ指定」を選択（カレンダー日付を選択）
+5. **詳細入力** - Quill リッチテキストエディタに詳細説明を入力
+6. **タスク保存** - 保存ボタンでタスクを登録
+7. **完了操作** - タスクを完了状態に変更
+8. **フィルター** - 「完了済み」「未完了」フィルタの切り替え確認
 
-**🔧 グローバル設定の場所:**
-`~/.copilot/global-config/demo-recording.json` に統一されたマウス・クリック可視化設定が保存されています。
+**🔧 デモ GIF 生成コマンド:**
+```bash
+npm run record:demo
+```
 
-**設定内容:**
-- ✅ マウスカーソル表示：有効（赤色, 12px）
-- ✅ クリック位置表示：有効（赤色リップル, 30px半径）
-- ✅ クリック表示時間：200ms
-- ✅ フレームレート：30fps
-- ✅ 出力形式：GIF
+このコマンドで、以下の処理が自動実行されます:
+- Playwright によるブラウザ自動操作（ヘッドフル起動でペイントプロセスを完全に処理、自動でカーソルとクリック波紋エフェクトを注入）
+- ブラウザの標準ビデオ録画機能による操作全体の WebM 保存
+- `ffmpeg` による高画質なカラーパレット付き GIF への一発変換
+- 出力: `screenshots/demo_animation.gif`
 
 ### 🖥️ メイン画面 (主要画面)
 ![メイン画面](screenshots/main_view.png)
@@ -106,61 +114,19 @@ npm run format    # Prettierによるフォーマットチェック
 npm run format:fix# Prettierによる自動整形
 ```
 
-### デモレコーディング設定の確認
+### デモ GIF の生成
+操作シーケンスを自動記録して、カーソルとクリックが可視化された GIF アニメーションを生成します。
 ```bash
-# グローバル設定を読み込んで、プロジェクト設定を統合・表示
-node scripts/setup-demo-recording.js
+npm run record:demo
+# 出力: screenshots/demo_animation.gif
 ```
 
----
-
-## 🎥 グローバルデモレコーディング設定
-
-複数プロジェクト間で統一されたスクリーンレコーディング設定をグローバルに管理しています。
-
-### 📍 設定ファイルの場所
-- **グローバル設定**: `~/.copilot/global-config/demo-recording.json`
-- **ツール**: `~/.copilot/global-config/demo-recording-tool.js`
-- **プロジェクト統合**: `scripts/setup-demo-recording.js`
-
-### 🔧 グローバル設定の内容
-
-```json
-{
-  "screenRecording": {
-    "showMouseCursor": true,        // マウスカーソルを可視化
-    "showClickIndicator": true,      // クリック位置を可視化
-    "clickRadius": 20,               // クリック検出半径
-    "clickDuration": 200,            // クリック表示時間（ms）
-    "cursorColor": "#FF0000",        // カーソル色（赤）
-    "cursorSize": 12,                // カーソルサイズ（px）
-    "clickIndicatorColor": "#FF4444",// クリック表示色
-    "clickRippleRadius": 30,         // クリックリップル半径（px）
-    "frameRate": 30,                 // フレームレート（fps）
-    "quality": "high",               // 品質
-    "format": "gif"                  // 出力形式
-  }
-}
-```
-
-### ✨ マウス・クリック可視化の特徴
-
-| 機能 | 説明 |
-|------|------|
-| **マウスカーソル表示** | 赤色の12px円形カーソルがマウスに追従 |
-| **クリック位置表示** | クリック時に赤色のリップルエフェクト（30px半径）が200ms表示 |
-| **複数プロジェクト対応** | 他のプロジェクト（`contact-form` など）でも同じ設定が適用 |
-| **永続化** | `~/.copilot/global-config/` に保存され、セッション間で維持 |
-
-### 🎬 デモ用スクリーンレコーディングの生成例
-
-```bash
-# グローバル設定を確認
-node ~/.copilot/global-config/demo-recording-tool.js
-
-# プロジェクト固有の統合設定を確認
-npm run setup:demo
-```
+**このコマンドの詳細:**
+1. Playwright でブラウザを起動し、カーソル追従・クリック波紋エフェクト用のスクリプトを注入
+2. `dist/index.html` にナビゲート
+3. デモシーケンスを滑らかなマウス軌跡で自動操作し、動画 (.webm) として録画
+4. `ffmpeg` を呼び出し、録画した動画を高品質な GIF に変換
+5. 完成した GIF を `screenshots/demo_animation.gif` に保存
 
 ---
 
