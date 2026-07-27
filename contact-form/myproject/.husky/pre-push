@@ -1,0 +1,64 @@
+#!/bin/sh
+
+# pre-push hook
+
+has_todo_changes=false
+
+# Read refs from stdin (standard pre-push hook input)
+while read local_ref local_sha remote_ref remote_sha
+do
+  if [ -z "$local_sha" ] || [ -z "$remote_sha" ]; then
+    continue
+  fi
+
+  if [ "$local_sha" = "0000000000000000000000000000000000000000" ]; then
+    # Deleted branch
+    continue
+  fi
+
+  if [ "$remote_sha" = "0000000000000000000000000000000000000000" ]; then
+    # New branch, check all commits on this branch
+    range="$local_sha"
+  else
+    range="$remote_sha..$local_sha"
+  fi
+
+  if git diff --name-only "$range" | grep -q "^todo-app2/"; then
+    has_todo_changes=true
+    break
+  fi
+done
+
+# If stdin was empty, fallback to checking diff between local HEAD and upstream
+if [ "$has_todo_changes" = false ]; then
+  upstream=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null)
+  if [ -n "$upstream" ]; then
+    if git diff --name-only "$upstream..HEAD" | grep -q "^todo-app2/"; then
+      has_todo_changes=true
+    fi
+  else
+    # No upstream, check if there are any commits modifying todo-app2
+    if git log HEAD --oneline -- todo-app2/ -n 1 >/dev/null 2>&1; then
+      has_todo_changes=true
+    fi
+  fi
+fi
+
+if [ "$has_todo_changes" = true ]; then
+  echo "--- Detected changes in todo-app2/ ---"
+  echo "Running 'npm run ci:check' in todo-app2..."
+  
+  REPO_ROOT=$(git rev-parse --show-toplevel)
+  
+  cd "$REPO_ROOT/todo-app2" || exit 1
+  npm run ci:check
+  
+  status=$?
+  if [ $status -ne 0 ]; then
+    echo "❌ Error: 'npm run ci:check' failed in todo-app2. Push aborted."
+    exit $status
+  fi
+  echo "✅ 'npm run ci:check' passed in todo-app2."
+fi
+
+exit 0
