@@ -1,5 +1,5 @@
-import { isValidTodo } from '../models/todo.js';
 import { STORAGE_KEY } from '../constants.js';
+import { isValidTodo } from '../models/todo.js';
 
 /**
  * ToDoリストを localStorage に保存する

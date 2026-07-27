@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { fireEvent } from '@testing-library/dom';
-import { initDetailView, openDetailModal, closeDetailModal } from '../../src/ui/detailView.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as editorAdapter from '../../src/editor/richEditorAdapter.js';
+import { closeDetailModal, initDetailView, openDetailModal } from '../../src/ui/detailView.js';
 
 // Quill アダプターのモック化
 vi.mock('../../src/editor/richEditorAdapter.js', () => {

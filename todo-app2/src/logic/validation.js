@@ -1,4 +1,4 @@
-import { MAX_TITLE_LENGTH, MAX_DETAIL_LENGTH } from '../constants.js';
+import { MAX_DETAIL_LENGTH, MAX_TITLE_LENGTH } from '../constants.js';
 
 /**
  * タイトル文字数検証（1〜100文字、トリム後）

@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { createTodo, updateTodo, isValidTodo } from '../../../src/models/todo.js';
+import { describe, expect, it } from 'vitest';
+import { createTodo, isValidTodo, updateTodo } from '../../../src/models/todo.js';
 
 describe('ToDoモデル (todo.js)', () => {
   describe('createTodo', () => {

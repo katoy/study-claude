@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { saveTodos, loadTodos } from '../../../src/storage/todoRepository.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { loadTodos, saveTodos } from '../../../src/storage/todoRepository.js';
 
 // isValidTodoをモック化または本物を使用
 // テストコードの実行時点では本物の isValidTodo が常に false を返すため、

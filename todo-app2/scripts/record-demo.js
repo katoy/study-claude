@@ -1,7 +1,7 @@
-import { chromium } from 'playwright';
 import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import { chromium } from 'playwright';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -10,7 +10,7 @@ const rootDir = path.resolve(__dirname, '..');
 
 // Helper to inject a visual mouse cursor and click ripple effect
 async function injectCursor(page) {
-  page.on('console', msg => {
+  page.on('console', (msg) => {
     console.log(`[BROWSER CONSOLE] ${msg.type()}: ${msg.text()}`);
   });
 
@@ -46,7 +46,7 @@ async function injectCursor(page) {
           left: '-100px', // Off-screen initially
           top: '-100px',
           boxShadow: '0 0 6px rgba(0,0,0,0.5)',
-          transition: 'background-color 0.1s, transform 0.1s'
+          transition: 'background-color 0.1s, transform 0.1s',
         });
         parent.appendChild(cursor);
         console.log(`Appended cursor to: ${parent.tagName}`);
@@ -65,63 +65,79 @@ async function injectCursor(page) {
     }
 
     // Track mouse movement
-    window.addEventListener('mousemove', (e) => {
-      createCursor(); // Ensure cursor exists and is attached to the correct parent
-      if (cursor) {
-        cursor.style.left = `${e.clientX}px`;
-        cursor.style.top = `${e.clientY}px`;
-      }
-    }, true);
+    window.addEventListener(
+      'mousemove',
+      (e) => {
+        createCursor(); // Ensure cursor exists and is attached to the correct parent
+        if (cursor) {
+          cursor.style.left = `${e.clientX}px`;
+          cursor.style.top = `${e.clientY}px`;
+        }
+      },
+      true
+    );
 
     // Mouse down animation
-    window.addEventListener('mousedown', () => {
-      createCursor();
-      if (cursor) {
-        cursor.style.transform = 'translate(-50%, -50%) scale(0.75)';
-        cursor.style.backgroundColor = 'rgba(255, 0, 0, 1)';
-      }
-    }, true);
+    window.addEventListener(
+      'mousedown',
+      () => {
+        createCursor();
+        if (cursor) {
+          cursor.style.transform = 'translate(-50%, -50%) scale(0.75)';
+          cursor.style.backgroundColor = 'rgba(255, 0, 0, 1)';
+        }
+      },
+      true
+    );
 
     // Mouse up animation
-    window.addEventListener('mouseup', () => {
-      createCursor();
-      if (cursor) {
-        cursor.style.transform = 'translate(-50%, -50%) scale(1)';
-        cursor.style.backgroundColor = 'rgba(255, 50, 50, 0.9)';
-      }
-    }, true);
+    window.addEventListener(
+      'mouseup',
+      () => {
+        createCursor();
+        if (cursor) {
+          cursor.style.transform = 'translate(-50%, -50%) scale(1)';
+          cursor.style.backgroundColor = 'rgba(255, 50, 50, 0.9)';
+        }
+      },
+      true
+    );
 
     // Click ripple effect
-    window.addEventListener('click', (e) => {
-      console.log(`Click registered at clientX=${e.clientX}, clientY=${e.clientY}`);
-      const ripple = document.createElement('div');
-      Object.assign(ripple.style, {
-        position: 'fixed',
-        width: '40px',
-        height: '40px',
-        border: '3px solid rgba(255, 50, 50, 0.7)',
-        borderRadius: '50%',
-        pointerEvents: 'none',
-        zIndex: '999998',
-        left: `${e.clientX}px`,
-        top: `${e.clientY}px`,
-        transform: 'translate(-50%, -50%) scale(0.1)',
-        opacity: '1',
-        transition: 'transform 0.4s cubic-bezier(0.1, 0.8, 0.3, 1), opacity 0.4s ease-out'
-      });
-      
-      const parent = getCursorParent();
-      parent.appendChild(ripple);
+    window.addEventListener(
+      'click',
+      (e) => {
+        console.log(`Click registered at clientX=${e.clientX}, clientY=${e.clientY}`);
+        const ripple = document.createElement('div');
+        Object.assign(ripple.style, {
+          position: 'fixed',
+          width: '40px',
+          height: '40px',
+          border: '3px solid rgba(255, 50, 50, 0.7)',
+          borderRadius: '50%',
+          pointerEvents: 'none',
+          zIndex: '999998',
+          left: `${e.clientX}px`,
+          top: `${e.clientY}px`,
+          transform: 'translate(-50%, -50%) scale(0.1)',
+          opacity: '1',
+          transition: 'transform 0.4s cubic-bezier(0.1, 0.8, 0.3, 1), opacity 0.4s ease-out',
+        });
 
-      // Trigger ripple scaling animation
-      setTimeout(() => {
-        ripple.style.transform = 'translate(-50%, -50%) scale(1)';
-        ripple.style.opacity = '0';
-      }, 10);
+        const parent = getCursorParent();
+        parent.appendChild(ripple);
 
-      // Cleanup ripple DOM element
-      setTimeout(() => ripple.remove(), 500);
-    }, true);
+        // Trigger ripple scaling animation
+        setTimeout(() => {
+          ripple.style.transform = 'translate(-50%, -50%) scale(1)';
+          ripple.style.opacity = '0';
+        }, 10);
+
+        // Cleanup ripple DOM element
+        setTimeout(() => ripple.remove(), 500);
+      },
+      true
+    );
   });
 }
 
@@ -190,17 +206,17 @@ async function main() {
     viewport: { width: 1024, height: 768 },
     recordVideo: {
       dir: videoDir,
-      size: { width: 1024, height: 768 }
-    }
+      size: { width: 1024, height: 768 },
+    },
   });
 
   const page = await context.newPage();
-  
+
   // Inject the fake cursor styles and logic
   await injectCursor(page);
 
   const fileUrl = `file://${path.join(rootDir, 'dist', 'index.html')}`;
-  
+
   console.log(`🔗 Navigating to: ${fileUrl}`);
   await page.goto(fileUrl);
   await page.waitForTimeout(1500);
@@ -222,7 +238,7 @@ async function main() {
   console.log('📅 Selecting date option...');
   await smoothClick(page, '#due-date');
   await page.waitForTimeout(500);
-  
+
   // Click on the invisible date picker to trigger the calendar popup
   console.log('📅 Clicking date picker to open calendar UI...');
   await smoothClick(page, '#due-date-picker');
@@ -251,7 +267,10 @@ async function main() {
   // Fill in rich text editor details (Quill editor wrapper)
   console.log('✍️ Writing description in rich text editor...');
   await smoothClick(page, '.ql-editor');
-  await page.fill('.ql-editor', '完了定義に沿って、APIエンドポイントと認証周りのセキュリティ設計をレビューする。');
+  await page.fill(
+    '.ql-editor',
+    '完了定義に沿って、APIエンドポイントと認証周りのセキュリティ設計をレビューする。'
+  );
   await page.waitForTimeout(1000);
 
   console.log('💾 Saving Todo...');
@@ -279,8 +298,8 @@ async function main() {
 
   // Find the generated webm file
   const files = fs.readdirSync(videoDir);
-  const webmFile = files.find(f => f.endsWith('.webm'));
-  
+  const webmFile = files.find((f) => f.endsWith('.webm'));
+
   if (!webmFile) {
     throw new Error('No webm video file was generated.');
   }
@@ -305,7 +324,7 @@ async function main() {
   console.log(`\n🎉 Success! GIF generated at: ${gifPath}`);
 }
 
-main().catch(err => {
+main().catch((err) => {
   console.error('❌ Error recording demo:', err);
   process.exit(1);
 });

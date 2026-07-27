@@ -221,6 +221,10 @@ jobs:
         working-directory: todo-app2
         run: npm run format
 
+      - name: Run Biome Check
+        working-directory: todo-app2
+        run: npm run biome:check
+
       - name: Run Tests with 100% Coverage Check
         working-directory: todo-app2
         run: npm run test:coverage

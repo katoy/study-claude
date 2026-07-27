@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { sanitizeHtml } from '../../../src/sanitize/sanitizeHtml.js';
 
 describe('サニタイズロジック (sanitizeHtml.js)', () => {

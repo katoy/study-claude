@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { getByText, queryByText, fireEvent } from '@testing-library/dom';
+import { fireEvent, getByText, queryByText } from '@testing-library/dom';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { initMainView, renderMainView } from '../../src/ui/mainView.js';
 
 // sections分類やsortロジックをテスト用にスタブ化/インポート

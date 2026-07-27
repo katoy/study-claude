@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
   convertToUtcForDate,
   convertToUtcForDateTime,
-  formatDue,
   daysBetween,
+  formatDue,
 } from '../../../src/date/dateFormat.js';
 
 describe('日付・時刻フォーマット・変換 (dateFormat.js)', () => {

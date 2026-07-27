@@ -1,4 +1,4 @@
-import { defineConfig, configDefaults } from 'vitest/config';
+import { configDefaults, defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
@@ -16,10 +16,7 @@ export default defineConfig({
         lines: 100,
       },
       include: ['src/**/*.js'],
-      exclude: [
-        'src/main.js',
-        'src/editor/richEditorAdapter.js'
-      ],
+      exclude: ['src/main.js', 'src/editor/richEditorAdapter.js'],
     },
   },
 });

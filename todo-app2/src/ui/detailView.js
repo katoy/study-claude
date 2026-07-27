@@ -1,14 +1,14 @@
-import { getCleanDetailText, isValidTitle, isValidDetail } from '../logic/validation.js';
+import { MAX_DETAIL_LENGTH, MAX_TITLE_LENGTH } from '../constants.js';
 import { convertToUtcForDate, convertToUtcForDateTime } from '../date/dateFormat.js';
-import { initCharCounter } from './charCounter.js';
-import { MAX_TITLE_LENGTH, MAX_DETAIL_LENGTH } from '../constants.js';
 import {
-  initEditor,
   getEditorHTML,
-  setEditorHTML,
   getEditorText,
+  initEditor,
   onChange as onEditorChange,
+  setEditorHTML,
 } from '../editor/richEditorAdapter.js';
+import { getCleanDetailText, isValidDetail, isValidTitle } from '../logic/validation.js';
+import { initCharCounter } from './charCounter.js';
 
 let dialogEl = null;
 let callbacksObj = null;

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('ToDoアプリ VRT テスト', () => {
   test.beforeEach(async ({ page }) => {

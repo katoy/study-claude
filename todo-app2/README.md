@@ -76,7 +76,7 @@ npm run record:demo
 - **Rich Editor**: Quill v2 (Snow theme / Custom Dark customized)
 - **Build Tool**: Vite + `vite-plugin-singlefile`
 - **Testing**: Vitest + jsdom + `@testing-library/dom`
-- **Linter / Formatter**: ESLint v9 (Flat Config) + Prettier
+- **Linter / Formatter**: ESLint v9 (Flat Config) + Prettier + Biome
 
 ---
 
@@ -117,10 +117,18 @@ npm run test:vrt:update   # 基準スクリーンショット画像を生成・�
 
 ### 静的解析とコード整形
 ```bash
-npm run lint      # Linterを実行
-npm run lint:fix  # Linterによる自動修正
-npm run format    # Prettierによるフォーマットチェック
-npm run format:fix# Prettierによる自動整形
+npm run lint            # Linterを実行 (ESLint)
+npm run lint:fix        # Linterによる自動修正
+npm run format          # Prettierによるフォーマットチェック
+npm run format:fix      # Prettierによる自動整形
+npm run biome:check     # Biomeによる静的解析 & フォーマットチェック
+npm run biome:check:fix # Biomeによる自動修正
+```
+
+### ローカルでの CI/CD 同等チェックの一括実行
+CIで実行されるすべての検証ステップ（ESLint、Prettier、Biome、テスト、カバレッジ、ビルド、VRTテスト）をローカルで一括実行します。
+```bash
+npm run ci:check
 ```
 
 ### デモ GIF の生成

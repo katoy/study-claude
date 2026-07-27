@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { isValidTitle, isValidDetail, getCleanDetailText } from '../../../src/logic/validation.js';
+import { describe, expect, it } from 'vitest';
+import { getCleanDetailText, isValidDetail, isValidTitle } from '../../../src/logic/validation.js';
 
 describe('バリデーションロジック (validation.js)', () => {
   describe('UT-VAL-001: タイトル文字数検証', () => {

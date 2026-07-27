@@ -1,11 +1,11 @@
+import { sortTodos } from './logic/sort.js';
 import { createTodo, updateTodo } from './models/todo.js';
 import { loadTodos, saveTodos } from './storage/todoRepository.js';
-import { initMainView, renderMainView } from './ui/mainView.js';
 import { initDetailView, openDetailModal } from './ui/detailView.js';
-import { sortTodos } from './logic/sort.js';
+import { initMainView, renderMainView } from './ui/mainView.js';
 
 // グローバル状態
-let appState = {
+const appState = {
   todos: [],
   activeTab: 'all',
 };

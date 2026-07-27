@@ -15,6 +15,9 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --check \"src/**/*.js\" \"tests/**/*.js\"",
     "format:fix": "prettier --write \"src/**/*.js\" \"tests/**/*.js\"",
+    "biome:check": "biome check",
+    "biome:check:fix": "biome check --write",
+    "ci:check": "npm run lint && npm run format && npm run biome:check && npm run test:coverage && npm run build && npm run test:vrt",
     "record:demo": "node scripts/record-demo.js"
   },
   "dependencies": {
@@ -23,6 +26,7 @@
     "quill": "^2.0.3"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.5.5",
     "@eslint/js": "^9.8.0",
     "@playwright/test": "^1.61.1",
     "@testing-library/dom": "^9.3.4",

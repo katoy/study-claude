@@ -47,7 +47,15 @@ todo-app2/
 
 ## コマンド一覧
 
-詳細は `package.json` の `scripts` セクションを参照。主要コマンド：`npm run dev`（開発）、`npm run build`（ビルド）、`npm test`（テスト）、`npm run lint` / `npm run format`（チェック）、`npm run test:coverage`（カバレッジ 100% 検証）。
+詳細は `package.json` の `scripts` セクションを参照。主要コマンド：
+- `npm run dev`：開発サーバー起動（HMR有効）
+- `npm run build`：ビルド実行、`dist/index.html` を生成
+- `npm test`：Vitest 単発実行
+- `npm run test:coverage`：カバレッジ計測実行（100%未満でCI失敗）
+- `npm run lint` / `npm run format`：ESLint / Prettier チェック
+- `npm run biome:check` / `npm run biome:check:fix`：Biome チェック / 自動修正
+- `npm run ci:check`：ローカルでCI/CDと同じ検証ステップを一括実行
+- `npm run test:vrt`：PlaywrightによるVRT（視覚的リグレッション）テストの実行
 
 ---
 
@@ -376,9 +384,11 @@ try {
 - [ ] **日時ロジック変更時は JST 日跨ぎ境界のテストを追加**
   - `vi.setSystemTime()` で複数の代表時刻を固定してテスト
   
-- [ ] **コミット前に `npm run lint && npm run test:coverage` を実行**
-  - Lint エラー/警告 0件
+- [ ] **コミット前に `npm run lint && npm run test:coverage` または `npm run ci:check` を実行**
+  - ESLint / Prettier エラー/警告 0件
+  - Biome エラー 0件
   - カバレッジ 100%（src/ 自作コード対象）
+  - ローカルでのビルドおよびVRTテストのパス
 
 ### Ask first（事前に質問すること）
 

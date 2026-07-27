@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { initCharCounter } from '../../../src/ui/charCounter.js';
 
 describe('charCounter (initCharCounter)', () => {

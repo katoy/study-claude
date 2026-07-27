@@ -1,5 +1,5 @@
-import { buildSections } from '../logic/sections.js';
 import { formatDue } from '../date/dateFormat.js';
+import { buildSections } from '../logic/sections.js';
 import { sanitizeHtml } from '../sanitize/sanitizeHtml.js';
 
 let currentTodos = [];
