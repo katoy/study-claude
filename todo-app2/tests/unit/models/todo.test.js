@@ -330,6 +330,20 @@ describe('ToDoモデル (todo.js)', () => {
           updatedAt: '2026-07-24T10:00:00.000Z',
         })
       ).toBe(false);
+
+      // detailHtml が 2000 文字を超える
+      expect(
+        isValidTodo({
+          id: '550e8400-e29b-41d4-a716-446655440000',
+          title: 'A',
+          detailHtml: 'a'.repeat(2001),
+          dueType: 'none',
+          dueAt: null,
+          completed: false,
+          createdAt: '2026-07-24T10:00:00.000Z',
+          updatedAt: '2026-07-24T10:00:00.000Z',
+        })
+      ).toBe(false);
     });
   });
 });

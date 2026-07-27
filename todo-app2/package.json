@@ -2,6 +2,9 @@
   "name": "todo-app2",
   "version": "1.0.0",
   "type": "module",
+  "engines": {
+    "node": "^20.19 || >=22.12"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -9,12 +12,12 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:vrt": "playwright test",
+    "test:vrt": "npm run build && playwright test",
     "test:vrt:update": "playwright test --update-snapshots",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier --check \"src/**/*.js\" \"tests/**/*.js\"",
-    "format:fix": "prettier --write \"src/**/*.js\" \"tests/**/*.js\"",
+    "format": "prettier --check \"src/**/*.js\" \"src/**/*.html\" \"src/**/*.css\" \"tests/**/*.js\" \"*.config.js\"",
+    "format:fix": "prettier --write \"src/**/*.js\" \"src/**/*.html\" \"src/**/*.css\" \"tests/**/*.js\" \"*.config.js\"",
     "biome:check": "biome check",
     "biome:check:fix": "biome check --write",
     "ci:check": "npm run lint && npm run format && npm run biome:check && npm run test:coverage && npm run build && npm run test:vrt",
@@ -22,11 +25,11 @@
   },
   "dependencies": {
     "dompurify": "^3.0.9",
-    "esbuild": "^0.28.1",
     "quill": "^2.0.3"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.5",
+    "esbuild": "^0.28.1",
     "@eslint/js": "^9.8.0",
     "@playwright/test": "^1.61.1",
     "@testing-library/dom": "^9.3.4",

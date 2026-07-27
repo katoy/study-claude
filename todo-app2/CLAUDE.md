@@ -208,9 +208,11 @@ describe('JST 日付判定', () => {
 
 ### カバレッジ 100% の目標
 
-- **対象**：`src/` 配下の自作コード（純粋関数・UI操作）
+- **対象**：`src/` 配下の自作コード（純粋関数・UI操作）のうち、以下を除外：
+  - `src/main.js` — アプリケーション起動時のイベントリスナー登録およびコールバック配線層。純粋ロジック（`createOrUpdateTodoFromFormData`）は `src/models/` へ切り出し済みであり、残部は結合テスト（`tests/integration/`）でカバーされます
+  - `src/editor/richEditorAdapter.js` — Quill ラッパー。jsdom との互換性が限定的なため、ユニットテスト時はフェイク実装で差し替え、VRT で実エディタの動作を検証
 - **除外**：`node_modules/`（Quill, DOMPurify 等ベンダーライブラリ）
-- **計測**：`npm run test:coverage` で statements/branches/functions/lines の4指標が 100%
+- **計測**：`npm run test:coverage` で statements/branches/functions/lines の4指標が 100%（除外対象を除く）
 - **強制**：GitHub Actions で 100% 未満の場合はビルド失敗
 
 ### Quill のテスト
@@ -307,15 +309,18 @@ npm run build
 npm run preview
 ```
 
-### GitHub Actions（リポジトリルートの `.github/workflows/todo-app2-ci.yml` および `pages-deploy.yml`）
+### GitHub Actions（リポジトリルートの `.github/workflows/all-projects-ci.yml`）
 
-**`todo-app2` への push / PR 時（CI）**：
+**`todo-app2` への push / PR 時（`todo-app2-ci` job）**：
 1. `npm run lint` — ESLint（0件エラー必須）
 2. `npm run format` — Prettier（フォーマット確認）
-3. `npm run test:coverage` — Vitest（カバレッジ 100% 必須）
+3. `npm run biome:check` — Biome（チェック必須）
+4. `npm run test:coverage` — Vitest（カバレッジ 100% 必須）
+5. `npm run build` — ビルド検証（`dist/index.html` 生成確認）
+6. `npm run test:vrt` — PlaywrightによるVRTテスト実行
 
-**`main` ブランチへのマージ時（CD）**：
-- `pages-deploy.yml` が走り、`todo-app2` を自動ビルドした上で GitHub Pages へデプロイ
+**`main` ブランチへのマージ時（`deploy` job）**：
+- GitHub Pages へ自動デプロイ
 - Pages 上の公開 URL (`https://katoy.github.io/study-claude/todo-app2/`) でアプリにアクセス可能
 
 ### ビルド成果物の管理

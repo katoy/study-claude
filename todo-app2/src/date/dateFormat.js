@@ -22,6 +22,29 @@ export function convertToUtcForDateTime(jstDateTimeStr) {
 }
 
 /**
+ * UTC ISO 文字列から JST の構成要素を抽出
+ * @param {string} utcStr UTC ISO文字列
+ * @returns {object} { yyyy, mm, dd, hh, mi, weekday }
+ */
+export function toJstParts(utcStr) {
+  const d = new Date(utcStr);
+  if (Number.isNaN(d.getTime())) {
+    return null;
+  }
+
+  const jstTime = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+  const yyyy = jstTime.getUTCFullYear();
+  const mm = String(jstTime.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(jstTime.getUTCDate()).padStart(2, '0');
+  const hh = String(jstTime.getUTCHours()).padStart(2, '0');
+  const mi = String(jstTime.getUTCMinutes()).padStart(2, '0');
+  const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+  const weekday = weekdays[jstTime.getUTCDay()];
+
+  return { yyyy, mm, dd, hh, mi, weekday };
+}
+
+/**
  * 期限を曜日を含む形式でフォーマットする
  * @param {string} dueType 'none' | 'date' | 'datetime'
  * @param {string|null} dueAt UTC ISO文字列
@@ -32,25 +55,17 @@ export function formatDue(dueType, dueAt) {
     return '—';
   }
 
-  const d = new Date(dueAt);
-  if (Number.isNaN(d.getTime())) {
+  const parts = toJstParts(dueAt);
+  if (!parts) {
     return '—';
   }
 
-  // JST (+9時間) に変換
-  const jstTime = new Date(d.getTime() + 9 * 60 * 60 * 1000);
-  const yyyy = jstTime.getUTCFullYear();
-  const mm = String(jstTime.getUTCMonth() + 1).padStart(2, '0');
-  const dd = String(jstTime.getUTCDate()).padStart(2, '0');
-  const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
-  const w = weekdays[jstTime.getUTCDay()];
+  const { yyyy, mm, dd, hh, mi, weekday } = parts;
 
   if (dueType === 'date') {
-    return `${yyyy}-${mm}-${dd} (${w})`;
+    return `${yyyy}-${mm}-${dd} (${weekday})`;
   } else if (dueType === 'datetime') {
-    const hh = String(jstTime.getUTCHours()).padStart(2, '0');
-    const mi = String(jstTime.getUTCMinutes()).padStart(2, '0');
-    return `${yyyy}-${mm}-${dd} (${w}) ${hh}:${mi}`;
+    return `${yyyy}-${mm}-${dd} (${weekday}) ${hh}:${mi}`;
   }
 
   return '—';

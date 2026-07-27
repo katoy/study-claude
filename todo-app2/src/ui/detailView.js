@@ -1,5 +1,5 @@
 import { MAX_DETAIL_LENGTH, MAX_TITLE_LENGTH } from '../constants.js';
-import { convertToUtcForDate, convertToUtcForDateTime } from '../date/dateFormat.js';
+import { convertToUtcForDate, convertToUtcForDateTime, toJstParts } from '../date/dateFormat.js';
 import {
   getEditorHTML,
   getEditorText,
@@ -19,12 +19,8 @@ let callbacksObj = null;
  * @returns {string} YYYY-MM-DD 形式
  */
 function formatUtcToDateString(utcString) {
-  const d = new Date(utcString);
-  const jstTime = new Date(d.getTime() + 9 * 60 * 60 * 1000);
-  const yyyy = jstTime.getUTCFullYear();
-  const mm = String(jstTime.getUTCMonth() + 1).padStart(2, '0');
-  const dd = String(jstTime.getUTCDate()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd}`;
+  const parts = toJstParts(utcString);
+  return parts ? `${parts.yyyy}-${parts.mm}-${parts.dd}` : '';
 }
 
 /**
@@ -33,16 +29,13 @@ function formatUtcToDateString(utcString) {
  * @returns {object} { datetime, display }
  */
 function formatUtcToDateTimeStrings(utcString) {
-  const d = new Date(utcString);
-  const jstTime = new Date(d.getTime() + 9 * 60 * 60 * 1000);
-  const yyyy = jstTime.getUTCFullYear();
-  const mm = String(jstTime.getUTCMonth() + 1).padStart(2, '0');
-  const dd = String(jstTime.getUTCDate()).padStart(2, '0');
-  const hh = String(jstTime.getUTCHours()).padStart(2, '0');
-  const mi = String(jstTime.getUTCMinutes()).padStart(2, '0');
+  const parts = toJstParts(utcString);
+  if (!parts) {
+    return { datetime: '', display: '' };
+  }
   return {
-    datetime: `${yyyy}-${mm}-${dd}T${hh}:${mi}`,
-    display: `${yyyy}-${mm}-${dd} ${hh}:${mi}`,
+    datetime: `${parts.yyyy}-${parts.mm}-${parts.dd}T${parts.hh}:${parts.mi}`,
+    display: `${parts.yyyy}-${parts.mm}-${parts.dd} ${parts.hh}:${parts.mi}`,
   };
 }
 
@@ -189,25 +182,6 @@ export function initDetailView(dialogElement, callbacks) {
     updateSaveButtonState();
   });
 
-  // タイトル入力の最大文字数制限
-  titleInput.addEventListener('keydown', (e) => {
-    const allowedKeys = [
-      'Backspace',
-      'Tab',
-      'Delete',
-      'ArrowLeft',
-      'ArrowRight',
-      'ArrowUp',
-      'ArrowDown',
-      'Enter',
-    ];
-    if (allowedKeys.includes(e.key)) return;
-
-    if (titleInput.value.length >= MAX_TITLE_LENGTH) {
-      e.preventDefault();
-    }
-  });
-
   // エディタ変更時にカウンター更新
   onEditorChange(() => {
     const cleanText = getCleanDetailText(getEditorText());
@@ -247,7 +221,6 @@ export function initDetailView(dialogElement, callbacks) {
   // 日時指定ラジオボタン変更
   [radioNone, radioDate, radioDatetime].forEach((radio) => {
     radio.addEventListener('change', updateDueTypeUI);
-    radio.addEventListener('click', updateDueTypeUI);
   });
 
   // 保存ボタンクリック
@@ -326,6 +299,7 @@ export function openDetailModal(todo = null) {
  */
 export function closeDetailModal() {
   if (dialogEl) {
+    dialogEl.removeAttribute('data-editing-id');
     dialogEl.close();
   }
 }

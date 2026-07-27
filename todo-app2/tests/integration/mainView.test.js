@@ -218,5 +218,40 @@ describe('メイン画面 UI 統合テスト (mainView.js)', () => {
       // 再初期化してテストを元の状態に配線し直す
       initMainView(container, callbacks);
     });
+
+    it('特殊文字を含むタイトルが正しくエスケープされて描画されること', () => {
+      const todos = [
+        {
+          id: '1',
+          title: '<script>alert("xss")</script>',
+          dueType: 'none',
+          dueAt: null,
+          completed: false,
+        },
+      ];
+      renderMainView(todos, 'all');
+
+      const listContainer = container.querySelector('#todo-list-container');
+      expect(listContainer.innerHTML).not.toContain('<script>');
+      expect(listContainer.innerHTML).toContain('&lt;script&gt;');
+    });
+
+    it('タイトルに &, <, > を含む場合にエスケープされること', () => {
+      const todos = [
+        {
+          id: '2',
+          title: 'A & B <test>',
+          dueType: 'none',
+          dueAt: null,
+          completed: false,
+        },
+      ];
+      renderMainView(todos, 'all');
+
+      const listContainer = container.querySelector('#todo-list-container');
+      expect(listContainer.innerHTML).toContain('&amp;');
+      expect(listContainer.innerHTML).toContain('&lt;');
+      expect(listContainer.innerHTML).toContain('&gt;');
+    });
   });
 });

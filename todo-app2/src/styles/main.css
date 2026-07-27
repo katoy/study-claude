@@ -1,4 +1,4 @@
-@import "quill/dist/quill.snow.css";
+@import 'quill/dist/quill.snow.css';
 
 :root {
   --bg-color: #0b0c10;
@@ -12,8 +12,7 @@
   --accent-pink: #ff007f;
   --danger-color: #ff4d4d;
   --success-color: #2ec4b6;
-  --font-family:
-    "Outfit", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 * {
@@ -240,6 +239,11 @@ h1 {
   transition: color 0.2s ease;
 }
 
+.todo-title.is-completed {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}
+
 .todo-item:hover .todo-title {
   color: var(--accent-blue);
 }
@@ -354,7 +358,7 @@ form {
   color: var(--text-secondary);
 }
 
-.due-radio-label input[type="radio"] {
+.due-radio-label input[type='radio'] {
   accent-color: var(--accent-cyan);
 }
 
@@ -368,7 +372,7 @@ form {
   width: 100%;
 }
 
-.custom-picker-wrapper input[type="text"] {
+.custom-picker-wrapper input[type='text'] {
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
@@ -383,7 +387,7 @@ form {
 
 /* カレンダーアイコンを重ねる */
 .custom-picker-wrapper::after {
-  content: "📅";
+  content: '📅';
   position: absolute;
   right: 16px;
   top: 50%;

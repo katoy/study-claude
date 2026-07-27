@@ -1,5 +1,6 @@
 import { formatDue } from '../date/dateFormat.js';
 import { buildSections } from '../logic/sections.js';
+import { escapeHtml } from '../sanitize/escapeHtml.js';
 import { sanitizeHtml } from '../sanitize/sanitizeHtml.js';
 
 let currentTodos = [];
@@ -109,23 +110,14 @@ export function renderMainView(todos, activeTab = 'all') {
       html += `<ul class="todo-list">`;
 
       for (const todo of sec.items) {
-        const titleStyle = todo.completed
-          ? 'style="text-decoration: line-through; color: gray;"'
-          : '';
+        const completedClass = todo.completed ? 'is-completed' : '';
         const btnText = todo.completed ? '未完了' : '完了';
         const formattedDate = formatDue(todo.dueType, todo.dueAt);
-
-        // セキュリティのためタイトルをHTMLエスケープ
-        const escapedTitle = (todo.title || '')
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;')
-          .replace(/"/g, '&quot;')
-          .replace(/'/g, '&#039;');
+        const escapedTitle = escapeHtml(todo.title);
 
         html += `
           <li class="todo-item" data-id="${todo.id}">
-            <span class="todo-title" data-edit-id="${todo.id}" ${titleStyle}>${escapedTitle}</span>
+            <span class="todo-title ${completedClass}" data-edit-id="${todo.id}">${escapedTitle}</span>
             <span class="todo-due">${formattedDate}</span>
             <button class="btn-toggle-complete" data-toggle-id="${todo.id}">${btnText}</button>
           </li>

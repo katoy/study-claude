@@ -4,7 +4,7 @@
 
 🚀 **デプロイ先 (GitHub Pages):** [https://katoy.github.io/study-claude/todo-app2/](https://katoy.github.io/study-claude/todo-app2/)
 
-[![ToDo App 2 CI](https://github.com/katoy/study-claude/actions/workflows/todo-app2-ci.yml/badge.svg)](https://github.com/katoy/study-claude/actions/workflows/todo-app2-ci.yml)
+[![ToDo App 2 CI](https://github.com/katoy/study-claude/actions/workflows/all-projects-ci.yml/badge.svg?query=branch%3Amain)](https://github.com/katoy/study-claude/actions/workflows/all-projects-ci.yml)
 
 ---
 
@@ -132,10 +132,10 @@ npm run ci:check
 ```
 
 ### Git プッシュ前の自動検証（Git Hooks）
-本プロジェクトでは、`git push` を行う際に、自動で `todo-app2/` 配下の変更を検知して `npm run ci:check` を走らせる仕組み（Huskyによる `pre-push` フック）を設定しています。
+リポジトリルートの `.husky/pre-push` により、`git push` 時に `todo-app2/` 配下の変更を自動検知して `npm run ci:check` を実行します。
 - **対象**: `git push` 対象コミットに `todo-app2/` 内の変更が含まれる場合のみ自動実行されます（変更がない場合は素早くスキップされます）。
-- **目的**: Linter、コード整形、カバレッジ100%、VRT、ビルド等すべての検証ステップに合格したコードのみをリモートへ安全にプッシュすることを強制します。
-- **失敗時**: 1件でも不合格があった場合は、`git push` が自動的にキャンセル（アボート）されます。
+- **目的**: ESLint、Prettier、Biome、テスト（100% カバレッジ）、VRT 含むすべての検証に合格したコードのみをリモートへプッシュすることを強制します。
+- **失敗時**: 1 件でも不合格があった場合は、`git push` が自動的にキャンセル（アボート）されます。
 
 
 ### デモ GIF の生成

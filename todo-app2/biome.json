@@ -9,10 +9,7 @@
     "includes": ["**"]
   },
   "formatter": {
-    "enabled": true,
-    "indentStyle": "space",
-    "indentWidth": 2,
-    "lineWidth": 100
+    "enabled": false
   },
   "linter": {
     "enabled": true,

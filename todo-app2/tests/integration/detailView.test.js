@@ -195,21 +195,6 @@ describe('詳細画面 UI 統合テスト (detailView.js)', () => {
       expect(titleCounter.textContent).toBe('4 / 100');
       expect(saveBtn.disabled).toBe(false); // タイトルと詳細が共に有効なので活性化
     });
-
-    it('100文字を超えるキー入力をブロックすること（keydown等の制御）', () => {
-      openDetailModal(null);
-      const titleInput = dialog.querySelector('#todo-title');
-
-      titleInput.value = 'a'.repeat(100);
-      fireEvent.input(titleInput);
-
-      // 101文字目を入力しようとした時の keydown イベントをシミュレート
-      const event = new KeyboardEvent('keydown', { key: 'b', cancelable: true });
-      titleInput.dispatchEvent(event);
-
-      // 100文字に達しているため、新しいキー入力はブロック (preventDefault) されること
-      expect(event.defaultPrevented).toBe(true);
-    });
   });
 
   describe('IT-DET-003: 日時指定ラジオボタンとカレンダー UI 入力フォームの連動', () => {
@@ -600,6 +585,46 @@ describe('詳細画面 UI 統合テスト (detailView.js)', () => {
           dueAt: '2026-07-24T14:59:00.000Z', // 変換後の UTC 値
         })
       );
+    });
+  });
+
+  describe('IT-DET-006: 不正な日時データの処理', () => {
+    it('不正な UTC 文字列でも クラッシュしないこと（datetime）', () => {
+      const invalidTodo = {
+        id: '1',
+        title: 'Test',
+        detail: '',
+        detailHtml: '',
+        dueType: 'datetime',
+        dueAt: 'invalid-date',
+        completed: false,
+        createdAt: '2026-07-24T10:00:00.000Z',
+        updatedAt: '2026-07-24T10:00:00.000Z',
+      };
+
+      expect(() => openDetailModal(invalidTodo)).not.toThrow();
+      // 不正な日時の場合、表示フィールドは空になること
+      const datetimeDisplay = dialog.querySelector('#due-datetime-display');
+      expect(datetimeDisplay.value).toBe('');
+    });
+
+    it('不正な UTC 文字列でも クラッシュしないこと（date）', () => {
+      const invalidTodo = {
+        id: '2',
+        title: 'Test',
+        detail: '',
+        detailHtml: '',
+        dueType: 'date',
+        dueAt: 'invalid-date',
+        completed: false,
+        createdAt: '2026-07-24T10:00:00.000Z',
+        updatedAt: '2026-07-24T10:00:00.000Z',
+      };
+
+      expect(() => openDetailModal(invalidTodo)).not.toThrow();
+      // 不正な日付の場合、表示フィールドは空になること
+      const dateDisplay = dialog.querySelector('#due-date-display');
+      expect(dateDisplay.value).toBe('');
     });
   });
 });

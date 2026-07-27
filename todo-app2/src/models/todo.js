@@ -1,3 +1,5 @@
+import { MAX_DETAIL_LENGTH, MAX_TITLE_LENGTH } from '../constants.js';
+
 /**
  * 新規ToDoオブジェクト生成
  * @param {string} title
@@ -55,16 +57,26 @@ export function isValidTodo(todo) {
     return false;
   }
 
-  // タイトル文字数（1〜100文字）
-  if (typeof todo.title !== 'string' || todo.title.trim() === '' || todo.title.length > 100) {
+  // タイトル文字数（1 〜 MAX_TITLE_LENGTH 文字）
+  if (
+    typeof todo.title !== 'string' ||
+    todo.title.trim() === '' ||
+    todo.title.length > MAX_TITLE_LENGTH
+  ) {
     return false;
   }
 
-  // 詳細（最大2000文字）
-  if (todo.detail !== undefined && (typeof todo.detail !== 'string' || todo.detail.length > 2000)) {
+  // 詳細（最大 MAX_DETAIL_LENGTH 文字）
+  if (
+    todo.detail !== undefined &&
+    (typeof todo.detail !== 'string' || todo.detail.length > MAX_DETAIL_LENGTH)
+  ) {
     return false;
   }
-  if (todo.detailHtml !== undefined && typeof todo.detailHtml !== 'string') {
+  if (
+    todo.detailHtml !== undefined &&
+    (typeof todo.detailHtml !== 'string' || todo.detailHtml.length > MAX_DETAIL_LENGTH)
+  ) {
     return false;
   }
 
