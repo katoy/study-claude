@@ -314,7 +314,7 @@ describe('詳細画面 UI 統合テスト (detailView.js)', () => {
       expect(saveBtn.disabled).toBe(false);
 
       // 2. 2000文字を超える入力
-      const longText = 'a'.repeat(2001) + '\n';
+      const longText = `${'a'.repeat(2001)}\n`;
       editorAdapter.__triggerChange(longText, `<p>${'a'.repeat(2001)}</p>`);
 
       expect(detailCounter.textContent).toBe('2001 / 2000');

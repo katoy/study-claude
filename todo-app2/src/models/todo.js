@@ -96,7 +96,7 @@ export function isValidTodo(todo) {
   // 日付の有効性チェック
   const createdDate = new Date(todo.createdAt);
   const updatedDate = new Date(todo.updatedAt);
-  if (isNaN(createdDate.getTime()) || isNaN(updatedDate.getTime())) {
+  if (Number.isNaN(createdDate.getTime()) || Number.isNaN(updatedDate.getTime())) {
     return false;
   }
 

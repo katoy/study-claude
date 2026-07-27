@@ -33,7 +33,7 @@ export function formatDue(dueType, dueAt) {
   }
 
   const d = new Date(dueAt);
-  if (isNaN(d.getTime())) {
+  if (Number.isNaN(d.getTime())) {
     return '—';
   }
 

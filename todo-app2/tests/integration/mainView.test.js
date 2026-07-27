@@ -7,8 +7,8 @@ vi.mock('../../src/logic/sections.js', () => ({
   buildSections: vi.fn((todos) => {
     // 擬似的にセクション分け
     const sections = [];
-    const today = todos.filter((t) => t.title && t.title.includes('本日中'));
-    const tomorrow = todos.filter((t) => t.title && t.title.includes('明日まで'));
+    const today = todos.filter((t) => t.title?.includes('本日中'));
+    const tomorrow = todos.filter((t) => t.title?.includes('明日まで'));
     const other = todos.filter(
       (t) => !t.title || (!t.title.includes('本日中') && !t.title.includes('明日まで'))
     );

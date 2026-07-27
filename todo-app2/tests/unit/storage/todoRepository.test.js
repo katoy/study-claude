@@ -9,7 +9,7 @@ vi.mock('../../../src/models/todo.js', () => {
     isValidTodo: vi.fn((todo) => {
       // 簡易的なスタブ: タイトルが存在し "invalid" が含まれなければ有効と判定する
       if (!todo || typeof todo !== 'object') return false;
-      if (todo.title && todo.title.includes('invalid')) return false;
+      if (todo.title?.includes('invalid')) return false;
       return true;
     }),
   };
