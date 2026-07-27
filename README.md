@@ -52,7 +52,8 @@
 * **主な機能**:
   * Quill エディタを統合したタスク作成モーダル
   * 100%のカバレッジ要件チェックを備えた高品質なコードベース
-* **技術スタック**: React / Vite / TypeScript, Jest / Vitest, Prettier, ESLint
+  * Playwright による VRT（視覚的リグレッションテスト）の自動検証環境
+* **技術スタック**: Vanilla JavaScript (ES Modules), Vite, Vitest, Playwright (VRT), Prettier, ESLint
 
 ### 5. [PDF Label Studio (pdflabel)](./pdflabel/README.md)
 * **概要**: 市販のA4ラベル用紙などの寸法に合わせて、任意の印刷用PDFをブラウザ内で完全ローカル生成するツール。

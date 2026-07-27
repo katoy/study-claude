@@ -292,6 +292,10 @@ it('should save and retrieve todo', () => {
   - `playwright.config.js` の `webServer` 設定により、テスト開始時に自動で Vite プレビューサーバー (`npm run preview` / ポート 4173) が立ち上がる。
 - **OSごとのレンダリング差異対策**：
   - OSやフォント環境（Mac, Windows, Linuxなど）によるアンチエイリアスの微細なレンダリング差分でテストが失敗するのを防ぐため、Playwright が自動生成する `*-<platform>.png` 形式でOSごとの基準画像をリポジトリにコミットし、それぞれで比較を行う。
+  - **Linux 用基準画像のローカル生成（Docker 経由）**：
+    ```bash
+    docker run --rm -v $(pwd):/work -v /work/node_modules -w /work mcr.microsoft.com/playwright:v1.61.1-jammy bash -c "npm ci && npx playwright test --update-snapshots"
+    ```
 
 ### テスト構成例
 

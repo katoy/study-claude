@@ -201,6 +201,11 @@ VRT は Playwright を用いて、ブラウザでレンダリングされた画�
    日付や時間の経過による表記の変化でVRTが誤検知（Flaky化）するのを防ぐため、Playwrightの `clock` APIを使用し、テスト中のシステム時刻を `2026-07-27 12:00:00 JST` にモック固定しています。
 2. **OSごとのレンダリング差異への対応**:
    OSやフォントの違いによるアンチエイリアスの微細な差分を許容するため、Playwrightの機能を用いてOS別の基準画像（Mac用の `*-darwin.png` や Linux用の `*-linux.png` など）を自動生成し、それぞれ比較しています。
+   * **Linux 用基準画像のローカル生成 (Docker 経由)**:
+     ホストOS側の `node_modules` を汚染・破壊せずに Linux 環境用のスナップショットを生成するために、以下の隔離コマンドを実行します。
+     ```bash
+     docker run --rm -v $(pwd):/work -v /work/node_modules -w /work mcr.microsoft.com/playwright:v1.61.1-jammy bash -c "npm ci && npx playwright test --update-snapshots"
+     ```
 
 ---
 
