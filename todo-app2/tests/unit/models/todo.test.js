@@ -331,12 +331,12 @@ describe('ToDoモデル (todo.js)', () => {
         })
       ).toBe(false);
 
-      // detailHtml が 2000 文字を超える
+      // detailHtml が 10000 文字を超える (MAX_DETAIL_LENGTH * 5)
       expect(
         isValidTodo({
           id: '550e8400-e29b-41d4-a716-446655440000',
           title: 'A',
-          detailHtml: 'a'.repeat(2001),
+          detailHtml: 'a'.repeat(10001),
           dueType: 'none',
           dueAt: null,
           completed: false,

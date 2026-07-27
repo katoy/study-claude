@@ -13,6 +13,10 @@ describe('日付・時刻フォーマット・変換 (dateFormat.js)', () => {
       const expectedUtc = '2026-07-24T14:59:59.000Z';
       expect(convertToUtcForDate(jstDate)).toBe(expectedUtc);
     });
+
+    it('不正な形式の日付文字列が渡された場合、RangeError をスローすること', () => {
+      expect(() => convertToUtcForDate('invalid-date')).toThrow(RangeError);
+    });
   });
 
   describe('UT-DAT-002: 「時まで」指定時のUTC変換', () => {
@@ -20,6 +24,10 @@ describe('日付・時刻フォーマット・変換 (dateFormat.js)', () => {
       const jstDateTime = '2026-07-24T09:00';
       const expectedUtc = '2026-07-24T00:00:00.000Z';
       expect(convertToUtcForDateTime(jstDateTime)).toBe(expectedUtc);
+    });
+
+    it('不正な形式の日時文字列が渡された場合、RangeError をスローすること', () => {
+      expect(() => convertToUtcForDateTime('invalid-date')).toThrow(RangeError);
     });
   });
 

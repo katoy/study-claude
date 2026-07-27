@@ -75,7 +75,7 @@ export function isValidTodo(todo) {
   }
   if (
     todo.detailHtml !== undefined &&
-    (typeof todo.detailHtml !== 'string' || todo.detailHtml.length > MAX_DETAIL_LENGTH)
+    (typeof todo.detailHtml !== 'string' || todo.detailHtml.length > MAX_DETAIL_LENGTH * 5)
   ) {
     return false;
   }

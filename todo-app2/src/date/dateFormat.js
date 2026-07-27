@@ -7,6 +7,9 @@
 export function convertToUtcForDate(jstDateStr) {
   // JST 23:59:59 の Date オブジェクトを作成し UTC 変換
   const date = new Date(`${jstDateStr}T23:59:59.000+09:00`);
+  if (Number.isNaN(date.getTime())) {
+    throw new RangeError('Invalid date format');
+  }
   return date.toISOString();
 }
 
@@ -18,6 +21,9 @@ export function convertToUtcForDate(jstDateStr) {
 export function convertToUtcForDateTime(jstDateTimeStr) {
   // JST の日時 Date オブジェクトを作成し UTC 変換
   const date = new Date(`${jstDateTimeStr}:00.000+09:00`);
+  if (Number.isNaN(date.getTime())) {
+    throw new RangeError('Invalid date format');
+  }
   return date.toISOString();
 }
 
