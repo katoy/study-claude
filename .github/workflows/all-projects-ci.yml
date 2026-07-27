@@ -235,6 +235,22 @@ jobs:
           echo "✅ Build successful: dist/index.html created"
           ls -lh dist/index.html
 
+      - name: Install Playwright Browsers
+        working-directory: todo-app2
+        run: npx playwright install --with-deps chromium
+
+      - name: Run VRT Tests
+        working-directory: todo-app2
+        run: npm run test:vrt
+
+      - name: Upload Playwright report (on failure)
+        uses: actions/upload-artifact@v4
+        if: ${{ failure() }}
+        with:
+          name: playwright-report-todo-app2
+          path: todo-app2/playwright-report/
+          retention-days: 30
+
   # 5. PDF Label CI
   pdflabel-ci:
     needs: detect-changes

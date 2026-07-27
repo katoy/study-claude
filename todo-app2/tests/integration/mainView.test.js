@@ -105,6 +105,17 @@ describe('メイン画面 UI 統合テスト (mainView.js)', () => {
       expect(queryByText(container, '未完了本日中タスク')).toBeNull();
       expect(getByText(container, '完了済それ以外タスク')).toBeDefined();
     });
+
+    it('tabs 領域自体をクリックしたが、ボタン以外の部分である場合にタブ切り替えが発生しないこと', () => {
+      const todos = [{ id: '1', title: '本日中タスク', completed: false }];
+      renderMainView(todos, 'all');
+
+      const tabsArea = container.querySelector('#tabs');
+      fireEvent.click(tabsArea);
+
+      const activeTab = container.querySelector('.active');
+      expect(activeTab.id).toBe('tab-all');
+    });
   });
 
   describe('IT-MAIN-003: 完了ステータスのトグル', () => {

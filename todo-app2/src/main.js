@@ -54,12 +54,7 @@ function createOrUpdateTodoFromFormData(formData, editingId = null) {
     return todo ? updateTodo(todo, formData) : null;
   }
 
-  const newTodo = createTodo(
-    formData.title,
-    formData.detail,
-    formData.dueType,
-    formData.dueAt
-  );
+  const newTodo = createTodo(formData.title, formData.detail, formData.dueType, formData.dueAt);
   newTodo.detailHtml = formData.detailHtml;
   return newTodo;
 }

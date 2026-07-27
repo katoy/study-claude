@@ -76,6 +76,8 @@ todo-app2/
 | `npm test` | Vitest 単発実行 |
 | `npm run test:watch` | Vitest ウォッチモード |
 | `npm run test:coverage` | カバレッジ計測（100%閾値強制） |
+| `npm run test:vrt` | Playwright による VRT テストの実行 |
+| `npm run test:vrt:update` | VRT 基準スクリーンショットの生成・更新 |
 | `npm run lint` | ESLint（チェックのみ） |
 | `npm run lint:fix` | ESLint 自動修正 |
 | `npm run format` | Prettier（チェックのみ） |
@@ -279,6 +281,18 @@ it('should save and retrieve todo', () => {
 });
 ```
 
+### VRT（視覚的リグレッションテスト）
+
+- **テストランナー**：Playwright Test (`@playwright/test`)
+- **テストディレクトリ**：`tests/vrt/`
+- **動作保証と時刻モック**：
+  - セクション分類や日時表示を安定させるため、テスト内で `page.clock.install()` を用いてテスト時刻を固定して実行する。
+  - テスト対象ページ読み込み前に `localStorage.clear()` を実行し、状態のクリーン性を担保する。
+- **実行条件とポート**：
+  - `playwright.config.js` の `webServer` 設定により、テスト開始時に自動で Vite プレビューサーバー (`npm run preview` / ポート 4173) が立ち上がる。
+- **OSごとのレンダリング差異対策**：
+  - OSやフォント環境（Mac, Windows, Linuxなど）によるアンチエイリアスの微細なレンダリング差分でテストが失敗するのを防ぐため、Playwright が自動生成する `*-<platform>.png` 形式でOSごとの基準画像をリポジトリにコミットし、それぞれで比較を行う。
+
 ### テスト構成例
 
 ```
@@ -292,6 +306,9 @@ tests/
 ├── integration/
 │   ├── mainView.test.js               # jsdom 上でタブ切替、完了操作
 │   └── detailView.test.js             # jsdom 上で保存、バリデーション
+├── vrt/
+│   ├── todo-app.spec.js               # Playwright VRT テスト
+│   └── todo-app.spec.js-snapshots/    # 各OSごとの基準スクリーンショット
 └── setup.js                            # jsdom 初期化、localStorage クリア
 ```
 

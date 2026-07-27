@@ -1,10 +1,11 @@
-import { defineConfig } from 'vitest/config';
+import { defineConfig, configDefaults } from 'vitest/config';
 
 export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./tests/setup.js'],
     globals: true,
+    exclude: [...configDefaults.exclude, 'tests/vrt/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

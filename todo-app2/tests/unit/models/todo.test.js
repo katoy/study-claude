@@ -79,7 +79,7 @@ describe('ToDoモデル (todo.js)', () => {
 
   describe('isValidTodo', () => {
     it('UT-MOD-003: 有効な全フィールドを持つToDoオブジェクトに対して true を返すこと', () => {
-      const validTodo = {
+      const validTodoNone = {
         id: '550e8400-e29b-41d4-a716-446655440000',
         title: '有効なタイトル',
         detail: '詳細情報',
@@ -90,7 +90,31 @@ describe('ToDoモデル (todo.js)', () => {
         updatedAt: '2026-07-24T10:00:00.000Z',
       };
 
-      expect(isValidTodo(validTodo)).toBe(true);
+      const validTodoDate = {
+        id: '550e8400-e29b-41d4-a716-446655440000',
+        title: '日付タスク',
+        detail: '詳細情報',
+        dueType: 'date',
+        dueAt: '2026-07-24T14:59:59.000Z',
+        completed: false,
+        createdAt: '2026-07-24T10:00:00.000Z',
+        updatedAt: '2026-07-24T10:00:00.000Z',
+      };
+
+      const validTodoDateTime = {
+        id: '550e8400-e29b-41d4-a716-446655440000',
+        title: '日時タスク',
+        detail: '詳細情報',
+        dueType: 'datetime',
+        dueAt: '2026-07-24T09:00:00.000Z',
+        completed: false,
+        createdAt: '2026-07-24T10:00:00.000Z',
+        updatedAt: '2026-07-24T10:00:00.000Z',
+      };
+
+      expect(isValidTodo(validTodoNone)).toBe(true);
+      expect(isValidTodo(validTodoDate)).toBe(true);
+      expect(isValidTodo(validTodoDateTime)).toBe(true);
     });
 
     it('UT-MOD-004: 異常値に対して false を返すこと', () => {
@@ -125,7 +149,7 @@ describe('ToDoモデル (todo.js)', () => {
       // title が欠損、非文字列、または空文字(trim後)
       expect(
         isValidTodo({
-          id: 'a',
+          id: '550e8400-e29b-41d4-a716-446655440000',
           dueType: 'none',
           dueAt: null,
           completed: false,
@@ -135,7 +159,7 @@ describe('ToDoモデル (todo.js)', () => {
       ).toBe(false);
       expect(
         isValidTodo({
-          id: 'a',
+          id: '550e8400-e29b-41d4-a716-446655440000',
           title: 123,
           dueType: 'none',
           dueAt: null,
@@ -146,7 +170,7 @@ describe('ToDoモデル (todo.js)', () => {
       ).toBe(false);
       expect(
         isValidTodo({
-          id: 'a',
+          id: '550e8400-e29b-41d4-a716-446655440000',
           title: '   ',
           dueType: 'none',
           dueAt: null,
@@ -159,7 +183,7 @@ describe('ToDoモデル (todo.js)', () => {
       // dueType が 'none' | 'date' | 'datetime' 以外
       expect(
         isValidTodo({
-          id: 'a',
+          id: '550e8400-e29b-41d4-a716-446655440000',
           title: 'A',
           dueType: 'invalid',
           dueAt: null,
@@ -172,7 +196,7 @@ describe('ToDoモデル (todo.js)', () => {
       // dueAt が 'none' なのに null 以外
       expect(
         isValidTodo({
-          id: 'a',
+          id: '550e8400-e29b-41d4-a716-446655440000',
           title: 'A',
           dueType: 'none',
           dueAt: '2026-07-24T10:00:00.000Z',
@@ -185,7 +209,7 @@ describe('ToDoモデル (todo.js)', () => {
       // dueType が 'date' または 'datetime' なのに dueAt が非文字列・空文字
       expect(
         isValidTodo({
-          id: 'a',
+          id: '550e8400-e29b-41d4-a716-446655440000',
           title: 'A',
           dueType: 'date',
           dueAt: null,
@@ -196,7 +220,7 @@ describe('ToDoモデル (todo.js)', () => {
       ).toBe(false);
       expect(
         isValidTodo({
-          id: 'a',
+          id: '550e8400-e29b-41d4-a716-446655440000',
           title: 'A',
           dueType: 'datetime',
           dueAt: '',
@@ -209,7 +233,7 @@ describe('ToDoモデル (todo.js)', () => {
       // completed が非boolean
       expect(
         isValidTodo({
-          id: 'a',
+          id: '550e8400-e29b-41d4-a716-446655440000',
           title: 'A',
           dueType: 'none',
           dueAt: null,
@@ -219,25 +243,90 @@ describe('ToDoモデル (todo.js)', () => {
         })
       ).toBe(false);
 
-      // createdAt/updatedAt が欠損または不正な日付文字列
+      // createdAt/updatedAt が欠損または不正な型
       expect(
         isValidTodo({
-          id: 'a',
+          id: '550e8400-e29b-41d4-a716-446655440000',
           title: 'A',
           dueType: 'none',
           dueAt: null,
           completed: false,
+          createdAt: 12345,
           updatedAt: '2026-07-24T10:00:00.000Z',
         })
       ).toBe(false);
       expect(
         isValidTodo({
-          id: 'a',
+          id: '550e8400-e29b-41d4-a716-446655440000',
+          title: 'A',
+          dueType: 'none',
+          dueAt: null,
+          completed: false,
+          createdAt: '2026-07-24T10:00:00.000Z',
+          updatedAt: null,
+        })
+      ).toBe(false);
+
+      // createdAt/updatedAt が不正な日付文字列
+      expect(
+        isValidTodo({
+          id: '550e8400-e29b-41d4-a716-446655440000',
           title: 'A',
           dueType: 'none',
           dueAt: null,
           completed: false,
           createdAt: 'invalid-date',
+          updatedAt: '2026-07-24T10:00:00.000Z',
+        })
+      ).toBe(false);
+      expect(
+        isValidTodo({
+          id: '550e8400-e29b-41d4-a716-446655440000',
+          title: 'A',
+          dueType: 'none',
+          dueAt: null,
+          completed: false,
+          createdAt: '2026-07-24T10:00:00.000Z',
+          updatedAt: 'invalid-date',
+        })
+      ).toBe(false);
+
+      // detail が非文字列、または2000文字超
+      expect(
+        isValidTodo({
+          id: '550e8400-e29b-41d4-a716-446655440000',
+          title: 'A',
+          detail: 123,
+          dueType: 'none',
+          dueAt: null,
+          completed: false,
+          createdAt: '2026-07-24T10:00:00.000Z',
+          updatedAt: '2026-07-24T10:00:00.000Z',
+        })
+      ).toBe(false);
+      expect(
+        isValidTodo({
+          id: '550e8400-e29b-41d4-a716-446655440000',
+          title: 'A',
+          detail: 'a'.repeat(2001),
+          dueType: 'none',
+          dueAt: null,
+          completed: false,
+          createdAt: '2026-07-24T10:00:00.000Z',
+          updatedAt: '2026-07-24T10:00:00.000Z',
+        })
+      ).toBe(false);
+
+      // detailHtml が非文字列
+      expect(
+        isValidTodo({
+          id: '550e8400-e29b-41d4-a716-446655440000',
+          title: 'A',
+          detailHtml: 123,
+          dueType: 'none',
+          dueAt: null,
+          completed: false,
+          createdAt: '2026-07-24T10:00:00.000Z',
           updatedAt: '2026-07-24T10:00:00.000Z',
         })
       ).toBe(false);

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { fireEvent } from '@testing-library/dom';
-import { initDetailView, openDetailModal } from '../../src/ui/detailView.js';
+import { initDetailView, openDetailModal, closeDetailModal } from '../../src/ui/detailView.js';
 import * as editorAdapter from '../../src/editor/richEditorAdapter.js';
 
 // Quill アダプターのモック化
@@ -204,11 +204,11 @@ describe('詳細画面 UI 統合テスト (detailView.js)', () => {
       fireEvent.input(titleInput);
 
       // 101文字目を入力しようとした時の keydown イベントをシミュレート
-      const event = new KeyboardEvent('keydown', { key: 'a', cancelable: true });
+      const event = new KeyboardEvent('keydown', { key: 'b', cancelable: true });
       titleInput.dispatchEvent(event);
 
-      // もし100文字に達していたら keydown は preventDefault されているべき
-      // (実装によっては input イベントの文字カットで行う場合もあるため、この仕様のテストアプローチに従う)
+      // 100文字に達しているため、新しいキー入力はブロック (preventDefault) されること
+      expect(event.defaultPrevented).toBe(true);
     });
   });
 
@@ -449,12 +449,58 @@ describe('詳細画面 UI 統合テスト (detailView.js)', () => {
       expect(dialog.showModal).not.toHaveBeenCalled();
     });
 
+    it('初期化前に closeDetailModal が呼ばれた場合にエラーを投げずにリターンすること', () => {
+      initDetailView(null, null);
+      expect(() => closeDetailModal()).not.toThrow();
+    });
+
+    it('showPicker が定義されていない要素でのクリック・フォーカス時にエラーにならずに動作すること', () => {
+      openDetailModal(null);
+      const datePicker = dialog.querySelector('#due-date-picker');
+      const datetimePicker = dialog.querySelector('#due-datetime-picker');
+
+      datePicker.showPicker = undefined;
+      datetimePicker.showPicker = undefined;
+
+      expect(() => fireEvent.click(datePicker)).not.toThrow();
+      expect(() => fireEvent.focus(datetimePicker)).not.toThrow();
+    });
+
+    it('すべてのラジオボタンが未チェックの場合に updateDueTypeUI が安全に動作すること', () => {
+      openDetailModal(null);
+      const radioNone = dialog.querySelector('#due-none');
+      const radioDate = dialog.querySelector('#due-date');
+      const radioDatetime = dialog.querySelector('#due-datetime');
+
+      radioNone.checked = false;
+      radioDate.checked = false;
+      radioDatetime.checked = false;
+
+      radioNone.dispatchEvent(new Event('change'));
+
+      const datePicker = dialog.querySelector('#due-date-picker');
+      const datetimePicker = dialog.querySelector('#due-datetime-picker');
+
+      expect(datePicker.disabled).toBe(true);
+      expect(datetimePicker.disabled).toBe(true);
+    });
+
     it('キーイベントで allowedKeys が入力されたときは preventDefault されないこと', () => {
       openDetailModal(null);
       const titleInput = dialog.querySelector('#todo-title');
 
       // allowed key (Backspace) のキーダウン
       const event = new KeyboardEvent('keydown', { key: 'Backspace', cancelable: true });
+      titleInput.dispatchEvent(event);
+      expect(event.defaultPrevented).toBe(false);
+    });
+
+    it('100文字未満の時のキー入力で preventDefault されないこと', () => {
+      openDetailModal(null);
+      const titleInput = dialog.querySelector('#todo-title');
+
+      titleInput.value = 'a';
+      const event = new KeyboardEvent('keydown', { key: 'b', cancelable: true });
       titleInput.dispatchEvent(event);
       expect(event.defaultPrevented).toBe(false);
     });
