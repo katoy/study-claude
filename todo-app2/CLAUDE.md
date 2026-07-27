@@ -16,29 +16,9 @@
 
 ---
 
-## 技術スタック
-
-| 領域 | 技術 | 備考 |
-|---|---|---|
-| 言語 | Vanilla JavaScript (ES Modules) | TypeScript は不採用 |
-| ランタイム | Node.js 20.x LTS以上 | `.nvmrc` で固定 |
-| ビルド | Vite + vite-plugin-singlefile | 単一HTML化 |
-| テスト | Vitest (jsdom) + @vitest/coverage-v8 | 設定最小化、Jest互換API |
-| DOM統合テスト | @testing-library/dom | 可読性高いクエリ |
-| リッチエディタ | Quill 2.x | 装飾系のみ（画像埋め込み不可） |
-| XSS対策 | DOMPurify | allowlist方式 |
-| Lint | ESLint(flat config) + eslint-plugin-no-unsanitized | innerHTML 未サニタイズ検出 |
-| Format | Prettier | ESLint と共存（eslint-config-prettier） |
-| パッケージマネージャ | npm | package-lock.json で固定 |
-| CI/CD | GitHub Actions | lint/test/build(全PR/push) + Pages デプロイ(mainマージ時) |
-
-**TypeScript を採用しない理由**：「HTML + JavaScript」の要件と単純さ優先の方針に合致。型が必要な箇所は JSDoc で補うことで十分。
-
----
-
 ## ディレクトリ構成
 
-実装時に従う推奨構成（詳細は `docs/spec.md` の Project Structure セクション参照）：
+詳細は `docs/spec.md` の Project Structure セクション、`package.json` の scripts を参照：
 
 ```
 todo-app2/
@@ -67,21 +47,7 @@ todo-app2/
 
 ## コマンド一覧
 
-| コマンド | 用途 |
-|---|---|
-| `npm ci` | 依存インストール（CI用）|
-| `npm run dev` | 開発サーバー起動（HMR） |
-| `npm run build` | ビルド（`dist/index.html` 生成） |
-| `npm run preview` | ビルド成果物をローカルプレビュー |
-| `npm test` | Vitest 単発実行 |
-| `npm run test:watch` | Vitest ウォッチモード |
-| `npm run test:coverage` | カバレッジ計測（100%閾値強制） |
-| `npm run test:vrt` | Playwright による VRT テストの実行 |
-| `npm run test:vrt:update` | VRT 基準スクリーンショットの生成・更新 |
-| `npm run lint` | ESLint（チェックのみ） |
-| `npm run lint:fix` | ESLint 自動修正 |
-| `npm run format` | Prettier（チェックのみ） |
-| `npm run format:fix` | Prettier 自動整形 |
+詳細は `package.json` の `scripts` セクションを参照。主要コマンド：`npm run dev`（開発）、`npm run build`（ビルド）、`npm test`（テスト）、`npm run lint` / `npm run format`（チェック）、`npm run test:coverage`（カバレッジ 100% 検証）。
 
 ---
 
