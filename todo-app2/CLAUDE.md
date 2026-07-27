@@ -384,11 +384,10 @@ try {
 - [ ] **日時ロジック変更時は JST 日跨ぎ境界のテストを追加**
   - `vi.setSystemTime()` で複数の代表時刻を固定してテスト
   
-- [ ] **コミット前に `npm run lint && npm run test:coverage` または `npm run ci:check` を実行**
-  - ESLint / Prettier エラー/警告 0件
-  - Biome エラー 0件
-  - カバレッジ 100%（src/ 自作コード対象）
-  - ローカルでのビルドおよびVRTテストのパス
+- [ ] **プッシュ前に `npm run ci:check` を検証（プレプッシュフック自動検証）**
+  - リポジトリの `.husky/pre-push` フックにより、`todo-app2/` に変更がある場合、`git push` 時に `npm run ci:check` が自動実行されます。
+  - テスト、Linter（ESLint / Biome）、カバレッジ 100%、ビルド、およびVRTテストすべてにパスしない限り、プッシュはアボートされます。
+  - ローカルで手動実行する場合は `npm run ci:check` を使用します。
 
 ### Ask first（事前に質問すること）
 
