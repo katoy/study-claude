@@ -12,6 +12,7 @@
   - [5. PDF Label Studio (pdflabel)](#5-pdf-label-studio-pdflabel)
 - [🛠️ GitHub Actions (CI/CD) の構成](#️-github-actions-cicd-の構成)
   - [特徴とワークフローの仕組み](#特徴とワークフローの仕組み)
+  - [Git プッシュ前の自動検証（Git Hooks）](#git-プッシュ前の自動検証git-hooks)
 - [💡 共通ツール・スキル](#-共通ツールスキル)
   - [ブラウザテスト & デモGIF生成スキル (skills/browser-tests)](#ブラウザテスト--デモgif生成スキル-skillsbrowser-tests)
   - [README.md 作成・構成スタイルガイド (skills/readme-style)](#readmemd-作成構成スタイルガイド-skillsreadme-style)
@@ -83,6 +84,19 @@
      * Premium ToDo App (todo-app2) -> `https://<user>.github.io/study-claude/todo-app2/`
      * 落ちモノパズル (example-001) -> `https://<user>.github.io/study-claude/example-001/`
      * PDF Label Studio (pdflabel) -> `https://<user>.github.io/study-claude/pdflabel/`
+
+### Git プッシュ前の自動検証（Git Hooks）
+
+本リポジトリには、開発者が誤ってテストやフォーマットエラーのあるコードをコミット・プッシュするのを防ぐため、Husky を用いた共通の Git フック（`pre-push`）が設定されています。
+
+* **動作の仕組み**:
+  1. 開発者が `git push` を実行すると、Git フックが起動します。
+  2. プッシュ対象の差分ファイルに `todo-app2/` 配下の変更が含まれているかを自動検知します。
+  3. `todo-app2/` に変更がある場合、自動的にその配下で `npm run ci:check` を実行し、Lint、Format、Test（カバレッジ100%）、VRTを一括検証します。
+  4. 1件でもエラーや違反があれば、プッシュ処理は自動的にアボート（キャンセル）されます。
+
+> [!NOTE]
+> この仕組みにより、GitHub Actions の CI でエラーが発生するのをローカル段階で未然に防ぎ、リポジトリの品質とクリーンなコミット履歴を維持しています。
 
 ---
 
